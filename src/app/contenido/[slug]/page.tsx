@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { contents, getContentBySlug } from "@/data/contents";
+import {
+  contents,
+  getContentBySlug,
+  getContentTypeLabel,
+} from "@/data/contents";
 
 type ContentPageProps = {
   params: Promise<{
@@ -29,7 +33,7 @@ export async function generateMetadata({
 
   return {
     title: content.title,
-    description: `Resumen completo con spoilers de ${content.title}.`,
+    description: content.shortSummary,
   };
 }
 
@@ -52,18 +56,18 @@ export default async function ContentPage({ params }: ContentPageProps) {
 
       <header className="mt-8 border-b border-zinc-200 pb-8">
         <p className="text-sm font-semibold uppercase tracking-[0.18em] text-ember">
-          {content.type} · {content.year}
+          {getContentTypeLabel(content.type)} · {content.year}
         </p>
         <h1 className="mt-4 text-4xl font-black leading-tight text-ink sm:text-5xl">
           {content.title}
         </h1>
         <p className="mt-5 text-lg leading-8 text-zinc-700">
-          {content.description}
+          {content.shortSummary}
         </p>
       </header>
 
       <div className="mt-10 space-y-10">
-        {content.sections.map((section) => (
+        {content.longSummary.map((section) => (
           <section
             className="rounded-lg border border-zinc-200 bg-white p-6 shadow-sm"
             key={section.title}

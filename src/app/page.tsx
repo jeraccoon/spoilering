@@ -1,8 +1,7 @@
 import Link from "next/link";
-import { contents } from "@/data/contents";
+import { contents, getContentTypeLabel } from "@/data/contents";
 
 const categories = ["Libros", "Series", "Películas"];
-const recentWorks = contents.slice(0, 4);
 
 export default function Home() {
   return (
@@ -66,7 +65,7 @@ export default function Home() {
             id="search"
             name="search"
             type="search"
-            placeholder="Busca Harry Potter, Dune, Dark, El padrino..."
+            placeholder="Busca Harry Potter, Breaking Bad, El club de la lucha..."
             className="min-h-12 flex-1 rounded-lg border border-transparent bg-zinc-50 px-4 text-base text-ink outline-none transition focus:border-ember focus:bg-white focus:ring-4 focus:ring-ember/15"
           />
           <button
@@ -105,29 +104,31 @@ export default function Home() {
             Contenidos recientes
           </p>
           <h2 className="mt-3 text-3xl font-bold text-ink">
-            Resúmenes listos para leer con todos los spoilers
+            Fichas listas para leer con todos los spoilers
           </h2>
         </div>
 
-        <div className="grid gap-5 md:grid-cols-2">
-          {recentWorks.map((work) => (
+        <div className="grid gap-5 md:grid-cols-3">
+          {contents.map((content) => (
             <article
               className="rounded-lg border border-zinc-200 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
-              key={work.slug}
+              key={content.slug}
             >
               <div className="flex items-center justify-between gap-4">
-                <p className="text-sm font-semibold text-moss">{work.type}</p>
+                <p className="text-sm font-semibold text-moss">
+                  {getContentTypeLabel(content.type)}
+                </p>
                 <p className="rounded-lg bg-zinc-100 px-3 py-1 text-xs font-semibold text-zinc-600">
-                  {work.readTime}
+                  {content.year}
                 </p>
               </div>
-              <h3 className="mt-4 text-xl font-bold text-ink">{work.title}</h3>
-              <p className="mt-3 leading-7 text-zinc-700">{work.description}</p>
+              <h3 className="mt-4 text-xl font-bold text-ink">{content.title}</h3>
+              <p className="mt-3 leading-7 text-zinc-700">{content.shortSummary}</p>
               <Link
                 className="mt-5 inline-flex font-semibold text-ember transition hover:text-ink"
-                href={`/contenido/${work.slug}`}
+                href={`/contenido/${content.slug}`}
               >
-                Leer resumen
+                Leer ficha
               </Link>
             </article>
           ))}
