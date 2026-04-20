@@ -1,6 +1,7 @@
-import Link from "next/link";
-import { contents, getContentTypeLabel } from "@/data/contents";
+import { ContentSearch } from "@/components/content-search";
+import { contents } from "@/data/contents";
 
+const contentList = Array.isArray(contents) ? contents : [];
 const categories = ["Libros", "Series", "Películas"];
 
 export default function Home() {
@@ -43,39 +44,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-4xl px-6 py-12" id="buscar">
-        <div className="text-center">
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-ember">
-            Búsqueda
-          </p>
-          <h2 className="mt-3 text-3xl font-bold text-ink">
-            Encuentra una historia y ve directo al spoiler.
-          </h2>
-          <p className="mx-auto mt-3 max-w-2xl leading-7 text-zinc-700">
-            El buscador todavía es visual, pero esta será la entrada principal
-            para localizar libros, series y películas.
-          </p>
-        </div>
-
-        <form className="mx-auto mt-8 flex w-full flex-col gap-3 rounded-lg border border-zinc-200 bg-white p-3 shadow-sm sm:flex-row">
-          <label className="sr-only" htmlFor="search">
-            Buscar una obra
-          </label>
-          <input
-            id="search"
-            name="search"
-            type="search"
-            placeholder="Busca Harry Potter, Breaking Bad, El club de la lucha..."
-            className="min-h-12 flex-1 rounded-lg border border-transparent bg-zinc-50 px-4 text-base text-ink outline-none transition focus:border-ember focus:bg-white focus:ring-4 focus:ring-ember/15"
-          />
-          <button
-            type="submit"
-            className="min-h-12 rounded-lg bg-ink px-6 text-base font-semibold text-white transition hover:bg-ember focus:outline-none focus:ring-4 focus:ring-ember/25"
-          >
-            Buscar
-          </button>
-        </form>
-      </section>
+      <ContentSearch contents={contentList} />
 
       <section className="border-y border-zinc-200 bg-white/75">
         <div className="mx-auto flex max-w-6xl flex-col items-center gap-5 px-6 py-8 text-center sm:flex-row sm:justify-between sm:text-left">
@@ -95,43 +64,6 @@ export default function Home() {
               </span>
             ))}
           </div>
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-6xl px-6 py-14" id="recientes">
-        <div className="mx-auto mb-8 max-w-2xl text-center">
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-ember">
-            Contenidos recientes
-          </p>
-          <h2 className="mt-3 text-3xl font-bold text-ink">
-            Fichas listas para leer con todos los spoilers
-          </h2>
-        </div>
-
-        <div className="grid gap-5 md:grid-cols-3">
-          {contents.map((content) => (
-            <article
-              className="rounded-lg border border-zinc-200 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
-              key={content.slug}
-            >
-              <div className="flex items-center justify-between gap-4">
-                <p className="text-sm font-semibold text-moss">
-                  {getContentTypeLabel(content.type)}
-                </p>
-                <p className="rounded-lg bg-zinc-100 px-3 py-1 text-xs font-semibold text-zinc-600">
-                  {content.year}
-                </p>
-              </div>
-              <h3 className="mt-4 text-xl font-bold text-ink">{content.title}</h3>
-              <p className="mt-3 leading-7 text-zinc-700">{content.shortSummary}</p>
-              <Link
-                className="mt-5 inline-flex font-semibold text-ember transition hover:text-ink"
-                href={`/contenido/${content.slug}`}
-              >
-                Leer ficha
-              </Link>
-            </article>
-          ))}
         </div>
       </section>
     </div>
