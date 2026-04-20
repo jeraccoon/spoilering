@@ -1,141 +1,142 @@
 # Spoilering
 
-## 🧠 Idea del proyecto
+Spoilering es una web pública de resúmenes con spoilers de libros, series y películas.
 
-Spoilering es una web donde los usuarios pueden leer **resúmenes completos con spoilers** de libros, series, películas, anime y videojuegos.
+La idea es simple: entrar, buscar una obra y entender rápido qué ocurre, quién importa y cómo termina.
 
-El objetivo es permitir:
+## Qué incluye ahora
 
-* entender una historia sin consumirla entera
-* recordar una historia ya vista o leída
-* consultar finales y giros importantes de forma rápida
+- Proyecto base con Next.js, TypeScript y Tailwind CSS.
+- Página de inicio sencilla.
+- Header y footer.
+- Página 404.
+- Configuración inicial de SEO.
+- Configuración inicial de Prisma para PostgreSQL.
+- Archivo `.env.example` con las variables necesarias.
 
----
+## Qué no incluye todavía
 
-## 🎯 Propuesta de valor
+- Buscador real conectado a base de datos.
+- Fichas públicas individuales.
+- Panel de administración.
+- Inicio de sesión.
+- Generación de contenido con IA.
 
-“La forma más rápida de entender cualquier historia, con spoilers incluidos.”
+Eso llegará después. Este primer paso solo prepara una base limpia para construir encima.
 
-Diferencias respecto a otras plataformas:
+## Requisitos
 
-* contenido estructurado (no texto caótico tipo wiki)
-* lectura rápida y clara
-* varios niveles de resumen
-* generación asistida por IA
-* enfoque práctico (no teorías ni ruido)
+Antes de empezar necesitas instalar:
 
----
+- Node.js.
+- PostgreSQL.
+- Un editor de código, por ejemplo Visual Studio Code.
 
-## 🚀 MVP (Primera versión)
+Si no sabes si tienes Node.js instalado, abre una terminal y ejecuta:
 
-### Funcionalidades
+```bash
+node -v
+```
 
-* buscador de obras
-* fichas públicas
-* resumen corto
-* resumen medio
-* historia completa
-* personajes clave
-* final explicado
-* panel privado de administración
-* generación de fichas con IA
+Si aparece un número de versión, lo tienes instalado.
 
----
+## Cómo arrancar el proyecto
 
-## 🧩 Estructura de una ficha
+1. Instala las dependencias:
 
-Cada obra tendrá:
+```bash
+npm install
+```
 
-1. Resumen corto (30 segundos)
-2. Resumen medio
-3. Historia completa
-4. Personajes
-5. Final explicado
+2. Crea el archivo de configuración local:
 
----
+```bash
+copy .env.example .env
+```
 
-## 🤖 Uso de IA
+En Windows PowerShell también puedes usar:
 
-La IA se utiliza para:
+```bash
+Copy-Item .env.example .env
+```
 
-* convertir texto libre en estructura
-* generar resúmenes
-* detectar personajes
-* ayudar a completar fichas
+3. Revisa el archivo `.env`.
 
-IMPORTANTE:
+La variable más importante es `DATABASE_URL`. Debe apuntar a tu base de datos PostgreSQL.
 
-* la IA no publica automáticamente
-* siempre hay revisión manual
+Ejemplo:
 
----
+```bash
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/spoilering?schema=public"
+```
 
-## ⚙️ Stack técnico
+4. Genera Prisma Client:
 
-* Frontend: Next.js
-* Backend: Next.js (API routes)
-* Base de datos: PostgreSQL
-* ORM: Prisma
-* Estilos: Tailwind CSS
-* IA: OpenAI API
-* Hosting: Vercel
+```bash
+npm run prisma:generate
+```
 
----
+5. Arranca la web:
 
-## 🗺️ Plan de desarrollo
+```bash
+npm run dev
+```
 
-### Fase 1
+6. Abre esta dirección en el navegador:
 
-* proyecto base
-* base de datos
-* home
-* ficha pública
+```bash
+http://localhost:3000
+```
 
-### Fase 2
+## Comandos útiles
 
-* panel admin
-* CRUD de obras
+```bash
+npm run dev
+```
 
-### Fase 3
+Arranca la web en modo desarrollo.
 
-* integración IA
+```bash
+npm run build
+```
 
-### Fase 4
+Comprueba si la web compila para producción.
 
-* despliegue
+```bash
+npm run lint
+```
 
----
+Revisa errores básicos de código.
 
-## 🧠 Flujo con IA
+```bash
+npm run prisma:migrate
+```
 
-1. Usuario pega texto
-2. IA estructura contenido
-3. Se muestra vista previa
-4. Usuario revisa
-5. Se guarda
+Crea o actualiza las tablas de PostgreSQL usando Prisma.
 
----
+## Estructura principal
 
-## 📂 Prompts Codex
+```text
+src/app
+```
 
-Ver carpeta `/prompts`
+Aquí están las páginas principales de Next.js.
 
----
+```text
+src/components
+```
 
-## ✅ Tareas pendientes
+Aquí están componentes reutilizables como el header y el footer.
 
-* [ ] crear proyecto base
-* [ ] configurar base de datos
-* [ ] crear fichas públicas
-* [ ] panel admin
-* [ ] integración IA
-* [ ] despliegue
-* [ ] contenido inicial
+```text
+prisma/schema.prisma
+```
 
----
+Aquí se define la estructura inicial de la base de datos.
 
-## 📌 Notas
+## Próximos pasos recomendados
 
-* mantener el MVP simple
-* priorizar calidad de contenido
-* no añadir funcionalidades complejas al inicio
+1. Crear la primera ficha pública de una obra.
+2. Conectar el listado de obras con PostgreSQL.
+3. Añadir una página de detalle por slug.
+4. Crear un panel privado sencillo para añadir contenido.
