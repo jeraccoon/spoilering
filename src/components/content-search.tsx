@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import {
   getContentTypeLabel,
+  type ContentType,
   type SpoileringContent,
 } from "@/data/contents";
 
@@ -11,20 +12,35 @@ type ContentSearchProps = {
   contents: SpoileringContent[];
 };
 
+type TypeFilter = "todos" | ContentType;
+
+const typeFilters: Array<{
+  label: string;
+  value: TypeFilter;
+}> = [
+  { label: "Todos", value: "todos" },
+  { label: "Libros", value: "libro" },
+  { label: "Series", value: "serie" },
+  { label: "Películas", value: "pelicula" },
+];
+
 export function ContentSearch({ contents }: ContentSearchProps) {
   const [query, setQuery] = useState("");
+  const [selectedType, setSelectedType] = useState<TypeFilter>("todos");
 
   const filteredContents = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
 
-    if (!normalizedQuery) {
-      return contents;
-    }
+    return contents.filter((content) => {
+      const matchesQuery =
+        !normalizedQuery ||
+        content.title.toLowerCase().includes(normalizedQuery);
+      const matchesType =
+        selectedType === "todos" || content.type === selectedType;
 
-    return contents.filter((content) =>
-      content.title.toLowerCase().includes(normalizedQuery),
-    );
-  }, [contents, query]);
+      return matchesQuery && matchesType;
+    });
+  }, [contents, query, selectedType]);
 
   return (
     <>
@@ -37,7 +53,7 @@ export function ContentSearch({ contents }: ContentSearchProps) {
             Encuentra una historia y ve directo al spoiler.
           </h2>
           <p className="mx-auto mt-3 max-w-2xl leading-7 text-zinc-700">
-            Filtra las fichas por título y abre el resumen completo con spoilers.
+            Filtra las fichas por título y tipo para abrir el resumen completo.
           </p>
         </div>
 
@@ -54,6 +70,27 @@ export function ContentSearch({ contents }: ContentSearchProps) {
             value={query}
             className="min-h-12 w-full rounded-lg border border-transparent bg-zinc-50 px-4 text-base text-ink outline-none transition focus:border-ember focus:bg-white focus:ring-4 focus:ring-ember/15"
           />
+        </div>
+
+        <div className="mt-5 flex flex-wrap justify-center gap-3">
+          {typeFilters.map((filter) => {
+            const isActive = selectedType === filter.value;
+
+            return (
+              <button
+                className={`rounded-lg border px-4 py-2 text-sm font-semibold transition focus:outline-none focus:ring-4 focus:ring-ember/15 ${
+                  isActive
+                    ? "border-ink bg-ink text-white"
+                    : "border-zinc-300 bg-white text-zinc-700 hover:border-ember hover:text-ember"
+                }`}
+                key={filter.value}
+                onClick={() => setSelectedType(filter.value)}
+                type="button"
+              >
+                {filter.label}
+              </button>
+            );
+          })}
         </div>
       </section>
 
@@ -101,7 +138,7 @@ export function ContentSearch({ contents }: ContentSearchProps) {
               No se encontraron resultados
             </p>
             <p className="mt-2 text-zinc-600">
-              Prueba con otro título o borra la búsqueda.
+              Prueba con otro título, cambia el filtro o borra la búsqueda.
             </p>
           </div>
         )}
