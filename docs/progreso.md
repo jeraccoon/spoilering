@@ -282,5 +282,11 @@ El foco actual debe ser:
 
 No añadir complejidad innecesaria antes de tiempo.
 
+## Último avance
+
+- Integración con TMDb para desambiguación
+- Selección de contenido real antes de generar
+- Base para uso de imágenes y metadatos
+
 
 
