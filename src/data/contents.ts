@@ -132,6 +132,60 @@ export const contents: SpoileringContent[] = [
         ]
       }
     ]
+  },
+  {
+    "title": "El padrino",
+    "slug": "el-padrino",
+    "type": "pelicula",
+    "year": "1972",
+    "shortSummary": "Una familia mafiosa lidia con el poder, la lealtad y las traiciones en Nueva York, centrada en el patriarca Vito Corleone y su hijo Michael.",
+    "longSummary": [
+      {
+        "title": "Inicio",
+        "paragraphs": [
+          "La familia Corleone, liderada por Vito Corleone, es una de las mafias más poderosas de Nueva York. En el día de la boda de su hija, se presentan varios personajes y se establece el panorama del mundo del crimen organizado. Vito Corleone se muestra como un hombre que valora la lealtad y la familia por encima de todo."
+        ]
+      },
+      {
+        "title": "Desarrollo",
+        "paragraphs": [
+          "Después de un intento de asesinato a Vito, su hijo Michael, inicialmente alejado de los asuntos familiares, se ve arrastrado al mundo del crimen. A medida que la violencia aumenta, Michael toma decisiones drásticas. Luego de vengar a su padre, empieza a asumir un rol más prominente en la organización, lo que lo cambia profundamente. La saga incluye traiciones, alianzas y el rescate de la familia frente a múltiples adversidades."
+        ]
+      },
+      {
+        "title": "Final",
+        "paragraphs": [
+          "Finalmente, Michael se convierte en el nuevo Don Corleone, emprendiendo una serie de decisiones que solidifican su poder, pero a costa de su moralidad y de la pérdida de sus relaciones familiares. La película cierra con la transformación de Michael en un líder despiadado, marcando su ascenso en el mundo criminal y aislándose de su familia."
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Lolita",
+    "slug": "lolita",
+    "type": "libro",
+    "year": "No verificado",
+    "shortSummary": "Una polémica novela que explora la obsesión, la manipulación y las dinámicas de poder a través de la relación entre un narrador adulto y una niña.",
+    "longSummary": [
+      {
+        "title": "Inicio",
+        "paragraphs": [
+          "El narrador, Humbert Humbert, introduce su fascinación por las jóvenes y su obsesión por 'Lolita', una niña de doce años. Se establece la relación tóxica y problemática entre ellos. Humbert se casa con la madre de Lolita para poder estar cerca de ella."
+        ]
+      },
+      {
+        "title": "Desarrollo",
+        "paragraphs": [
+          "Después de la muerte de la madre, Humbert toma el control total de la vida de Lolita. A lo largo de la narrativa, Humbert explora su relación con ella, que transcurre entre momentos de ternura y manipulación. A medida que la historia avanza, la perspectiva de Lolita y su sufrimiento se hace más evidente, creando un contraste entre su inocencia y la depravación de Humbert."
+        ]
+      },
+      {
+        "title": "Final",
+        "paragraphs": [
+          "Finalmente, Lolita escapa de Humbert y se casa con otro hombre. Humbert, lleno de remordimientos y obsesiones, busca venganza y acaba enfrentándose a las consecuencias de sus actos. La novela concluye con un sentido de tragedia y pérdida, y una reflexión sobre la moralidad y la percepción del amor."
+        ]
+      }
+    ]
   }
 ];
 
