@@ -8,6 +8,15 @@ export type GeneratedContent = {
   longSummary: LongSummarySection[];
 };
 
+export type GenerationReference = {
+  title: string;
+  type: ContentType;
+  year: string;
+  slug?: string;
+  source?: "local" | "tmdb";
+  tmdbId?: number;
+};
+
 type OpenAIContentResponse = {
   title: string;
   type: ContentType;
@@ -100,7 +109,10 @@ function extractResponseText(data: OpenAIResponseBody) {
   return textFromOutput ?? null;
 }
 
-export async function generateContent(title: string): Promise<GeneratedContent> {
+export async function generateContent(
+  title: string,
+  reference?: GenerationReference,
+): Promise<GeneratedContent> {
   const cleanTitle = title.trim();
 
   if (!cleanTitle) {
@@ -112,6 +124,18 @@ export async function generateContent(title: string): Promise<GeneratedContent> 
   if (!apiKey) {
     throw new Error("Falta configurar OPENAI_API_KEY en el archivo .env.");
   }
+
+  const referenceText = reference
+    ? `Contexto interno de desambiguación:
+- origen: ${reference.source ?? "local"}
+- título elegido: ${reference.title}
+- tipo: ${reference.type}
+- año: ${reference.year}
+${reference.slug ? `- slug interno: ${reference.slug}` : ""}
+${typeof reference.tmdbId === "number" ? `- id de TMDb: ${reference.tmdbId}` : ""}
+
+Si este contexto existe, úsalo para resolver ambigüedades antes de escribir la ficha.`
+    : "No hay contexto adicional de desambiguación.";
 
   const response = await fetch("https://api.openai.com/v1/responses", {
     method: "POST",
@@ -130,7 +154,11 @@ export async function generateContent(title: string): Promise<GeneratedContent> 
         },
         {
           role: "user",
-          content: `Genera una ficha con spoilers para este título: "${cleanTitle}". Si identificas la obra con seguridad, resume la obra real. Si no puedes identificarla con seguridad, no te limites a rechazar: crea una ficha básica útil, estimada y no verificada, evitando datos concretos inventados.`,
+          content: `Genera una ficha con spoilers para este título: "${cleanTitle}".
+
+${referenceText}
+
+Si identificas la obra con seguridad, resume la obra real. Si no puedes identificarla con seguridad, no te limites a rechazar: crea una ficha básica útil, estimada y no verificada, evitando datos concretos inventados.`,
         },
       ],
       text: {

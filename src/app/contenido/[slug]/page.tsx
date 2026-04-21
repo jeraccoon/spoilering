@@ -2,9 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
-  contents,
   getContentBySlug,
   getContentTypeLabel,
+  getPublishedContents,
+  isPublishedContent,
 } from "@/data/contents";
 
 type ContentPageProps = {
@@ -14,7 +15,7 @@ type ContentPageProps = {
 };
 
 export function generateStaticParams() {
-  return contents.map((content) => ({
+  return getPublishedContents().map((content) => ({
     slug: content.slug,
   }));
 }
@@ -25,7 +26,7 @@ export async function generateMetadata({
   const { slug } = await params;
   const content = getContentBySlug(slug);
 
-  if (!content) {
+  if (!content || !isPublishedContent(content)) {
     return {
       title: "Contenido no encontrado",
     };
@@ -41,7 +42,7 @@ export default async function ContentPage({ params }: ContentPageProps) {
   const { slug } = await params;
   const content = getContentBySlug(slug);
 
-  if (!content) {
+  if (!content || !isPublishedContent(content)) {
     notFound();
   }
 

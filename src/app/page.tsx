@@ -1,7 +1,7 @@
 import { ContentSearch } from "@/components/content-search";
-import { contents } from "@/data/contents";
+import { getPublishedContents } from "@/data/contents";
 
-const contentList = Array.isArray(contents) ? contents : [];
+const contentList = getPublishedContents();
 const categories = ["Libros", "Series", "Películas"];
 
 export default function Home() {

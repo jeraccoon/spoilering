@@ -1,4 +1,5 @@
 export type ContentType = "libro" | "serie" | "pelicula";
+export type ContentStatus = "draft" | "published";
 
 export type LongSummarySection = {
   title: string;
@@ -10,6 +11,7 @@ export type SpoileringContent = {
   slug: string;
   type: ContentType;
   year: string;
+  status?: ContentStatus;
   shortSummary: string;
   longSummary: LongSummarySection[];
 };
@@ -186,11 +188,51 @@ export const contents: SpoileringContent[] = [
         ]
       }
     ]
+  },
+  {
+    "title": "Torrente",
+    "slug": "torrente",
+    "type": "pelicula",
+    "year": "No verificado",
+    "status": "draft",
+    "shortSummary": "Una serie de películas cómicas que siguen las desventuras de un ex-policía incompetente y sus grotescas acciones en una sociedad que lo ignora.",
+    "longSummary": [
+      {
+        "title": "Inicio",
+        "paragraphs": [
+          "La historia se centra en José Luis Torrente, un ex-policía que lleva una vida poco glamorosa, repleta de fracasos y situaciones cómicas. Desde el principio, se establece su carácter problemático y la percepción negativa que los demás tienen de él. Torrente es un anti-héroe que intenta resolver problemas a su manera, aunque sus métodos son cuestionables."
+        ]
+      },
+      {
+        "title": "Desarrollo",
+        "paragraphs": [
+          "A medida que avanza la trama, Torrente se involucra en varios enredos, en los que busca recuperar su 'gloria' perdida. Las situaciones absurdas y el humor característico se combinan con críticas sociales y referencias a la cultura popular, haciendo que cada película tenga su propio enfoque. Los personajes secundarios aportan a la comedia, pero a menudo caen en los mismos estereotipos que Torrente."
+        ]
+      },
+      {
+        "title": "Final",
+        "paragraphs": [
+          "Cada película culmina en un desenlace caótico que resuelve, de manera cómica, los problemas creados. Torrente logra, en el mejor de los casos, salir airoso de sus situaciones, reforzando su imagen de anti-héroe. Sin embargo, el humor se basa en la radicalización de sus fallos y la ridiculez de sus acciones, dejando al espectador con una mezcla de risa y desconcierto sobre su personalidad."
+        ]
+      }
+    ]
   }
 ];
 
 export function getContentBySlug(slug: string) {
   return contents.find((content) => content.slug === slug);
+}
+
+export function getContentStatus(content: SpoileringContent): ContentStatus {
+  return content.status ?? "published";
+}
+
+export function isPublishedContent(content: SpoileringContent) {
+  return getContentStatus(content) === "published";
+}
+
+export function getPublishedContents() {
+  return contents.filter(isPublishedContent);
 }
 
 export function getContentTypeLabel(type: ContentType) {

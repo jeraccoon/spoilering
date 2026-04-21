@@ -1,11 +1,18 @@
 import { NextResponse } from "next/server";
-import { generateContent } from "@/lib/generate-content";
+import { generateContent, type GenerationReference } from "@/lib/generate-content";
 
 export async function POST(request: Request) {
   try {
-    const body = (await request.json()) as { title?: unknown };
+    const body = (await request.json()) as {
+      title?: unknown;
+      reference?: unknown;
+    };
     const title = typeof body.title === "string" ? body.title : "";
-    const content = await generateContent(title);
+    const reference =
+      typeof body.reference === "object" && body.reference !== null
+        ? (body.reference as GenerationReference)
+        : undefined;
+    const content = await generateContent(title, reference);
 
     return NextResponse.json({ content });
   } catch (error) {
