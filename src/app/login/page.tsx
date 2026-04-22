@@ -28,21 +28,21 @@ export default function LoginPage() {
       return
     }
 
-    router.push('/')
     router.refresh()
+    router.push('/')
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-zinc-950 px-4">
+    <div className="flex min-h-[calc(100vh-8rem)] items-center justify-center px-4 py-12">
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
-          <Link href="/" className="text-2xl font-bold text-white">Spoilering</Link>
-          <p className="mt-2 text-sm text-zinc-400">Inicia sesión en tu cuenta</p>
+          <h1 className="text-2xl font-black tracking-tight text-ink">Inicia sesión</h1>
+          <p className="mt-2 text-sm text-ink/50">Bienvenido de nuevo a Spoilering</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-zinc-300 mb-1.5">
+            <label htmlFor="email" className="block text-sm font-semibold text-ink mb-1.5">
               Email
             </label>
             <input
@@ -52,13 +52,13 @@ export default function LoginPage() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2.5 text-sm text-white placeholder-zinc-500 outline-none focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500"
+              className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2.5 text-sm text-ink placeholder-ink/30 outline-none transition focus:border-ember focus:ring-2 focus:ring-ember/20"
               placeholder="tu@email.com"
             />
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-zinc-300 mb-1.5">
+            <label htmlFor="password" className="block text-sm font-semibold text-ink mb-1.5">
               Contraseña
             </label>
             <input
@@ -68,13 +68,13 @@ export default function LoginPage() {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2.5 text-sm text-white placeholder-zinc-500 outline-none focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500"
+              className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2.5 text-sm text-ink placeholder-ink/30 outline-none transition focus:border-ember focus:ring-2 focus:ring-ember/20"
               placeholder="••••••••"
             />
           </div>
 
           {error && (
-            <p className="rounded-lg border border-red-800 bg-red-950/50 px-3 py-2 text-sm text-red-400">
+            <p className="rounded-lg border border-ember/30 bg-ember/5 px-3 py-2 text-sm text-ember">
               {error}
             </p>
           )}
@@ -82,19 +82,19 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-lg bg-white py-2.5 text-sm font-semibold text-zinc-900 transition-colors hover:bg-zinc-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full rounded-lg bg-ember py-2.5 text-sm font-semibold text-white transition hover:bg-ember/90 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {loading ? 'Iniciando sesión…' : 'Iniciar sesión'}
           </button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-zinc-500">
+        <p className="mt-6 text-center text-sm text-ink/50">
           ¿No tienes cuenta?{' '}
-          <Link href="/registro" className="text-zinc-300 underline hover:text-white">
+          <Link href="/registro" className="font-semibold text-ink underline hover:text-ember">
             Regístrate
           </Link>
         </p>
       </div>
-    </main>
+    </div>
   )
 }

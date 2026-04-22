@@ -13,18 +13,36 @@ export async function middleware(request: NextRequest) {
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
           supabaseResponse = NextResponse.next({ request })
-          cookiesToSet.forEach(({ name, value, options }) => supabaseResponse.cookies.set(name, value, options))
+          cookiesToSet.forEach(({ name, value, options }) =>
+            supabaseResponse.cookies.set(name, value, options)
+          )
         },
       },
     }
   )
 
   const { data: { user } } = await supabase.auth.getUser()
+  console.log('USER:', user?.id, user?.email)
 
   if (request.nextUrl.pathname.startsWith('/admin')) {
-    if (!user) return NextResponse.redirect(new URL('/login', request.url))
-    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-    if (profile?.role !== 'admin') return NextResponse.redirect(new URL('/', request.url))
+    if (!user) {
+      const redirect = NextResponse.redirect(new URL('/login', request.url))
+      supabaseResponse.cookies.getAll().forEach((cookie) => redirect.cookies.set(cookie))
+      return redirect
+    }
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+    console.log('PROFILE:', profile?.role)
+
+    if (profile?.role !== 'admin') {
+      const redirect = NextResponse.redirect(new URL('/', request.url))
+      supabaseResponse.cookies.getAll().forEach((cookie) => redirect.cookies.set(cookie))
+      return redirect
+    }
   }
 
   return supabaseResponse
