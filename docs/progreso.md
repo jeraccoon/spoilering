@@ -190,7 +190,7 @@ El proyecto Spoilering ha alcanzado un MVP funcional con las siguientes capacida
 
 
 
-\* Migración a base de datos (Prisma)
+\* Migración a base de datos 
 
 \* Panel admin más completo
 

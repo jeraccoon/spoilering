@@ -8,7 +8,7 @@ Stack:
 - TypeScript
 - Tailwind CSS
 - PostgreSQL
-- Prisma
+- Supabase
 
 Quiero que prepares el proyecto base con:
 - página de inicio
