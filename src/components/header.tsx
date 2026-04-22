@@ -7,25 +7,36 @@ const navItems = [
   { href: '/buscar', label: 'Buscar' },
 ]
 
-export async function Header() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+async function getUser() {
+  try {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return null
 
-  let username: string | null = null
-  if (user) {
     const { data: profile } = await supabase
       .from('profiles')
       .select('username')
       .eq('id', user.id)
       .single()
-    username = (profile as { username: string } | null)?.username ?? null
+
+    return { user, username: (profile as { username: string } | null)?.username ?? null }
+  } catch {
+    return null
   }
+}
+
+export async function Header() {
+  const auth = await getUser()
 
   return (
-    <header className="sticky top-0 z-20 border-b border-zinc-200 bg-paper/90 backdrop-blur">
+    <header className="sticky top-0 z-20 border-b border-ink/10 bg-paper/90 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-6 px-6 py-4">
-        <Link className="flex items-center gap-3 font-black tracking-tight text-ink" href="/">
-          <span className="flex size-9 items-center justify-center rounded-lg bg-ink text-sm text-white">
+
+        <Link
+          href="/"
+          className="flex items-center gap-3 font-black tracking-tight text-ink"
+        >
+          <span className="flex size-9 items-center justify-center rounded-lg bg-ink text-sm font-black text-paper">
             S
           </span>
           <span className="text-xl">Spoilering</span>
@@ -36,7 +47,7 @@ export async function Header() {
             <Link
               key={item.href}
               href={item.href}
-              className="text-sm font-semibold text-zinc-700 transition hover:text-ember"
+              className="text-sm font-semibold text-ink/70 transition hover:text-ember"
             >
               {item.label}
             </Link>
@@ -44,25 +55,26 @@ export async function Header() {
         </nav>
 
         <div className="flex items-center gap-3">
-          {user && username ? (
-            <UserMenu username={username} />
+          {auth?.user && auth?.username ? (
+            <UserMenu username={auth.username} />
           ) : (
             <>
               <Link
                 href="/login"
-                className="text-sm font-semibold text-zinc-700 transition hover:text-ink"
+                className="text-sm font-semibold text-ink/70 transition hover:text-ink"
               >
                 Iniciar sesión
               </Link>
               <Link
                 href="/registro"
-                className="rounded-lg bg-ink px-4 py-2 text-sm font-semibold text-white transition hover:bg-ember"
+                className="rounded-lg bg-ink px-4 py-2 text-sm font-semibold text-paper transition hover:bg-ember"
               >
                 Registrarse
               </Link>
             </>
           )}
         </div>
+
       </div>
     </header>
   )
