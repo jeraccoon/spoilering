@@ -1,71 +1,78 @@
-import { ContentSearch } from "@/components/content-search";
-import { getPublishedContents } from "@/data/contents";
+import Link from 'next/link'
+import Image from 'next/image'
+import { createClient } from '@/lib/supabase/server'
+import type { CardWithWork } from '@/types/database'
 
-const contentList = getPublishedContents();
-const categories = ["Libros", "Series", "Películas"];
+const TYPE_LABELS = { movie: 'Película', series: 'Serie', book: 'Libro' }
+const TYPE_COLORS = {
+  movie: 'bg-blue-900/60 text-blue-200',
+  series: 'bg-purple-900/60 text-purple-200',
+  book: 'bg-amber-900/60 text-amber-200',
+}
 
-export default function Home() {
+async function getRecentCards(): Promise<CardWithWork[]> {
+  const supabase = await createClient()
+  const { data } = await supabase
+    .from('cards')
+    .select('*, work:works(*)')
+    .eq('status', 'published')
+    .order('updated_at', { ascending: false })
+    .limit(24)
+  return (data ?? []) as CardWithWork[]
+}
+
+export default async function HomePage() {
+  const cards = await getRecentCards()
   return (
-    <div className="pb-16">
-      <section
-        className="relative overflow-hidden border-b border-zinc-200 bg-ink"
-        style={{
-          backgroundImage:
-            "linear-gradient(90deg, rgba(24,24,27,0.88), rgba(24,24,27,0.58)), url('https://images.unsplash.com/photo-1481627834876-b7833e8f5570?auto=format&fit=crop&w=1600&q=80')",
-          backgroundPosition: "center",
-          backgroundSize: "cover",
-        }}
-      >
-        <div className="mx-auto flex min-h-[520px] max-w-6xl flex-col justify-center px-6 py-16 text-white">
-          <p className="mb-4 text-sm font-semibold uppercase tracking-[0.18em] text-orange-200">
-            Finales explicados y resúmenes directos
-          </p>
-          <h1 className="max-w-3xl text-5xl font-black leading-tight sm:text-6xl">
-            Spoilering
-          </h1>
-          <p className="mt-5 max-w-2xl text-xl leading-8 text-zinc-100">
-            Resúmenes con spoilers para recordar lo que ya has visto o leído
-          </p>
-
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <a
-              className="inline-flex min-h-12 items-center justify-center rounded-lg bg-ember px-6 text-base font-semibold text-white transition hover:bg-white hover:text-ink focus:outline-none focus:ring-4 focus:ring-white/30"
-              href="#recientes"
-            >
-              Explorar
-            </a>
-            <a
-              className="inline-flex min-h-12 items-center justify-center rounded-lg border border-white/55 px-6 text-base font-semibold text-white transition hover:border-white hover:bg-white/10 focus:outline-none focus:ring-4 focus:ring-white/25"
-              href="#buscar"
-            >
-              Buscar una obra
-            </a>
-          </div>
+    <main className="min-h-screen bg-zinc-950 text-white">
+      <section className="border-b border-zinc-800 px-4 py-16 text-center">
+        <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">Spoilering</h1>
+        <p className="mx-auto mt-4 max-w-xl text-lg text-zinc-400">
+          Resúmenes completos con spoilers de series, películas y libros.
+          Para cuando vuelves a algo después de un tiempo y necesitas refrescar la memoria.
+        </p>
+        <div className="mt-8 flex justify-center gap-3">
+          <Link href="/buscar" className="rounded-lg bg-white px-5 py-2.5 text-sm font-semibold text-zinc-900 hover:bg-zinc-100 transition-colors">
+            Buscar una obra
+          </Link>
+          <Link href="/crear" className="rounded-lg border border-zinc-700 px-5 py-2.5 text-sm font-semibold text-zinc-300 hover:border-zinc-500 hover:text-white transition-colors">
+            Crear una ficha
+          </Link>
         </div>
       </section>
-
-      <ContentSearch contents={contentList} />
-
-      <section className="border-y border-zinc-200 bg-white/75">
-        <div className="mx-auto flex max-w-6xl flex-col items-center gap-5 px-6 py-8 text-center sm:flex-row sm:justify-between sm:text-left">
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-ember">
-              Categorías
-            </p>
-            <h2 className="mt-2 text-2xl font-bold text-ink">Elige qué quieres destripar</h2>
+      <section className="mx-auto max-w-6xl px-4 py-10">
+        {cards.length === 0 ? (
+          <div className="py-24 text-center text-zinc-500">
+            <p className="text-lg">Todavía no hay fichas publicadas.</p>
+            <Link href="/crear" className="mt-4 inline-block text-sm text-zinc-400 underline hover:text-white">
+              Sé el primero en crear una
+            </Link>
           </div>
-          <div className="flex flex-wrap justify-center gap-3">
-            {categories.map((category) => (
-              <span
-                className="rounded-lg border border-zinc-300 bg-white px-4 py-2 text-sm font-semibold text-zinc-700"
-                key={category}
-              >
-                {category}
-              </span>
+        ) : (
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+            {cards.map((card) => (
+              <Link key={card.id} href={`/ficha/${card.work.slug}`}
+                className="group relative flex flex-col overflow-hidden rounded-lg border border-zinc-800 bg-zinc-900 transition-all hover:border-zinc-600">
+                <div className="relative aspect-[2/3] w-full overflow-hidden bg-zinc-800">
+                  {card.work.poster_url ? (
+                    <Image src={card.work.poster_url} alt={card.work.title} fill
+                      sizes="(max-width: 640px) 50vw, 16vw" className="object-cover transition-transform duration-300 group-hover:scale-105" />
+                  ) : (
+                    <div className="flex h-full items-center justify-center text-4xl text-zinc-600">📖</div>
+                  )}
+                  <span className={`absolute left-1.5 top-1.5 rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${TYPE_COLORS[card.work.type as keyof typeof TYPE_COLORS]}`}>
+                    {TYPE_LABELS[card.work.type as keyof typeof TYPE_LABELS]}
+                  </span>
+                </div>
+                <div className="flex flex-col gap-0.5 p-2">
+                  <p className="line-clamp-2 text-xs font-semibold leading-tight text-zinc-100">{card.work.title}</p>
+                  {card.work.year && <p className="text-[11px] text-zinc-500">{card.work.year}</p>}
+                </div>
+              </Link>
             ))}
           </div>
-        </div>
+        )}
       </section>
-    </div>
-  );
+    </main>
+  )
 }
