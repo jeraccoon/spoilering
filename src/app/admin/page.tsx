@@ -125,7 +125,7 @@ export default async function AdminPage() {
                     <td className="px-4 py-3 text-right">
                       <div className="flex items-center justify-end gap-3">
                         <Link
-                          href={`/admin/fichas/${card.id}`}
+                          href={`/admin/ficha/${card.id}`}
                           className="text-xs font-semibold text-ink/50 underline underline-offset-2 hover:text-ink"
                         >
                           Editar

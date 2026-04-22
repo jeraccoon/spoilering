@@ -1,8 +1,9 @@
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import type { Metadata } from 'next'
+import ReactMarkdown from 'react-markdown'
 import { createClient } from '@/lib/supabase/server'
-import type { CardFull, SectionWithChildren } from '@/types/database'
+import type { CardFull } from '@/types/database'
 
 interface Props {
   params: Promise<{ slug: string }>
@@ -24,7 +25,9 @@ async function getCard(slug: string): Promise<CardFull | null> {
     .sort((a, b) => a.order_index - b.order_index)
     .map((root) => ({
       ...root,
-      children: all.filter((s) => s.parent_id === root.id).sort((a, b) => a.order_index - b.order_index),
+      children: all
+        .filter((s) => s.parent_id === root.id)
+        .sort((a, b) => a.order_index - b.order_index),
     }))
   return { ...card, sections: roots } as CardFull
 }
@@ -49,65 +52,100 @@ export default async function CardPage({ params, searchParams }: Props) {
   if (!card) notFound()
   const { work, sections } = card
   const activeSection = sections.find((s) => s.id === seccion) ?? sections[0]
+
   return (
-    <main className="min-h-screen bg-zinc-950 text-white">
-      <section className="border-b border-zinc-800">
+    <div>
+      {/* Cabecera de la obra */}
+      <section className="border-b border-ink/10">
         <div className="mx-auto flex max-w-5xl gap-6 px-4 py-8">
           {work.poster_url && (
-            <div className="relative hidden h-48 w-32 shrink-0 overflow-hidden rounded-lg sm:block">
+            <div className="relative hidden h-48 w-32 shrink-0 overflow-hidden rounded-lg border border-ink/10 sm:block">
               <Image src={work.poster_url} alt={work.title} fill className="object-cover" priority />
             </div>
           )}
           <div className="flex flex-col justify-end gap-2">
-            <div className="flex items-center gap-2 text-sm text-zinc-500">
+            <div className="flex items-center gap-2 text-sm text-ink/50">
               <span>{TYPE_LABELS[work.type as keyof typeof TYPE_LABELS]}</span>
               {work.year && <><span>·</span><span>{work.year}</span></>}
             </div>
-            <h1 className="text-3xl font-bold tracking-tight">{work.title}</h1>
-            {work.overview && <p className="mt-1 max-w-2xl text-sm leading-relaxed text-zinc-400">{work.overview}</p>}
-            <span className="mt-2 w-fit rounded-full bg-red-900/40 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-red-400">
+            <h1 className="text-3xl font-black tracking-tight text-ink">{work.title}</h1>
+            {work.overview && (
+              <p className="mt-1 max-w-2xl text-sm leading-relaxed text-ink/60">{work.overview}</p>
+            )}
+            <span className="mt-2 w-fit rounded-full bg-ember/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-ember">
               ⚠ Contiene spoilers
             </span>
           </div>
         </div>
       </section>
+
+      {/* Contenido */}
       <div className="mx-auto flex max-w-5xl gap-8 px-4 py-8">
+
+        {/* Navegación lateral */}
         <aside className="hidden w-56 shrink-0 sm:block">
           <div className="sticky top-6">
-            <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-zinc-500">Contenido</p>
+            <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-ink/40">Contenido</p>
             <nav className="space-y-0.5">
               {sections.map((section) => (
-                <a key={section.id} href={`/ficha/${slug}?seccion=${section.id}`}
-                  className={`block rounded px-2 py-1.5 text-sm transition-colors ${
+                <a
+                  key={section.id}
+                  href={`/ficha/${slug}?seccion=${section.id}`}
+                  className={`block rounded-lg px-2.5 py-1.5 text-sm transition-colors ${
                     activeSection?.id === section.id
-                      ? 'bg-zinc-800 font-semibold text-white'
-                      : 'text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200'
-                  }`}>
+                      ? 'bg-ember/10 font-semibold text-ember'
+                      : 'text-ink/60 hover:bg-ink/5 hover:text-ink'
+                  }`}
+                >
                   {section.short_label ?? section.label}
                 </a>
               ))}
             </nav>
           </div>
         </aside>
+
+        {/* Artículo */}
         <div className="min-w-0 flex-1">
           {activeSection ? (
             <article>
-              <h2 className="mb-6 text-xl font-bold">{activeSection.label}</h2>
+              <h2 className="mb-6 text-xl font-black text-ink">{activeSection.label}</h2>
               {activeSection.content ? (
-                <div className="space-y-4">
-                  {activeSection.content.split('\n\n').map((p, i) => (
-                    <p key={i} className="leading-relaxed text-zinc-300">{p}</p>
-                  ))}
-                </div>
+                <ReactMarkdown
+                  components={{
+                    p: ({ children }) => (
+                      <p className="mb-4 text-justify leading-relaxed text-ink/80">{children}</p>
+                    ),
+                    h2: ({ children }) => (
+                      <h2 className="mb-3 mt-6 text-lg font-black text-ink">{children}</h2>
+                    ),
+                    h3: ({ children }) => (
+                      <h3 className="mb-2 mt-5 text-base font-black text-ink">{children}</h3>
+                    ),
+                    ul: ({ children }) => (
+                      <ul className="mb-4 space-y-1 pl-5 text-ink/80 [list-style:disc]">{children}</ul>
+                    ),
+                    ol: ({ children }) => (
+                      <ol className="mb-4 space-y-1 pl-5 text-ink/80 [list-style:decimal]">{children}</ol>
+                    ),
+                    li: ({ children }) => (
+                      <li className="text-justify leading-relaxed">{children}</li>
+                    ),
+                    strong: ({ children }) => (
+                      <strong className="font-semibold text-ink">{children}</strong>
+                    ),
+                  }}
+                >
+                  {activeSection.content}
+                </ReactMarkdown>
               ) : (
-                <p className="text-zinc-600">Esta sección todavía no tiene contenido.</p>
+                <p className="text-ink/30">Esta sección todavía no tiene contenido.</p>
               )}
             </article>
           ) : (
-            <p className="text-zinc-500">Esta ficha todavía no tiene contenido.</p>
+            <p className="text-ink/30">Esta ficha todavía no tiene contenido.</p>
           )}
         </div>
       </div>
-    </main>
+    </div>
   )
 }
