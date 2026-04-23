@@ -4,13 +4,14 @@ import { createClient } from '@/lib/supabase/server'
 async function getAdminData() {
   const supabase = await createClient()
 
-  const [works, published, drafts, users, pendingRevisions, draftCards, { data: { user } }] =
+  const [works, published, drafts, users, pendingRevisions, pendingSuggestions, draftCards, { data: { user } }] =
     await Promise.all([
       supabase.from('works').select('*', { count: 'exact', head: true }),
       supabase.from('cards').select('*', { count: 'exact', head: true }).eq('status', 'published'),
       supabase.from('cards').select('*', { count: 'exact', head: true }).eq('status', 'draft'),
       supabase.from('profiles').select('*', { count: 'exact', head: true }),
       supabase.from('revisions').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
+      (supabase.from('suggestions') as any).select('*', { count: 'exact', head: true }).eq('status', 'pending'),
       supabase
         .from('cards')
         .select('id, created_at, work:works(title, type, slug)')
@@ -37,6 +38,7 @@ async function getAdminData() {
       drafts: drafts.count ?? 0,
       users: users.count ?? 0,
       pendingRevisions: pendingRevisions.count ?? 0,
+      pendingSuggestions: pendingSuggestions.count ?? 0,
     },
     draftCards: (draftCards.data ?? []) as any[],
     username,
@@ -147,7 +149,7 @@ export default async function AdminPage() {
       </section>
 
       {/* Revisiones pendientes */}
-      <section>
+      <section className="mb-6">
         <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-ink/40">
           Revisiones pendientes
         </h2>
@@ -169,6 +171,30 @@ export default async function AdminPage() {
               Revisar
             </Link>
           )}
+        </div>
+      </section>
+
+      {/* Sugerencias pendientes */}
+      <section>
+        <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-ink/40">
+          Sugerencias de corrección
+        </h2>
+        <div className="flex items-center gap-4 rounded-lg border border-ink/10 bg-paper px-6 py-5 shadow-sm">
+          <span className={`text-4xl font-black tabular-nums ${stats.pendingSuggestions > 0 ? 'text-plum' : 'text-ink'}`}>
+            {stats.pendingSuggestions}
+          </span>
+          <div>
+            <p className="font-semibold text-ink">
+              {stats.pendingSuggestions === 1 ? 'sugerencia pendiente' : 'sugerencias pendientes'}
+            </p>
+            <p className="text-sm text-ink/50">Correcciones propuestas por usuarios registrados</p>
+          </div>
+          <Link
+            href="/admin/sugerencias"
+            className="ml-auto rounded-lg border border-ink/20 px-4 py-2 text-sm font-semibold text-ink transition hover:border-ink/40 hover:bg-ink/5"
+          >
+            {stats.pendingSuggestions > 0 ? 'Revisar' : 'Ver todas'}
+          </Link>
         </div>
       </section>
     </div>

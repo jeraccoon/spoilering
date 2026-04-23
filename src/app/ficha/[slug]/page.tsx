@@ -4,6 +4,7 @@ import Image from 'next/image'
 import type { Metadata } from 'next'
 import ReactMarkdown from 'react-markdown'
 import { createClient } from '@/lib/supabase/server'
+import { SuggestionModal } from '@/components/suggestion-modal'
 import type { CardFull } from '@/types/database'
 
 interface Props {
@@ -33,16 +34,16 @@ async function getCard(slug: string): Promise<CardFull | null> {
   return { ...card, sections: roots } as CardFull
 }
 
-async function getUserRole(): Promise<string | null> {
+async function getAuthInfo(): Promise<{ role: string | null; isLoggedIn: boolean }> {
   try {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return null
+    if (!user) return { role: null, isLoggedIn: false }
     const { data: profile } = await (supabase.from('profiles') as any)
       .select('role').eq('id', user.id).single()
-    return profile?.role ?? 'user'
+    return { role: profile?.role ?? 'user', isLoggedIn: true }
   } catch {
-    return null
+    return { role: null, isLoggedIn: false }
   }
 }
 
@@ -64,7 +65,7 @@ export default async function CardPage({ params, searchParams }: Props) {
   const { slug } = await params
   const { seccion } = await searchParams
 
-  const [card, role] = await Promise.all([getCard(slug), getUserRole()])
+  const [card, { role, isLoggedIn }] = await Promise.all([getCard(slug), getAuthInfo()])
   if (!card) notFound()
 
   const isDraft = card.status !== 'published'
@@ -190,6 +191,14 @@ export default async function CardPage({ params, searchParams }: Props) {
                 </ReactMarkdown>
               ) : (
                 <p className="text-ink/30">Esta sección todavía no tiene contenido.</p>
+              )}
+
+              {isLoggedIn && (
+                <SuggestionModal
+                  sectionId={activeSection.id}
+                  sectionLabel={activeSection.label}
+                  originalContent={activeSection.content ?? ''}
+                />
               )}
             </article>
           ) : (
