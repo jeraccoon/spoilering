@@ -77,6 +77,22 @@ export async function POST(request: NextRequest) {
 
     if (workError) {
       console.error('[create-work] paso 4 ERROR — workError:', JSON.stringify(workError))
+      if (workError.code === '23505') {
+        // Duplicate key — find the existing work's slug
+        let existingSlug: string | null = null
+        if (tmdb_id) {
+          const { data } = await (supabase.from('works') as any).select('slug').eq('tmdb_id', tmdb_id).maybeSingle()
+          existingSlug = data?.slug ?? null
+        } else if (google_books_id) {
+          const { data } = await (supabase.from('works') as any).select('slug').eq('google_books_id', google_books_id).maybeSingle()
+          existingSlug = data?.slug ?? null
+        }
+        if (!existingSlug) {
+          const { data } = await (supabase.from('works') as any).select('slug').eq('slug', await findUniqueSlug(supabase, title)).maybeSingle()
+          existingSlug = data?.slug ?? null
+        }
+        return NextResponse.json({ error: 'duplicate', slug: existingSlug }, { status: 409 })
+      }
       return NextResponse.json({ error: workError.message, detail: workError }, { status: 400 })
     }
     console.log('[create-work] paso 4 OK — work.id:', work.id)

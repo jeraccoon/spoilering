@@ -67,6 +67,7 @@ export default function NuevaObraPage() {
   const [form, setForm] = useState<FormState>(EMPTY_FORM)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [duplicateSlug, setDuplicateSlug] = useState<string | null>(null)
   const [existingCard, setExistingCard] = useState<{ cardId: string } | null>(null)
   const [checkingDuplicate, setCheckingDuplicate] = useState(false)
   const [posterMode, setPosterMode] = useState<'url' | 'file'>('url')
@@ -145,6 +146,7 @@ export default function NuevaObraPage() {
     e.preventDefault()
     if (!form.title || !form.type) return
     setError(null)
+    setDuplicateSlug(null)
     setSubmitting(true)
     try {
       const res = await fetch('/api/admin/create-work', {
@@ -162,7 +164,15 @@ export default function NuevaObraPage() {
         }),
       })
       const data = await res.json()
-      if (!res.ok) { setError(data.error); setSubmitting(false); return }
+      if (!res.ok) {
+        if (data.error === 'duplicate') {
+          setDuplicateSlug(data.slug ?? null)
+        } else {
+          setError(data.error)
+        }
+        setSubmitting(false)
+        return
+      }
       router.push(`/admin/ficha/${data.cardId}`)
     } catch {
       setError('Error inesperado. Inténtalo de nuevo.')
@@ -348,6 +358,30 @@ export default function NuevaObraPage() {
           <Field label="TMDb ID" value={form.tmdb_id} onChange={(v) => updateField('tmdb_id', v)} type="number" />
           <Field label="Google Books ID" value={form.google_books_id} onChange={(v) => updateField('google_books_id', v)} />
         </div>
+
+        {duplicateSlug !== null && (
+          <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-4 text-sm text-amber-900">
+            <p className="font-semibold">Esta obra ya está en Spoilering.</p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <a
+                href={`/ficha/${duplicateSlug}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-lg bg-ink px-4 py-2 text-xs font-semibold text-paper transition hover:bg-ember"
+              >
+                Ver la ficha →
+              </a>
+              <a
+                href={`/ficha/${duplicateSlug}#sugerir`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-lg border border-ink/20 px-4 py-2 text-xs font-semibold text-ink transition hover:border-ink/40 hover:bg-ink/5"
+              >
+                Sugerir una corrección
+              </a>
+            </div>
+          </div>
+        )}
 
         {error && (
           <p className="rounded-lg border border-ember/30 bg-ember/5 px-4 py-3 text-sm text-ember">{error}</p>
