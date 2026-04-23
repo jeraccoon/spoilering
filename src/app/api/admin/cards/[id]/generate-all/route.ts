@@ -20,55 +20,32 @@ function getSectionGuide(label: string): string {
   return SECTION_GUIDES[key] ?? `Cubre los aspectos más relevantes de esta sección con todos los detalles y spoilers necesarios.`
 }
 
-export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const { id: cardId } = await params
-  const supabase = await createClient()
-
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'No autenticado' }, { status: 401 })
-
-  const apiKey = process.env.ANTHROPIC_API_KEY
-  if (!apiKey) return NextResponse.json({ error: 'ANTHROPIC_API_KEY no configurada' }, { status: 500 })
-
-  const { workTitle, workType, workYear, workOverview, sections } = await request.json() as {
-    workTitle: string
-    workType: string
-    workYear: number | null
-    workOverview: string | null
-    sections: SectionInput[]
-  }
-
-  if (!sections || sections.length === 0) {
-    return NextResponse.json({ error: 'No hay secciones' }, { status: 400 })
-  }
-
-  const typeLabel: Record<string, string> = { movie: 'película', series: 'serie', book: 'libro' }
-
-  const sectionInstructions = sections.map((s) => {
-    const guide = getSectionGuide(s.label)
-    return `### Sección: "${s.label}" (id: "${s.id}")
-${guide}
-
-Requisitos: entre 500 y 900 palabras, mínimo 2 subtítulos ## dentro del contenido, escribe en **negrita** el nombre de cada personaje la primera vez que aparece, empieza directamente con un subtítulo ##.`
-  }).join('\n\n')
+async function generateSection(
+  apiKey: string,
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  section: SectionInput,
+  workTitle: string,
+  workType: string,
+  workYear: number | null,
+): Promise<{ id: string; content: string; error?: string }> {
+  const typeLabel = workType === 'movie' ? 'película' : workType === 'series' ? 'serie' : 'libro'
+  const guide = getSectionGuide(section.label)
 
   const prompt = `Eres un experto redactor de resúmenes con spoilers completos para la web Spoilering.
 
-Escribe el contenido de cada sección para la ficha de "${workTitle}"${workYear ? ` (${workYear})` : ''}, una ${typeLabel[workType] ?? workType}.${workOverview ? `\n\nSinopsis oficial: ${workOverview}` : ''}
+Escribe el contenido de la sección "${section.label}" para la ficha de "${workTitle}"${workYear ? ` (${workYear})` : ''}, una ${typeLabel}.
 
-**Instrucciones por sección:**
-${sectionInstructions}
+**Instrucciones específicas para esta sección:**
+${guide}
 
-**Requisitos generales de estilo:**
+**Requisitos de formato y estilo:**
+- Extensión: entre 500 y 900 palabras
+- Usa subtítulos ## para separar bloques temáticos dentro de la sección (mínimo 2 subtítulos)
+- Escribe en **negrita** el nombre de cada personaje la primera vez que aparece en el texto
 - Estilo enciclopédico, claro y objetivo — sin valoraciones ni opiniones
 - Incluye TODOS los spoilers, giros argumentales, revelaciones y motivaciones de los personajes
-- NO incluyas advertencias de spoilers ni introducciones genéricas
-- Escribe en español
-
-Responde ÚNICAMENTE con un objeto JSON válido con este formato exacto (sin markdown envolvente, sin explicaciones extra):
-{
-${sections.map((s) => `  "${s.id}": "contenido completo de la sección ${s.label} con saltos de línea como \\n"`).join(',\n')}
-}`
+- NO incluyas advertencias de spoilers ni introducciones genéricas como "En esta sección..."
+- Escribe directamente el contenido, empezando por un subtítulo ##`
 
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
@@ -79,37 +56,62 @@ ${sections.map((s) => `  "${s.id}": "contenido completo de la sección ${s.label
     },
     body: JSON.stringify({
       model: 'claude-sonnet-4-6',
-      max_tokens: 8000,
+      max_tokens: 2000,
       messages: [{ role: 'user', content: prompt }],
     }),
   })
 
   if (!res.ok) {
     const err = await res.text()
-    return NextResponse.json({ error: `Error de Anthropic: ${err}` }, { status: 500 })
+    return { id: section.id, content: '', error: `Error de Anthropic: ${err}` }
   }
 
-  const aiData = await res.json()
-  const rawText: string = aiData.content?.[0]?.text?.trim() ?? ''
+  const data = await res.json()
+  const content: string = data.content?.[0]?.text ?? ''
 
-  let generated: Record<string, string>
-  try {
-    const jsonMatch = rawText.match(/\{[\s\S]*\}/)
-    generated = JSON.parse(jsonMatch ? jsonMatch[0] : rawText)
-  } catch {
-    return NextResponse.json({ error: 'La IA no devolvió JSON válido', raw: rawText }, { status: 500 })
+  await (supabase.from('sections') as any).update({ content }).eq('id', section.id)
+
+  return { id: section.id, content }
+}
+
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id: cardId } = await params
+  const supabase = await createClient()
+
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return NextResponse.json({ error: 'No autenticado' }, { status: 401 })
+
+  const apiKey = process.env.ANTHROPIC_API_KEY
+  if (!apiKey) return NextResponse.json({ error: 'ANTHROPIC_API_KEY no configurada' }, { status: 500 })
+
+  const { workTitle, workType, workYear, sections } = await request.json() as {
+    workTitle: string
+    workType: string
+    workYear: number | null
+    sections: SectionInput[]
   }
 
-  await Promise.all(
-    sections.map(async (s) => {
-      const content = generated[s.id]
-      if (!content) return
-      await (supabase.from('sections') as any).update({ content }).eq('id', s.id)
-    })
-  )
+  if (!sections || sections.length === 0) {
+    return NextResponse.json({ error: 'No hay secciones' }, { status: 400 })
+  }
 
-  // suppress unused var warning
   void cardId
 
-  return NextResponse.json({ generated })
+  const results = await Promise.allSettled(
+    sections.map((s) => generateSection(apiKey, supabase, s, workTitle, workType, workYear))
+  )
+
+  const generated: Record<string, string> = {}
+  const errors: string[] = []
+
+  for (const result of results) {
+    if (result.status === 'fulfilled') {
+      if (result.value.error) errors.push(result.value.error)
+      else generated[result.value.id] = result.value.content
+    } else {
+      errors.push(String(result.reason))
+    }
+  }
+
+  return NextResponse.json({ generated, errors: errors.length ? errors : undefined })
 }

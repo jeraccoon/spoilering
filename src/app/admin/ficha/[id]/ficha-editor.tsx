@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 
@@ -137,27 +137,8 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
   const [saving, setSaving] = useState<string | null>(null)
   const [generatingAll, setGeneratingAll] = useState(false)
   const [generateError, setGenerateError] = useState<string | null>(null)
-  const [progressMsg, setProgressMsg] = useState('')
+  const [generatingSections, setGeneratingSections] = useState<Set<string>>(new Set())
   const [statusLoading, setStatusLoading] = useState(false)
-
-  const PROGRESS_MESSAGES = [
-    'Analizando la obra…',
-    'Escribiendo el inicio…',
-    'Desarrollando el nudo…',
-    'Completando el desenlace…',
-    'Añadiendo subtramas y personajes…',
-  ]
-
-  useEffect(() => {
-    if (!generatingAll) { setProgressMsg(''); return }
-    let i = 0
-    setProgressMsg(PROGRESS_MESSAGES[0])
-    const interval = setInterval(() => {
-      i = (i + 1) % PROGRESS_MESSAGES.length
-      setProgressMsg(PROGRESS_MESSAGES[i])
-    }, 3500)
-    return () => clearInterval(interval)
-  }, [generatingAll])
   const [modal, setModal] = useState<{ parentId: string | null; parentLabel?: string } | null>(null)
 
   const allSections: Section[] = []
@@ -181,33 +162,46 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
   }
 
   async function generateAll() {
-    const rootSections = card.sections.map((s) => ({ id: s.id, label: s.label, order_index: s.order_index }))
+    const rootSections = card.sections
     if (rootSections.length === 0) return
     setGeneratingAll(true)
     setGenerateError(null)
-    try {
-      const res = await fetch(`/api/admin/cards/${card.id}/generate-all`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          workTitle: card.work.title,
-          workType: card.work.type,
-          workYear: card.work.year,
-          workOverview: (card.work as any).overview ?? null,
-          sections: rootSections,
-        }),
+    setGeneratingSections(new Set(rootSections.map((s) => s.id)))
+
+    await Promise.all(
+      rootSections.map(async (section) => {
+        try {
+          const res = await fetch(`/api/admin/sections/${section.id}/generate`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              workTitle: card.work.title,
+              workType: card.work.type,
+              workYear: card.work.year,
+              sectionLabel: section.label,
+              parentLabel: null,
+              existingContent: null,
+            }),
+          })
+          const data = await res.json()
+          if (res.ok && data.content) {
+            setEditContent((prev) => ({ ...prev, [section.id]: data.content }))
+          } else if (!res.ok) {
+            setGenerateError(data.error ?? 'Error al generar una sección')
+          }
+        } catch {
+          setGenerateError('Error de red al generar')
+        } finally {
+          setGeneratingSections((prev) => {
+            const next = new Set(prev)
+            next.delete(section.id)
+            return next
+          })
+        }
       })
-      const data = await res.json()
-      if (!res.ok) {
-        setGenerateError(data.error ?? 'Error desconocido al generar')
-      } else if (data.generated) {
-        setEditContent((prev) => ({ ...prev, ...data.generated }))
-      }
-    } catch (err) {
-      setGenerateError(err instanceof Error ? err.message : 'Error de red')
-    } finally {
-      setGeneratingAll(false)
-    }
+    )
+
+    setGeneratingAll(false)
   }
 
   async function toggleStatus() {
@@ -275,12 +269,11 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
               disabled={generatingAll || card.sections.length === 0}
               className="flex items-center gap-1.5 rounded-lg border border-plum/30 bg-plum/5 px-3 py-1.5 text-xs font-semibold text-plum transition hover:bg-plum/10 disabled:opacity-50"
             >
-              {generatingAll ? '⏳ Generando…' : '✨ Generar todo con IA'}
+              {generatingAll
+              ? `⏳ Generando… (${card.sections.length - generatingSections.size}/${card.sections.length})`
+              : '✨ Generar todo con IA'}
             </button>
           </div>
-          {generatingAll && progressMsg && (
-            <p className="mt-1.5 text-xs font-medium text-plum/70 animate-pulse">{progressMsg}</p>
-          )}
           {generateError && (
             <p className="mt-1 text-xs text-ember">{generateError}</p>
           )}
@@ -321,7 +314,12 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
                         : 'text-ink/70 hover:bg-ink/5 hover:text-ink'
                     }`}
                   >
-                    {section.short_label ?? section.label}
+                    <span className="flex items-center gap-1.5">
+                      {section.short_label ?? section.label}
+                      {generatingSections.has(section.id) && (
+                        <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-plum/60" />
+                      )}
+                    </span>
                   </button>
                   <button
                     onClick={() => setModal({ parentId: section.id, parentLabel: section.label })}
