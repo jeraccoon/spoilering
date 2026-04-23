@@ -108,6 +108,16 @@ export default function NuevaObraPage() {
       google_books_id: result.google_books_id ?? '',
     })
 
+    if ((result.type === 'movie' || result.type === 'series') && result.tmdb_id) {
+      try {
+        const creditsRes = await fetch(`/api/admin/tmdb-credits?id=${result.tmdb_id}&type=${result.type}`)
+        const { directors } = await creditsRes.json()
+        if (directors.length > 0) {
+          setForm((prev) => ({ ...prev, directors: directors.join(', ') }))
+        }
+      } catch {}
+    }
+
     const tmdbId = result.tmdb_id
     const booksId = result.google_books_id
     if (!tmdbId && !booksId) return
@@ -350,8 +360,13 @@ export default function NuevaObraPage() {
         {form.type === 'book' && (
           <Field label="Autores (separados por comas)" value={form.authors} onChange={(v) => updateField('authors', v)} placeholder="J.R.R. Tolkien" />
         )}
-        {form.type === 'movie' && (
-          <Field label="Directores (separados por comas)" value={form.directors} onChange={(v) => updateField('directors', v)} placeholder="Christopher Nolan" />
+        {(form.type === 'movie' || form.type === 'series') && (
+          <Field
+            label={form.type === 'series' ? 'Directores / Creadores (separados por comas)' : 'Directores (separados por comas)'}
+            value={form.directors}
+            onChange={(v) => updateField('directors', v)}
+            placeholder={form.type === 'series' ? 'Vince Gilligan' : 'Christopher Nolan'}
+          />
         )}
 
         <div className="grid gap-5 sm:grid-cols-2">

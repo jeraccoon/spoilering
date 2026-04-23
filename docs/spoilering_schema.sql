@@ -314,12 +314,26 @@ create policy "Solo admins eliminan cards"
 -- ---------------------------------------------------------------------------
 -- sections
 -- ---------------------------------------------------------------------------
+-- Política para usuarios autenticados (editors/admins ven todo)
 create policy "Secciones publicadas visibles por todos"
   on sections for select
   using (
     is_published = true
     or auth.uid() is not null
   );
+
+-- Política adicional para usuarios anónimos: ver secciones de fichas publicadas
+-- EJECUTAR en Supabase si los usuarios anónimos no pueden ver el contenido:
+-- create policy "Secciones de fichas publicadas visibles para anon"
+--   on sections for select
+--   to anon
+--   using (
+--     exists (
+--       select 1 from cards
+--       where cards.id = sections.card_id
+--       and cards.status = 'published'
+--     )
+--   );
 
 create policy "Editors y admins gestionan secciones"
   on sections for insert

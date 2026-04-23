@@ -13,7 +13,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   }
 
   const { id } = await params
-  const { action } = await request.json()
+  const { action, content: overrideContent } = await request.json()
 
   if (action === 'approve') {
     const { data: suggestion } = await (supabase.from('suggestions') as any)
@@ -22,8 +22,12 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       .single()
     if (!suggestion) return NextResponse.json({ error: 'Sugerencia no encontrada' }, { status: 404 })
 
+    const finalContent = (typeof overrideContent === 'string' && overrideContent.trim())
+      ? overrideContent.trim()
+      : suggestion.suggested_content
+
     await (supabase.from('sections') as any)
-      .update({ content: suggestion.suggested_content })
+      .update({ content: finalContent })
       .eq('id', suggestion.section_id)
 
     await (supabase.from('suggestions') as any)

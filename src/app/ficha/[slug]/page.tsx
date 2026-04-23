@@ -4,7 +4,9 @@ import Image from 'next/image'
 import type { Metadata } from 'next'
 import ReactMarkdown from 'react-markdown'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { SuggestionModal } from '@/components/suggestion-modal'
+import { SpoilerGate } from '@/components/spoiler-gate'
 import type { CardFull } from '@/types/database'
 
 interface Props {
@@ -13,7 +15,7 @@ interface Props {
 }
 
 async function getCard(slug: string): Promise<CardFull | null> {
-  const supabase = await createClient()
+  const supabase = createAdminClient()
   const { data: work } = await supabase.from('works').select('id').eq('slug', slug).single()
   if (!work) return null
   const { id: workId } = work as { id: string }
@@ -142,6 +144,7 @@ export default async function CardPage({ params, searchParams }: Props) {
       </section>
 
       {/* Contenido */}
+      <SpoilerGate slug={slug}>
       <div className="mx-auto flex max-w-5xl gap-8 px-4 py-8">
 
         {/* Navegación lateral */}
@@ -216,6 +219,7 @@ export default async function CardPage({ params, searchParams }: Props) {
           )}
         </div>
       </div>
+      </SpoilerGate>
     </div>
   )
 }
