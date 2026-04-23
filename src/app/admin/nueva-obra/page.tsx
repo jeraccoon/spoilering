@@ -80,6 +80,9 @@ export default function NuevaObraPage() {
   const [checkingDuplicate, setCheckingDuplicate] = useState(false)
   const [posterMode, setPosterMode] = useState<'url' | 'file'>('url')
   const [uploading, setUploading] = useState(false)
+  const [isbnQuery, setIsbnQuery] = useState('')
+  const [isbnSearching, setIsbnSearching] = useState(false)
+  const [isbnError, setIsbnError] = useState<string | null>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
@@ -164,6 +167,122 @@ export default function NuevaObraPage() {
     } catch (err) {
       setError(err instanceof Error ? `Error al subir imagen: ${err.message}` : 'Error al subir imagen')
     } finally { setUploading(false) }
+  }
+
+  async function lookupByIsbnOrGoodreads(input: string) {
+    const trimmed = input.trim()
+    if (!trimmed) return
+
+    function applyOlBook(book: any) {
+      const title: string = book.title ?? ''
+      const authors: string[] = (book.authors ?? []).map((a: any) => a.name as string).filter(Boolean)
+      const rawYear: string = book.publish_date ?? ''
+      const yearMatch = rawYear.match(/\d{4}/)
+      const year = yearMatch ? parseInt(yearMatch[0]) : null
+      const publisher: string = book.publishers?.[0]?.name ?? ''
+      const pages: string = book.number_of_pages ? String(book.number_of_pages) : ''
+      const isbn13: string = book.identifiers?.isbn_13?.[0] ?? ''
+      const isbn10: string = book.identifiers?.isbn_10?.[0] ?? ''
+      const isbn = isbn13 || isbn10 || ''
+      const subjects: string[] = (book.subjects ?? [])
+        .slice(0, 5)
+        .map((s: any) => (typeof s === 'string' ? s : (s.name as string)))
+        .filter(Boolean)
+
+      let poster_url = ''
+      if (book.cover?.large) poster_url = book.cover.large as string
+      else if (book.cover?.medium) poster_url = book.cover.medium as string
+      else if (isbn13) poster_url = `https://covers.openlibrary.org/b/isbn/${isbn13}-M.jpg`
+      else if (isbn10) poster_url = `https://covers.openlibrary.org/b/isbn/${isbn10}-M.jpg`
+
+      setSelected({
+        id: 'ol-lookup',
+        type: 'book',
+        title,
+        original_title: null,
+        year,
+        poster_url: poster_url || null,
+        overview: null,
+        genres: subjects,
+        authors,
+        directors: [],
+        seasons_count: null,
+        tmdb_id: null,
+        google_books_id: null,
+        open_library_id: (book.key as string) ?? null,
+        isbn: isbn || null,
+      })
+      setForm((prev) => ({
+        ...prev,
+        type: 'book',
+        title: title || prev.title,
+        authors: authors.length > 0 ? authors.join(', ') : prev.authors,
+        year: year ? String(year) : prev.year,
+        poster_url: poster_url || prev.poster_url,
+        publisher: publisher || prev.publisher,
+        pages: pages || prev.pages,
+        isbn: isbn || prev.isbn,
+        genres: subjects.length > 0 ? subjects.join(', ') : prev.genres,
+      }))
+      setIsbnQuery('')
+      setExistingCard(null)
+    }
+
+    setIsbnSearching(true)
+    setIsbnError(null)
+
+    try {
+      // Goodreads URL
+      const grMatch = trimmed.match(/goodreads\.com\/book\/show\/(\d+)(?:\.([^?#\s]+))?/)
+      if (grMatch) {
+        const goodreadsId = grMatch[1]
+        const urlSlug: string | undefined = grMatch[2]
+
+        const res = await fetch(
+          `https://openlibrary.org/api/books?bibkeys=GOODREADS:${goodreadsId}&format=json&jscmd=data`
+        )
+        const json = await res.json()
+        const book = Object.values(json)[0] as any
+
+        if (book) { applyOlBook(book); return }
+
+        // Fallback: buscar por título extraído del slug de la URL
+        if (urlSlug) {
+          const titleQuery = urlSlug.replace(/[_-]/g, ' ').trim()
+          if (titleQuery.length >= 2) {
+            const searchRes = await fetch(`/api/admin/search-works?q=${encodeURIComponent(titleQuery)}&type=book`)
+            const searchResults = await searchRes.json()
+            if (searchResults.length > 0) {
+              setResults(searchResults)
+              setIsbnQuery('')
+              return
+            }
+          }
+        }
+
+        setIsbnError('No se encontró este libro en Open Library. Prueba a buscarlo por título.')
+        return
+      }
+
+      // ISBN-10 o ISBN-13 (con o sin guiones)
+      const cleanIsbn = trimmed.replace(/[-\s]/g, '')
+      if (/^\d{10}$/.test(cleanIsbn) || /^\d{13}$/.test(cleanIsbn)) {
+        const res = await fetch(
+          `https://openlibrary.org/api/books?bibkeys=ISBN:${cleanIsbn}&format=json&jscmd=data`
+        )
+        const json = await res.json()
+        const book = Object.values(json)[0] as any
+        if (!book) { setIsbnError('No se encontró ningún libro con ese ISBN.'); return }
+        applyOlBook(book)
+        return
+      }
+
+      setIsbnError('Introduce un ISBN (10 o 13 dígitos) o un enlace de Goodreads válido.')
+    } catch {
+      setIsbnError('Error al buscar. Comprueba la conexión e inténtalo de nuevo.')
+    } finally {
+      setIsbnSearching(false)
+    }
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -280,6 +399,35 @@ export default function NuevaObraPage() {
           </div>
         )}
       </div>
+
+      {/* Búsqueda por ISBN o Goodreads — solo libros */}
+      {searchType === 'book' && (
+        <div className="mb-8">
+          <label className="mb-1.5 block text-sm font-semibold text-ink">
+            ISBN o enlace de Goodreads{' '}
+            <span className="font-normal text-ink/40">(opcional)</span>
+          </label>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={isbnQuery}
+              onChange={(e) => { setIsbnQuery(e.target.value); setIsbnError(null) }}
+              onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); lookupByIsbnOrGoodreads(isbnQuery) } }}
+              placeholder="9780618640157  o  https://www.goodreads.com/book/show/…"
+              className="flex-1 rounded-lg border border-ink/20 bg-paper px-4 py-3 text-sm text-ink placeholder-ink/30 outline-none transition focus:border-ember focus:ring-2 focus:ring-ember/20"
+            />
+            <button
+              type="button"
+              onClick={() => lookupByIsbnOrGoodreads(isbnQuery)}
+              disabled={!isbnQuery.trim() || isbnSearching}
+              className="rounded-lg border border-ink/20 px-5 py-3 text-sm font-semibold text-ink transition hover:border-ink/40 hover:bg-ink/5 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              {isbnSearching ? 'Buscando…' : 'Buscar'}
+            </button>
+          </div>
+          {isbnError && <p className="mt-2 text-xs text-ember">{isbnError}</p>}
+        </div>
+      )}
 
       {/* Obra seleccionada */}
       {selected && (
