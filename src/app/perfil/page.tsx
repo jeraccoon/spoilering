@@ -17,6 +17,30 @@ const TYPE_COLORS = {
   book: 'bg-amber-600 text-white',
 }
 
+const USER_CARD_LIMIT = 3
+
+function CardStatusBadge({ status, isUser }: { status: string; isUser: boolean }) {
+  if (status === 'published') {
+    return (
+      <span className="rounded px-2 py-0.5 text-[11px] font-semibold bg-moss/10 text-moss">
+        Publicada
+      </span>
+    )
+  }
+  if (isUser) {
+    return (
+      <span className="rounded px-2 py-0.5 text-[11px] font-semibold bg-amber-100 text-amber-700">
+        Pendiente de revisión
+      </span>
+    )
+  }
+  return (
+    <span className="rounded px-2 py-0.5 text-[11px] font-semibold bg-ink/10 text-ink/50">
+      Borrador
+    </span>
+  )
+}
+
 export default async function PerfilPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -39,7 +63,9 @@ export default async function PerfilPage() {
     day: 'numeric',
   })
   const role: string = profile?.role ?? 'user'
+  const isUser = role === 'user'
   const displayName = profile?.username ? `@${profile.username}` : user.email
+  const cardCount = cards?.length ?? 0
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
@@ -61,21 +87,42 @@ export default async function PerfilPage() {
       </div>
 
       <section className="mt-10">
-        <h2 className="mb-4 text-lg font-bold text-ink">
-          Mis fichas
-          {cards && cards.length > 0 && (
-            <span className="ml-2 text-sm font-normal text-ink/40">({cards.length})</span>
-          )}
-        </h2>
+        <div className="mb-4 flex items-baseline justify-between gap-4">
+          <h2 className="text-lg font-bold text-ink">
+            Mis fichas
+          </h2>
+          {isUser ? (
+            <span className={`text-sm font-semibold tabular-nums ${cardCount >= USER_CARD_LIMIT ? 'text-ember' : 'text-ink/40'}`}>
+              {cardCount}/{USER_CARD_LIMIT} fichas
+            </span>
+          ) : cardCount > 0 ? (
+            <span className="text-sm text-ink/40">({cardCount})</span>
+          ) : null}
+        </div>
+
+        {isUser && cardCount < USER_CARD_LIMIT && (
+          <div className="mb-4 rounded-lg border border-ink/10 bg-ink/5 px-4 py-3 text-sm text-ink/60">
+            Puedes crear hasta {USER_CARD_LIMIT} fichas. Las fichas enviadas quedan pendientes de revisión antes de publicarse.{' '}
+            <Link href="/nueva-obra" className="font-semibold text-ember hover:underline">
+              Añadir una obra →
+            </Link>
+          </div>
+        )}
+
+        {isUser && cardCount >= USER_CARD_LIMIT && (
+          <div className="mb-4 rounded-lg border border-ember/20 bg-ember/5 px-4 py-3 text-sm text-ember">
+            Has alcanzado el límite de {USER_CARD_LIMIT} fichas. Contacta con nosotros para ampliar tu acceso.
+          </div>
+        )}
 
         {(!cards || cards.length === 0) ? (
           <div className="rounded-lg border border-ink/10 px-6 py-10 text-center">
             <p className="text-sm text-ink/40">Todavía no has creado ninguna ficha.</p>
             <Link
-              href="/buscar"
+              href={isUser ? '/nueva-obra' : '/buscar'}
               className="mt-3 inline-block text-sm font-semibold text-ember hover:underline"
             >
-              Explorar fichas existentes
+              {isUser ? 'Añadir una obra' : 'Explorar fichas existentes'}
             </Link>
           </div>
         ) : (
@@ -112,9 +159,7 @@ export default async function PerfilPage() {
                   <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${TYPE_COLORS[card.work.type as keyof typeof TYPE_COLORS]}`}>
                     {TYPE_LABELS[card.work.type as keyof typeof TYPE_LABELS]}
                   </span>
-                  <span className={`rounded px-2 py-0.5 text-[11px] font-semibold ${card.status === 'published' ? 'bg-moss/10 text-moss' : 'bg-ink/10 text-ink/50'}`}>
-                    {card.status === 'published' ? 'Publicada' : 'Borrador'}
-                  </span>
+                  <CardStatusBadge status={card.status} isUser={isUser} />
                 </div>
               </Link>
             ))}

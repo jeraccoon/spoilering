@@ -321,7 +321,7 @@ export default function NuevaObraPage() {
         setSubmitting(false)
         return
       }
-      router.push(`/admin/ficha/${data.cardId}`)
+      router.push(data.redirectTo ?? `/admin/ficha/${data.cardId}`)
     } catch {
       setError('Error inesperado. Inténtalo de nuevo.')
       setSubmitting(false)

@@ -15,11 +15,16 @@ async function getUser() {
 
     const { data: profile } = await supabase
       .from('profiles')
-      .select('username')
+      .select('username, role')
       .eq('id', user.id)
       .single()
 
-    return { user, username: (profile as { username: string } | null)?.username ?? null }
+    const p = profile as { username: string; role: string } | null
+    return {
+      user,
+      username: p?.username ?? null,
+      role: p?.role ?? 'user',
+    }
   } catch {
     return null
   }
@@ -27,6 +32,8 @@ async function getUser() {
 
 export async function Header() {
   const auth = await getUser()
+  const isPrivileged = auth?.role === 'admin' || auth?.role === 'editor'
+  const addHref = isPrivileged ? '/admin/nueva-obra' : '/nueva-obra'
 
   return (
     <header className="sticky top-0 z-20 border-b border-ink/10 bg-paper/90 backdrop-blur">
@@ -55,8 +62,22 @@ export async function Header() {
         </nav>
 
         <div className="flex items-center gap-3">
-          {auth?.user && auth?.username ? (
-            <UserMenu username={auth.username} />
+          {auth?.user ? (
+            <>
+              <Link
+                href={addHref}
+                className="hidden rounded-lg border border-ink/20 px-3 py-1.5 text-sm font-semibold text-ink/70 transition hover:border-ink/40 hover:text-ink sm:block"
+              >
+                + Añadir obra
+              </Link>
+              {auth.username ? (
+                <UserMenu username={auth.username} />
+              ) : (
+                <Link href="/perfil" className="text-sm font-semibold text-ink/70 transition hover:text-ember">
+                  Mi perfil
+                </Link>
+              )}
+            </>
           ) : (
             <>
               <Link

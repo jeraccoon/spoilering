@@ -1,10 +1,11 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
+import { PendingCardsSection, type PendingCard } from '@/components/pending-cards-section'
 
 async function getAdminData() {
   const supabase = await createClient()
 
-  const [works, published, drafts, users, pendingRevisions, pendingSuggestions, incomplete, draftCards, { data: { user } }] =
+  const [works, published, drafts, users, pendingRevisions, pendingSuggestions, incomplete, allDraftCards, { data: { user } }] =
     await Promise.all([
       supabase.from('works').select('*', { count: 'exact', head: true }),
       supabase.from('cards').select('*', { count: 'exact', head: true }).eq('status', 'published'),
@@ -13,12 +14,11 @@ async function getAdminData() {
       supabase.from('revisions').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
       (supabase.from('suggestions') as any).select('*', { count: 'exact', head: true }).eq('status', 'pending'),
       (supabase.from('cards') as any).select('*', { count: 'exact', head: true }).eq('is_complete', false),
-      supabase
-        .from('cards')
-        .select('id, created_at, is_complete, work:works(title, type, slug)')
+      (supabase.from('cards') as any)
+        .select('id, created_at, is_complete, work:works(title, type, slug), creator:profiles!created_by(username, role)')
         .eq('status', 'draft')
         .order('created_at', { ascending: false })
-        .limit(10),
+        .limit(30),
       supabase.auth.getUser(),
     ])
 
@@ -32,6 +32,14 @@ async function getAdminData() {
     username = (profile as { username: string } | null)?.username ?? 'admin'
   }
 
+  const allDrafts: any[] = allDraftCards.data ?? []
+  const pendingCards: PendingCard[] = allDrafts
+    .filter((c) => c.creator?.role === 'user')
+    .slice(0, 20)
+  const draftCards = allDrafts
+    .filter((c) => !c.creator || c.creator.role !== 'user')
+    .slice(0, 10)
+
   return {
     stats: {
       works: works.count ?? 0,
@@ -42,7 +50,8 @@ async function getAdminData() {
       pendingSuggestions: pendingSuggestions.count ?? 0,
       incomplete: incomplete.count ?? 0,
     },
-    draftCards: (draftCards.data ?? []) as any[],
+    draftCards,
+    pendingCards,
     username,
   }
 }
@@ -62,7 +71,7 @@ function formatDate(iso: string) {
 }
 
 export default async function AdminPage() {
-  const { stats, draftCards, username } = await getAdminData()
+  const { stats, draftCards, pendingCards, username } = await getAdminData()
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
@@ -97,13 +106,22 @@ export default async function AdminPage() {
         </div>
       </section>
 
-      {/* Fichas en borrador */}
+      {/* Fichas pendientes de revisión (enviadas por usuarios) */}
+      <section className="mb-10">
+        <h2 className="mb-1 text-xs font-semibold uppercase tracking-wider text-ink/40">
+          Fichas pendientes de revisión
+        </h2>
+        <p className="mb-4 text-xs text-ink/40">Enviadas por usuarios registrados, esperando aprobación.</p>
+        <PendingCardsSection initialCards={pendingCards} />
+      </section>
+
+      {/* Fichas en borrador (admin / editor) */}
       <section className="mb-10">
         <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-ink/40">
           Fichas en borrador
         </h2>
         {draftCards.length === 0 ? (
-          <div className="rounded-lg border border-ink/10 bg-ink/5 px-6 py-10 text-center text-ink/40">
+          <div className="rounded-lg border border-ink/10 bg-ink/5 px-6 py-10 text-center text-sm text-ink/40">
             No hay fichas en borrador.
           </div>
         ) : (
@@ -118,7 +136,7 @@ export default async function AdminPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-ink/10">
-                {draftCards.map((card) => (
+                {draftCards.map((card: any) => (
                   <tr key={card.id} className="transition hover:bg-ink/5">
                     <td className="px-4 py-3 font-semibold text-ink">
                       <span>{card.work?.title ?? '—'}</span>

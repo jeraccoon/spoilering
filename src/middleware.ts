@@ -31,6 +31,11 @@ export async function middleware(request: NextRequest) {
       return redirect
     }
 
+    // /admin/nueva-obra es accesible a cualquier usuario autenticado
+    if (request.nextUrl.pathname === '/admin/nueva-obra') {
+      return supabaseResponse
+    }
+
     const { data: profile } = await supabase
       .from('profiles')
       .select('role')
@@ -38,7 +43,7 @@ export async function middleware(request: NextRequest) {
       .single()
     console.log('PROFILE:', profile?.role)
 
-    if (profile?.role !== 'admin') {
+    if (!['admin', 'editor'].includes(profile?.role ?? '')) {
       const redirect = NextResponse.redirect(new URL('/', request.url))
       supabaseResponse.cookies.getAll().forEach((cookie) => redirect.cookies.set(cookie))
       return redirect

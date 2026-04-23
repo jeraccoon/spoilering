@@ -32,6 +32,22 @@ export async function POST(request: NextRequest) {
     console.log('[create-work] paso 2: user =', user?.id ?? 'null')
     if (!user) return NextResponse.json({ error: 'No autenticado' }, { status: 401 })
 
+    const { data: profile } = await (supabase.from('profiles') as any)
+      .select('role').eq('id', user.id).single()
+    const role: string = profile?.role ?? 'user'
+
+    if (role === 'user') {
+      const { count } = await (supabase.from('cards') as any)
+        .select('*', { count: 'exact', head: true })
+        .eq('created_by', user.id)
+      if ((count ?? 0) >= 3) {
+        return NextResponse.json(
+          { error: 'Has alcanzado el límite de 3 fichas. Contacta con nosotros para ampliar tu acceso.' },
+          { status: 403 }
+        )
+      }
+    }
+
     const body = await request.json()
     const {
       type, title, original_title, year, poster_url, overview,
@@ -136,7 +152,8 @@ export async function POST(request: NextRequest) {
     }
     console.log('[create-work] paso 6 OK — secciones insertadas')
 
-    return NextResponse.json({ workId: work.id, cardId: card.id })
+    const redirectTo = role === 'user' ? '/perfil' : `/admin/ficha/${card.id}`
+    return NextResponse.json({ workId: work.id, cardId: card.id, redirectTo })
   } catch (err: unknown) {
     console.error('[create-work] excepción no controlada:', err)
     const msg = err instanceof Error ? err.message : String(err)
