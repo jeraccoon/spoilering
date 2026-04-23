@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation'
+import Link from 'next/link'
 import Image from 'next/image'
 import type { Metadata } from 'next'
 import ReactMarkdown from 'react-markdown'
@@ -17,25 +18,39 @@ async function getCard(slug: string): Promise<CardFull | null> {
   const { id: workId } = work as { id: string }
   const { data: card } = await supabase
     .from('cards').select('*, work:works(*), sections(*)')
-    .eq('work_id', workId).eq('status', 'published').single() as { data: any; error: unknown }
+    .eq('work_id', workId).single() as { data: any; error: unknown }
   if (!card) return null
   const all = (card.sections ?? []) as any[]
   const roots = all
-    .filter((s) => s.parent_id === null)
-    .sort((a, b) => a.order_index - b.order_index)
-    .map((root) => ({
+    .filter((s: any) => s.parent_id === null)
+    .sort((a: any, b: any) => a.order_index - b.order_index)
+    .map((root: any) => ({
       ...root,
       children: all
-        .filter((s) => s.parent_id === root.id)
-        .sort((a, b) => a.order_index - b.order_index),
+        .filter((s: any) => s.parent_id === root.id)
+        .sort((a: any, b: any) => a.order_index - b.order_index),
     }))
   return { ...card, sections: roots } as CardFull
+}
+
+async function getUserRole(): Promise<string | null> {
+  try {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return null
+    const { data: profile } = await (supabase.from('profiles') as any)
+      .select('role').eq('id', user.id).single()
+    return profile?.role ?? 'user'
+  } catch {
+    return null
+  }
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
   const card = await getCard(slug)
   if (!card) return { title: 'Ficha no encontrada — Spoilering' }
+  if (card.status !== 'published') return { title: `${card.work.title} — Spoilering`, robots: { index: false } }
   return {
     title: `${card.work.title}${card.work.year ? ` (${card.work.year})` : ''} — Spoilering`,
     description: `Resumen completo con spoilers de ${card.work.title}.`.slice(0, 160),
@@ -48,13 +63,49 @@ const TYPE_LABELS = { movie: 'Película', series: 'Serie', book: 'Libro' }
 export default async function CardPage({ params, searchParams }: Props) {
   const { slug } = await params
   const { seccion } = await searchParams
-  const card = await getCard(slug)
+
+  const [card, role] = await Promise.all([getCard(slug), getUserRole()])
   if (!card) notFound()
+
+  const isDraft = card.status !== 'published'
+  const canEdit = role === 'admin' || role === 'editor'
+
+  if (isDraft && !canEdit) {
+    return (
+      <div className="flex min-h-[60vh] flex-col items-center justify-center gap-3 px-4 text-center">
+        <p className="text-4xl">🔒</p>
+        <h1 className="text-xl font-black text-ink">Esta ficha aún no está disponible</h1>
+        <p className="max-w-sm text-sm text-ink/50">
+          El contenido está siendo preparado y todavía no ha sido publicado.
+        </p>
+        <Link href="/buscar" className="mt-2 text-sm font-semibold text-ember hover:underline">
+          Explorar fichas publicadas
+        </Link>
+      </div>
+    )
+  }
+
   const { work, sections } = card
   const activeSection = sections.find((s) => s.id === seccion) ?? sections[0]
 
   return (
     <div>
+      {isDraft && (
+        <div className="border-b border-amber-300 bg-amber-50 px-4 py-3">
+          <div className="mx-auto flex max-w-5xl items-center justify-between gap-4">
+            <p className="text-sm font-medium text-amber-800">
+              Esta ficha está en borrador y no es visible para el público.
+            </p>
+            <Link
+              href={`/admin/ficha/${card.id}`}
+              className="shrink-0 rounded-lg bg-amber-800 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-amber-900"
+            >
+              Ir al editor
+            </Link>
+          </div>
+        </div>
+      )}
+
       {/* Cabecera de la obra */}
       <section className="border-b border-ink/10">
         <div className="mx-auto flex max-w-5xl gap-6 px-4 py-8">
