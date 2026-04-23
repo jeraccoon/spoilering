@@ -15,7 +15,9 @@ interface Props {
 }
 
 async function getCard(slug: string): Promise<CardFull | null> {
-  const supabase = createAdminClient()
+  const supabase = process.env.SUPABASE_SERVICE_ROLE_KEY
+    ? createAdminClient()
+    : await createClient()
   const { data: work } = await supabase.from('works').select('id').eq('slug', slug).single()
   if (!work) return null
   const { id: workId } = work as { id: string }
