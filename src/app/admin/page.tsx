@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 async function getAdminData() {
   const supabase = await createClient()
 
-  const [works, published, drafts, users, pendingRevisions, pendingSuggestions, draftCards, { data: { user } }] =
+  const [works, published, drafts, users, pendingRevisions, pendingSuggestions, incomplete, draftCards, { data: { user } }] =
     await Promise.all([
       supabase.from('works').select('*', { count: 'exact', head: true }),
       supabase.from('cards').select('*', { count: 'exact', head: true }).eq('status', 'published'),
@@ -12,9 +12,10 @@ async function getAdminData() {
       supabase.from('profiles').select('*', { count: 'exact', head: true }),
       supabase.from('revisions').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
       (supabase.from('suggestions') as any).select('*', { count: 'exact', head: true }).eq('status', 'pending'),
+      (supabase.from('cards') as any).select('*', { count: 'exact', head: true }).eq('is_complete', false),
       supabase
         .from('cards')
-        .select('id, created_at, work:works(title, type, slug)')
+        .select('id, created_at, is_complete, work:works(title, type, slug)')
         .eq('status', 'draft')
         .order('created_at', { ascending: false })
         .limit(10),
@@ -39,6 +40,7 @@ async function getAdminData() {
       users: users.count ?? 0,
       pendingRevisions: pendingRevisions.count ?? 0,
       pendingSuggestions: pendingSuggestions.count ?? 0,
+      incomplete: incomplete.count ?? 0,
     },
     draftCards: (draftCards.data ?? []) as any[],
     username,
@@ -85,10 +87,13 @@ export default async function AdminPage() {
       <section className="mb-10">
         <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-ink/40">Resumen</h2>
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-          <StatCard value={stats.works}     label="Obras totales" />
-          <StatCard value={stats.published} label="Fichas publicadas" accent="text-moss" />
-          <StatCard value={stats.drafts}    label="En borrador"        accent="text-ember" />
-          <StatCard value={stats.users}     label="Usuarios" />
+          <StatCard value={stats.works}      label="Obras totales" />
+          <StatCard value={stats.published}  label="Fichas publicadas" accent="text-moss" />
+          <StatCard value={stats.drafts}     label="En borrador"       accent="text-ember" />
+          <StatCard value={stats.users}      label="Usuarios" />
+          {stats.incomplete > 0 && (
+            <StatCard value={stats.incomplete} label="Fichas incompletas" accent="text-amber-600" />
+          )}
         </div>
       </section>
 
@@ -116,7 +121,10 @@ export default async function AdminPage() {
                 {draftCards.map((card) => (
                   <tr key={card.id} className="transition hover:bg-ink/5">
                     <td className="px-4 py-3 font-semibold text-ink">
-                      {card.work?.title ?? '—'}
+                      <span>{card.work?.title ?? '—'}</span>
+                      {card.is_complete === false && (
+                        <span className="ml-2 rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700">Incompleta</span>
+                      )}
                     </td>
                     <td className="px-4 py-3 text-ink/50">
                       {TYPE_LABELS[card.work?.type] ?? '—'}

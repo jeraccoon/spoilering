@@ -1,6 +1,28 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
+function toSlug(title: string): string {
+  return title
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+    .slice(0, 80)
+}
+
+async function findUniqueSlug(supabase: any, title: string): Promise<string> {
+  const base = toSlug(title)
+  let slug = base
+  let counter = 1
+  while (true) {
+    const { data } = await supabase.from('works').select('id').eq('slug', slug).maybeSingle()
+    if (!data) return slug
+    counter++
+    slug = `${base}-${counter}`
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     console.log('[create-work] paso 1: iniciando')
@@ -13,15 +35,22 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const {
       type, title, original_title, year, poster_url, overview,
-      genres, authors, directors, seasons_count, slug,
+      genres, authors, directors, seasons_count,
       tmdb_id, google_books_id,
     } = body
 
-    console.log('[create-work] paso 3: body recibido — title:', title, 'slug:', slug, 'type:', type)
+    console.log('[create-work] paso 3: body recibido — title:', title, 'type:', type)
 
-    if (!type || !title || !slug) {
+    if (!type || !title) {
       return NextResponse.json({ error: 'Faltan campos obligatorios' }, { status: 400 })
     }
+
+    console.log('[create-work] paso 3b: generando slug único...')
+    const slug = await findUniqueSlug(supabase, title)
+    console.log('[create-work] paso 3b OK — slug:', slug)
+
+    const genres_arr: string[] = genres ?? []
+    const is_complete = Boolean(poster_url && overview && genres_arr.length > 0)
 
     const workPayload = {
       type,
@@ -30,7 +59,7 @@ export async function POST(request: NextRequest) {
       year: year ? parseInt(year) : null,
       poster_url: poster_url || null,
       overview: overview || null,
-      genres: genres ?? [],
+      genres: genres_arr,
       authors: authors ?? [],
       directors: directors ?? [],
       seasons_count: seasons_count ? parseInt(seasons_count) : null,
@@ -48,17 +77,14 @@ export async function POST(request: NextRequest) {
 
     if (workError) {
       console.error('[create-work] paso 4 ERROR — workError:', JSON.stringify(workError))
-      const msg = workError.code === '23505'
-        ? 'Ya existe una obra con ese slug. Cambia el slug e inténtalo de nuevo.'
-        : workError.message
-      return NextResponse.json({ error: msg, detail: workError }, { status: 400 })
+      return NextResponse.json({ error: workError.message, detail: workError }, { status: 400 })
     }
     console.log('[create-work] paso 4 OK — work.id:', work.id)
 
     console.log('[create-work] paso 5: insertando card...')
     const { data: card, error: cardError } = await (supabase
       .from('cards') as any)
-      .insert({ work_id: work.id, status: 'draft', created_by: user.id })
+      .insert({ work_id: work.id, status: 'draft', created_by: user.id, is_complete })
       .select()
       .single()
 
@@ -80,7 +106,6 @@ export async function POST(request: NextRequest) {
 
     if (sectionsError) {
       console.error('[create-work] paso 6 ERROR — sectionsError:', JSON.stringify(sectionsError))
-      // No bloqueamos la respuesta — la obra y ficha ya existen, las secciones se pueden crear manualmente
       return NextResponse.json({
         workId: work.id,
         cardId: card.id,
