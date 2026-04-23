@@ -14,20 +14,27 @@ export async function GET(request: NextRequest) {
   const q = request.nextUrl.searchParams.get('q')?.trim()
   if (!q || q.length < 2) return NextResponse.json([])
 
+  const type = request.nextUrl.searchParams.get('type') // 'movie' | 'series' | 'book' | null
+
   const tmdbKey = process.env.TMDB_API_KEY
   const booksKey = process.env.GOOGLE_BOOKS_API_KEY
 
+  const wantTmdb = !type || type === 'movie' || type === 'series'
+  const wantBooks = !type || type === 'book'
+
   const [tmdbRes, booksRes] = await Promise.allSettled([
-    tmdbKey
+    wantTmdb && tmdbKey
       ? fetch(
           `https://api.themoviedb.org/3/search/multi?api_key=${tmdbKey}&query=${encodeURIComponent(q)}&language=es-ES&page=1`,
           { next: { revalidate: 60 } }
         )
       : Promise.resolve(null),
-    fetch(
-      `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(q)}&maxResults=5${booksKey ? `&key=${booksKey}` : ''}`,
-      { next: { revalidate: 60 } }
-    ),
+    wantBooks
+      ? fetch(
+          `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(q)}&maxResults=6&langRestrict=es${booksKey ? `&key=${booksKey}` : ''}`,
+          { next: { revalidate: 60 } }
+        )
+      : Promise.resolve(null),
   ])
 
   const results: any[] = []
@@ -36,6 +43,8 @@ export async function GET(request: NextRequest) {
     const json = await tmdbRes.value.json()
     for (const item of json.results ?? []) {
       if (item.media_type === 'person') continue
+      if (type === 'movie' && item.media_type !== 'movie') continue
+      if (type === 'series' && item.media_type !== 'tv') continue
       const isMovie = item.media_type === 'movie'
       const title = isMovie ? item.title : item.name
       const original_title = isMovie ? item.original_title : item.original_name

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 
@@ -137,7 +137,27 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
   const [saving, setSaving] = useState<string | null>(null)
   const [generatingAll, setGeneratingAll] = useState(false)
   const [generateError, setGenerateError] = useState<string | null>(null)
+  const [progressMsg, setProgressMsg] = useState('')
   const [statusLoading, setStatusLoading] = useState(false)
+
+  const PROGRESS_MESSAGES = [
+    'Analizando la obra…',
+    'Escribiendo el inicio…',
+    'Desarrollando el nudo…',
+    'Completando el desenlace…',
+    'Añadiendo subtramas y personajes…',
+  ]
+
+  useEffect(() => {
+    if (!generatingAll) { setProgressMsg(''); return }
+    let i = 0
+    setProgressMsg(PROGRESS_MESSAGES[0])
+    const interval = setInterval(() => {
+      i = (i + 1) % PROGRESS_MESSAGES.length
+      setProgressMsg(PROGRESS_MESSAGES[i])
+    }, 3500)
+    return () => clearInterval(interval)
+  }, [generatingAll])
   const [modal, setModal] = useState<{ parentId: string | null; parentLabel?: string } | null>(null)
 
   const allSections: Section[] = []
@@ -258,6 +278,9 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
               {generatingAll ? '⏳ Generando…' : '✨ Generar todo con IA'}
             </button>
           </div>
+          {generatingAll && progressMsg && (
+            <p className="mt-1.5 text-xs font-medium text-plum/70 animate-pulse">{progressMsg}</p>
+          )}
           {generateError && (
             <p className="mt-1 text-xs text-ember">{generateError}</p>
           )}

@@ -60,9 +60,16 @@ const EMPTY_FORM: FormState = {
   tmdb_id: '', google_books_id: '',
 }
 
+type SearchType = 'all' | 'movie' | 'series' | 'book'
+
+const SEARCH_TYPE_LABELS: Record<SearchType, string> = {
+  all: 'Todo', movie: 'Película', series: 'Serie', book: 'Libro',
+}
+
 export default function NuevaObraPage() {
   const router = useRouter()
   const [query, setQuery] = useState('')
+  const [searchType, setSearchType] = useState<SearchType>('all')
   const [results, setResults] = useState<SearchResult[]>([])
   const [searching, setSearching] = useState(false)
   const [selected, setSelected] = useState<SearchResult | null>(null)
@@ -78,7 +85,8 @@ export default function NuevaObraPage() {
     debounceRef.current = setTimeout(async () => {
       setSearching(true)
       try {
-        const res = await fetch(`/api/admin/search-works?q=${encodeURIComponent(query)}`)
+        const url = `/api/admin/search-works?q=${encodeURIComponent(query)}${searchType !== 'all' ? `&type=${searchType}` : ''}`
+        const res = await fetch(url)
         const data = await res.json()
         setResults(data)
       } catch {
@@ -89,7 +97,7 @@ export default function NuevaObraPage() {
     }, 400)
 
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current) }
-  }, [query])
+  }, [query, searchType])
 
   function selectResult(result: SearchResult) {
     setSelected(result)
@@ -161,16 +169,42 @@ export default function NuevaObraPage() {
         </p>
       </div>
 
+      {/* Selector de tipo */}
+      <div className="mb-4">
+        <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-ink/40">¿Qué tipo de obra es?</p>
+        <div className="flex gap-2">
+          {(['all', 'movie', 'series', 'book'] as SearchType[]).map((t) => (
+            <button
+              key={t}
+              type="button"
+              onClick={() => setSearchType(t)}
+              className={`rounded-lg border px-4 py-1.5 text-sm font-semibold transition ${
+                searchType === t
+                  ? 'border-ember bg-ember text-white'
+                  : 'border-ink/20 text-ink/50 hover:border-ink/40 hover:text-ink'
+              }`}
+            >
+              {SEARCH_TYPE_LABELS[t]}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Buscador */}
       <div className="relative mb-8">
         <label className="mb-1.5 block text-sm font-semibold text-ink">
-          Buscar en TMDb y Google Books
+          {searchType === 'book' ? 'Buscar en Google Books' : searchType !== 'all' ? 'Buscar en TMDb' : 'Buscar en TMDb y Google Books'}
         </label>
         <input
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Ej: Breaking Bad, El señor de los anillos…"
+          placeholder={
+            searchType === 'book' ? 'Ej: El señor de los anillos, Dune…'
+            : searchType === 'series' ? 'Ej: Breaking Bad, The Wire…'
+            : searchType === 'movie' ? 'Ej: Inception, El padrino…'
+            : 'Ej: Breaking Bad, El señor de los anillos…'
+          }
           className="w-full rounded-lg border border-ink/20 bg-paper px-4 py-3 text-sm text-ink placeholder-ink/30 outline-none transition focus:border-ember focus:ring-2 focus:ring-ember/20"
         />
         {searching && (

@@ -5,9 +5,9 @@ import type { CardWithWork } from '@/types/database'
 
 const TYPE_LABELS = { movie: 'Película', series: 'Serie', book: 'Libro' }
 const TYPE_COLORS = {
-  movie: 'bg-moss/20 text-moss',
-  series: 'bg-plum/20 text-plum',
-  book: 'bg-ember/20 text-ember',
+  movie: 'bg-blue-600 text-white',
+  series: 'bg-purple-600 text-white',
+  book: 'bg-amber-600 text-white',
 }
 
 async function getRecentCards(): Promise<CardWithWork[]> {
