@@ -21,6 +21,8 @@ interface SearchResult {
   seasons_count: number | null
   tmdb_id: number | null
   google_books_id: string | null
+  open_library_id: string | null
+  isbn: string | null
 }
 
 interface FormState {
@@ -36,6 +38,11 @@ interface FormState {
   seasons_count: string
   tmdb_id: string
   google_books_id: string
+  isbn: string
+  publisher: string
+  pages: string
+  saga: string
+  saga_order: string
 }
 
 const TYPE_LABELS = { movie: 'Película', series: 'Serie', book: 'Libro' }
@@ -50,6 +57,7 @@ const EMPTY_FORM: FormState = {
   poster_url: '', overview: '', genres: '', authors: '',
   directors: '', seasons_count: '',
   tmdb_id: '', google_books_id: '',
+  isbn: '', publisher: '', pages: '', saga: '', saga_order: '',
 }
 
 type SearchType = 'all' | 'movie' | 'series' | 'book'
@@ -106,6 +114,11 @@ export default function NuevaObraPage() {
       seasons_count: result.seasons_count ? String(result.seasons_count) : '',
       tmdb_id: result.tmdb_id ? String(result.tmdb_id) : '',
       google_books_id: result.google_books_id ?? '',
+      isbn: result.isbn ?? '',
+      publisher: '',
+      pages: '',
+      saga: '',
+      saga_order: '',
     })
 
     if ((result.type === 'movie' || result.type === 'series') && result.tmdb_id) {
@@ -118,6 +131,7 @@ export default function NuevaObraPage() {
       } catch {}
     }
 
+    // Comprobar duplicado solo si hay un ID externo que podamos buscar en BD
     const tmdbId = result.tmdb_id
     const booksId = result.google_books_id
     if (!tmdbId && !booksId) return
@@ -171,6 +185,11 @@ export default function NuevaObraPage() {
           genres: form.genres.split(',').map((s) => s.trim()).filter(Boolean),
           authors: form.authors.split(',').map((s) => s.trim()).filter(Boolean),
           directors: form.directors.split(',').map((s) => s.trim()).filter(Boolean),
+          isbn: form.isbn || null,
+          publisher: form.publisher || null,
+          pages: form.pages ? parseInt(form.pages) : null,
+          saga: form.saga || null,
+          saga_order: form.saga_order ? parseInt(form.saga_order) : null,
         }),
       })
       const data = await res.json()
@@ -190,13 +209,19 @@ export default function NuevaObraPage() {
     }
   }
 
+  const searchLabel = searchType === 'book'
+    ? 'Buscar en Google Books y Open Library'
+    : searchType !== 'all'
+    ? 'Buscar en TMDb'
+    : 'Buscar en TMDb, Google Books y Open Library'
+
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
 
       <div className="mb-8">
         <h1 className="text-3xl font-black tracking-tight text-ink">Nueva obra</h1>
         <p className="mt-1 text-sm text-ink/50">
-          Busca en TMDb o Google Books para rellenar el formulario automáticamente.
+          Busca en TMDb, Google Books u Open Library para rellenar el formulario automáticamente.
         </p>
       </div>
 
@@ -217,9 +242,7 @@ export default function NuevaObraPage() {
 
       {/* Buscador */}
       <div className="relative mb-8">
-        <label className="mb-1.5 block text-sm font-semibold text-ink">
-          {searchType === 'book' ? 'Buscar en Google Books' : searchType !== 'all' ? 'Buscar en TMDb' : 'Buscar en TMDb y Google Books'}
-        </label>
+        <label className="mb-1.5 block text-sm font-semibold text-ink">{searchLabel}</label>
         <input type="text" value={query} onChange={(e) => setQuery(e.target.value)}
           placeholder="Busca por título, autor, director, actor..."
           className="w-full rounded-lg border border-ink/20 bg-paper px-4 py-3 text-sm text-ink placeholder-ink/30 outline-none transition focus:border-ember focus:ring-2 focus:ring-ember/20" />
@@ -244,10 +267,13 @@ export default function NuevaObraPage() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-semibold text-ink">{result.title}</p>
-                  <p className="text-xs text-ink/40">{result.year ?? '—'} · {TYPE_LABELS[result.type]}</p>
+                  <p className="text-xs text-ink/40">
+                    {result.year ?? '—'} · {TYPE_LABELS[result.type]}
+                    {result.authors.length > 0 && ` · ${result.authors[0]}`}
+                  </p>
                 </div>
                 <span className={`shrink-0 rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase ${TYPE_COLORS[result.type]}`}>
-                  {TYPE_LABELS[result.type]}
+                  {result.open_library_id && !result.google_books_id ? 'OL' : TYPE_LABELS[result.type]}
                 </span>
               </button>
             ))}
@@ -297,11 +323,8 @@ export default function NuevaObraPage() {
           )}
         </div>
 
-        {/* Slug automático — solo informativo */}
         {form.title && (
-          <p className="text-xs text-ink/40">
-            URL generada automáticamente a partir del título.
-          </p>
+          <p className="text-xs text-ink/40">URL generada automáticamente a partir del título.</p>
         )}
 
         {/* Póster */}
@@ -369,6 +392,21 @@ export default function NuevaObraPage() {
           />
         )}
 
+        {/* Campos específicos de libros */}
+        {form.type === 'book' && (
+          <>
+            <Field label="ISBN" value={form.isbn} onChange={(v) => updateField('isbn', v)} placeholder="978-84-..." />
+            <div className="grid gap-5 sm:grid-cols-2">
+              <Field label="Editorial" value={form.publisher} onChange={(v) => updateField('publisher', v)} placeholder="Minotauro" />
+              <Field label="Número de páginas" value={form.pages} onChange={(v) => updateField('pages', v)} type="number" placeholder="340" />
+            </div>
+            <div className="grid gap-5 sm:grid-cols-2">
+              <Field label="Saga / serie de libros" value={form.saga} onChange={(v) => updateField('saga', v)} placeholder="El Señor de los Anillos" />
+              <Field label="Número en la saga" value={form.saga_order} onChange={(v) => updateField('saga_order', v)} type="number" placeholder="1" />
+            </div>
+          </>
+        )}
+
         <div className="grid gap-5 sm:grid-cols-2">
           <Field label="TMDb ID" value={form.tmdb_id} onChange={(v) => updateField('tmdb_id', v)} type="number" />
           <Field label="Google Books ID" value={form.google_books_id} onChange={(v) => updateField('google_books_id', v)} />
@@ -378,20 +416,12 @@ export default function NuevaObraPage() {
           <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-4 text-sm text-amber-900">
             <p className="font-semibold">Esta obra ya está en Spoilering.</p>
             <div className="mt-3 flex flex-wrap gap-2">
-              <a
-                href={`/ficha/${duplicateSlug}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="rounded-lg bg-ink px-4 py-2 text-xs font-semibold text-paper transition hover:bg-ember"
-              >
+              <a href={`/ficha/${duplicateSlug}`} target="_blank" rel="noopener noreferrer"
+                className="rounded-lg bg-ink px-4 py-2 text-xs font-semibold text-paper transition hover:bg-ember">
                 Ver la ficha →
               </a>
-              <a
-                href={`/ficha/${duplicateSlug}#sugerir`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="rounded-lg border border-ink/20 px-4 py-2 text-xs font-semibold text-ink transition hover:border-ink/40 hover:bg-ink/5"
-              >
+              <a href={`/ficha/${duplicateSlug}#sugerir`} target="_blank" rel="noopener noreferrer"
+                className="rounded-lg border border-ink/20 px-4 py-2 text-xs font-semibold text-ink transition hover:border-ink/40 hover:bg-ink/5">
                 Sugerir una corrección
               </a>
             </div>

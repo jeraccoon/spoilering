@@ -37,6 +37,7 @@ export async function POST(request: NextRequest) {
       type, title, original_title, year, poster_url, overview,
       genres, authors, directors, seasons_count,
       tmdb_id, google_books_id,
+      isbn, publisher, pages, saga, saga_order,
     } = body
 
     console.log('[create-work] paso 3: body recibido — title:', title, 'type:', type)
@@ -66,6 +67,11 @@ export async function POST(request: NextRequest) {
       slug,
       tmdb_id: tmdb_id ?? null,
       google_books_id: google_books_id ?? null,
+      isbn: isbn ?? null,
+      publisher: publisher ?? null,
+      pages: pages ?? null,
+      saga: saga ?? null,
+      saga_order: saga_order ?? null,
     }
 
     console.log('[create-work] paso 4: insertando work...')
