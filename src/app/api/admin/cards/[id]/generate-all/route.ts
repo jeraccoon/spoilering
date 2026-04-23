@@ -56,7 +56,7 @@ ${sections.map((s) => `  "${s.id}": "contenido completo de la sección ${s.label
       'content-type': 'application/json',
     },
     body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-sonnet-4-6',
       max_tokens: 4096,
       messages: [{ role: 'user', content: prompt }],
     }),

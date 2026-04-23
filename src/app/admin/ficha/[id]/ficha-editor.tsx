@@ -136,6 +136,7 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
   })
   const [saving, setSaving] = useState<string | null>(null)
   const [generatingAll, setGeneratingAll] = useState(false)
+  const [generateError, setGenerateError] = useState<string | null>(null)
   const [statusLoading, setStatusLoading] = useState(false)
   const [modal, setModal] = useState<{ parentId: string | null; parentLabel?: string } | null>(null)
 
@@ -163,22 +164,30 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
     const rootSections = card.sections.map((s) => ({ id: s.id, label: s.label, order_index: s.order_index }))
     if (rootSections.length === 0) return
     setGeneratingAll(true)
-    const res = await fetch(`/api/admin/cards/${card.id}/generate-all`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        workTitle: card.work.title,
-        workType: card.work.type,
-        workYear: card.work.year,
-        workOverview: (card.work as any).overview ?? null,
-        sections: rootSections,
-      }),
-    })
-    const data = await res.json()
-    if (data.generated) {
-      setEditContent((prev) => ({ ...prev, ...data.generated }))
+    setGenerateError(null)
+    try {
+      const res = await fetch(`/api/admin/cards/${card.id}/generate-all`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          workTitle: card.work.title,
+          workType: card.work.type,
+          workYear: card.work.year,
+          workOverview: (card.work as any).overview ?? null,
+          sections: rootSections,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setGenerateError(data.error ?? 'Error desconocido al generar')
+      } else if (data.generated) {
+        setEditContent((prev) => ({ ...prev, ...data.generated }))
+      }
+    } catch (err) {
+      setGenerateError(err instanceof Error ? err.message : 'Error de red')
+    } finally {
+      setGeneratingAll(false)
     }
-    setGeneratingAll(false)
   }
 
   async function toggleStatus() {
@@ -249,6 +258,9 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
               {generatingAll ? '⏳ Generando…' : '✨ Generar todo con IA'}
             </button>
           </div>
+          {generateError && (
+            <p className="mt-1 text-xs text-ember">{generateError}</p>
+          )}
         </div>
         <button
           onClick={() => router.push('/admin')}
