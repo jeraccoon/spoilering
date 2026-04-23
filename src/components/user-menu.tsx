@@ -20,10 +20,16 @@ export function UserMenu({ username }: Props) {
 
   return (
     <div className="flex items-center gap-3">
-      <span className="text-sm font-medium text-zinc-600">@{username}</span>
+      <span className="hidden text-sm font-medium text-ink/50 sm:block">@{username}</span>
+      <Link
+        href="/perfil"
+        className="text-sm font-semibold text-ink/70 transition hover:text-ember"
+      >
+        Mi perfil
+      </Link>
       <button
         onClick={handleSignOut}
-        className="rounded-lg border border-zinc-300 px-3 py-1.5 text-sm font-semibold text-zinc-700 transition hover:border-zinc-400 hover:text-ink"
+        className="rounded-lg border border-ink/20 px-3 py-1.5 text-sm font-semibold text-ink/70 transition hover:border-ink/40 hover:text-ink"
       >
         Cerrar sesión
       </button>
