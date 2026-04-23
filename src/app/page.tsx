@@ -21,8 +21,23 @@ async function getRecentCards(): Promise<CardWithWork[]> {
   return (data ?? []) as CardWithWork[]
 }
 
+async function isAdmin(): Promise<boolean> {
+  try {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return false
+    const { data: profile } = await (supabase.from('profiles') as any)
+      .select('role')
+      .eq('id', user.id)
+      .single()
+    return profile?.role === 'admin'
+  } catch {
+    return false
+  }
+}
+
 export default async function HomePage() {
-  const cards = await getRecentCards()
+  const [cards, admin] = await Promise.all([getRecentCards(), isAdmin()])
   return (
     <div>
       <section className="border-b border-ink/10 px-4 py-16 text-center">
@@ -38,12 +53,14 @@ export default async function HomePage() {
           >
             Buscar una obra
           </Link>
-          <Link
-            href="/crear"
-            className="rounded-lg border border-ink/20 px-5 py-2.5 text-sm font-semibold text-ink transition hover:border-ink/40 hover:bg-ink/5"
-          >
-            Crear una ficha
-          </Link>
+          {admin && (
+            <Link
+              href="/admin/nueva-obra"
+              className="rounded-lg border border-ink/20 px-5 py-2.5 text-sm font-semibold text-ink transition hover:border-ink/40 hover:bg-ink/5"
+            >
+              Crear una ficha
+            </Link>
+          )}
         </div>
       </section>
 

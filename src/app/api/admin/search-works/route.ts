@@ -22,7 +22,22 @@ export async function GET(request: NextRequest) {
   const wantTmdb = !type || type === 'movie' || type === 'series'
   const wantBooks = !type || type === 'book'
 
-  const [tmdbRes, booksRes] = await Promise.allSettled([
+  // Construir query para Google Books: soporta "autor:nombre" para búsqueda por autor
+  function buildBooksQuery(raw: string): string {
+    if (raw.toLowerCase().includes('autor:')) {
+      const [titlePart, authorPart] = raw.toLowerCase().split('autor:')
+      const parts: string[] = []
+      if (titlePart.trim()) parts.push(`intitle:${titlePart.trim()}`)
+      if (authorPart.trim()) parts.push(`inauthor:${authorPart.trim()}`)
+      return parts.join('+')
+    }
+    return raw
+  }
+
+  const booksQuery = buildBooksQuery(q)
+  const booksBase = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(booksQuery)}&maxResults=6&printType=books&orderBy=relevance${booksKey ? `&key=${booksKey}` : ''}`
+
+  const [tmdbRes, booksEsRes, booksAllRes] = await Promise.allSettled([
     wantTmdb && tmdbKey
       ? fetch(
           `https://api.themoviedb.org/3/search/multi?api_key=${tmdbKey}&query=${encodeURIComponent(q)}&language=es-ES&page=1`,
@@ -30,10 +45,10 @@ export async function GET(request: NextRequest) {
         )
       : Promise.resolve(null),
     wantBooks
-      ? fetch(
-          `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(q)}&maxResults=6&langRestrict=es${booksKey ? `&key=${booksKey}` : ''}`,
-          { next: { revalidate: 60 } }
-        )
+      ? fetch(`${booksBase}&langRestrict=es`, { next: { revalidate: 60 } })
+      : Promise.resolve(null),
+    wantBooks
+      ? fetch(booksBase, { next: { revalidate: 60 } })
       : Promise.resolve(null),
   ])
 
@@ -75,32 +90,39 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  if (booksRes.status === 'fulfilled' && booksRes.value) {
-    const json = await booksRes.value.json()
-    for (const item of json.items ?? []) {
-      const info = item.volumeInfo ?? {}
-      const year = info.publishedDate
-        ? parseInt(info.publishedDate.substring(0, 4))
-        : null
-      const poster_url =
-        info.imageLinks?.thumbnail?.replace('http://', 'https://') ?? null
+  const seenBookIds = new Set<string>()
+  function mapBookItem(item: any) {
+    if (seenBookIds.has(item.id)) return
+    seenBookIds.add(item.id)
+    const info = item.volumeInfo ?? {}
+    const rawDate: string = info.publishedDate ?? ''
+    const yearNum = rawDate ? parseInt(rawDate.match(/^\d{4}/)?.[0] ?? '') : NaN
+    const year = isNaN(yearNum) ? null : yearNum
+    const poster_url = info.imageLinks?.thumbnail?.replace('http://', 'https://') ?? null
+    results.push({
+      id: `book-${item.id}`,
+      type: 'book',
+      title: info.title ?? 'Sin título',
+      original_title: null,
+      year,
+      poster_url,
+      overview: info.description ?? null,
+      genres: info.categories ?? [],
+      authors: info.authors ?? [],
+      directors: [],
+      seasons_count: null,
+      tmdb_id: null,
+      google_books_id: item.id,
+    })
+  }
 
-      results.push({
-        id: `book-${item.id}`,
-        type: 'book',
-        title: info.title ?? 'Sin título',
-        original_title: null,
-        year: isNaN(year as number) ? null : year,
-        poster_url,
-        overview: info.description ?? null,
-        genres: info.categories ?? [],
-        authors: info.authors ?? [],
-        directors: [],
-        seasons_count: null,
-        tmdb_id: null,
-        google_books_id: item.id,
-      })
-    }
+  if (booksEsRes.status === 'fulfilled' && booksEsRes.value) {
+    const json = await booksEsRes.value.json()
+    for (const item of json.items ?? []) mapBookItem(item)
+  }
+  if (booksAllRes.status === 'fulfilled' && booksAllRes.value) {
+    const json = await booksAllRes.value.json()
+    for (const item of json.items ?? []) mapBookItem(item)
   }
 
   return NextResponse.json(results.slice(0, 12))

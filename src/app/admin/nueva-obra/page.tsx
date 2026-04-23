@@ -3,6 +3,9 @@
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
+import { createClient } from '@/lib/supabase/client'
+
+const supabase = createClient()
 
 interface SearchResult {
   id: string
@@ -76,6 +79,8 @@ export default function NuevaObraPage() {
   const [form, setForm] = useState<FormState>(EMPTY_FORM)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [existingCard, setExistingCard] = useState<{ cardId: string } | null>(null)
+  const [checkingDuplicate, setCheckingDuplicate] = useState(false)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
@@ -99,10 +104,11 @@ export default function NuevaObraPage() {
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current) }
   }, [query, searchType])
 
-  function selectResult(result: SearchResult) {
+  async function selectResult(result: SearchResult) {
     setSelected(result)
     setResults([])
     setQuery('')
+    setExistingCard(null)
     setForm({
       type: result.type,
       title: result.title,
@@ -118,6 +124,28 @@ export default function NuevaObraPage() {
       tmdb_id: result.tmdb_id ? String(result.tmdb_id) : '',
       google_books_id: result.google_books_id ?? '',
     })
+
+    // Verificar si ya existe una obra con el mismo ID externo
+    const tmdbId = result.tmdb_id
+    const booksId = result.google_books_id
+    if (!tmdbId && !booksId) return
+
+    setCheckingDuplicate(true)
+    try {
+      let q = (supabase.from('works') as any)
+        .select('id, cards(id)')
+        .limit(1)
+
+      if (tmdbId) q = q.eq('tmdb_id', tmdbId)
+      else if (booksId) q = q.eq('google_books_id', booksId)
+
+      const { data } = await q.maybeSingle()
+      if (data?.cards?.length > 0) {
+        setExistingCard({ cardId: data.cards[0].id })
+      }
+    } finally {
+      setCheckingDuplicate(false)
+    }
   }
 
   function updateField(field: keyof FormState, value: string) {
@@ -199,16 +227,16 @@ export default function NuevaObraPage() {
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder={
-            searchType === 'book' ? 'Ej: El señor de los anillos, Dune…'
-            : searchType === 'series' ? 'Ej: Breaking Bad, The Wire…'
-            : searchType === 'movie' ? 'Ej: Inception, El padrino…'
-            : 'Ej: Breaking Bad, El señor de los anillos…'
-          }
+          placeholder="Busca por título, autor, director, actor..."
           className="w-full rounded-lg border border-ink/20 bg-paper px-4 py-3 text-sm text-ink placeholder-ink/30 outline-none transition focus:border-ember focus:ring-2 focus:ring-ember/20"
         />
+        <p className="mt-1.5 text-xs text-ink/40">
+          {searchType === 'book'
+            ? 'Puedes buscar por título o autor. Ejemplo: "autor:tolkien" para buscar por autor.'
+            : 'Puedes buscar por título, director o actor.'}
+        </p>
         {searching && (
-          <p className="mt-2 text-xs text-ink/40">Buscando…</p>
+          <p className="mt-1 text-xs text-ink/40">Buscando…</p>
         )}
 
         {/* Resultados del buscador */}
@@ -260,7 +288,7 @@ export default function NuevaObraPage() {
           </p>
           <button
             type="button"
-            onClick={() => { setSelected(null); setForm(EMPTY_FORM) }}
+            onClick={() => { setSelected(null); setForm(EMPTY_FORM); setExistingCard(null) }}
             className="ml-auto text-xs text-ink/40 hover:text-ink"
           >
             Limpiar
@@ -344,14 +372,30 @@ export default function NuevaObraPage() {
           </p>
         )}
 
+        {existingCard && (
+          <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+            <p className="font-semibold">Ya existe una ficha para esta obra.</p>
+            <a
+              href={`/admin/ficha/${existingCard.cardId}`}
+              className="mt-1 inline-block underline underline-offset-2 hover:text-amber-900"
+            >
+              Ir a editar la ficha existente →
+            </a>
+          </div>
+        )}
+
         <div className="flex items-center gap-3 pt-2">
-          <button
-            type="submit"
-            disabled={submitting || !form.title || !form.slug}
-            className="rounded-lg bg-ember px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-ember/90 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {submitting ? 'Creando…' : 'Crear obra y ficha'}
-          </button>
+          {checkingDuplicate ? (
+            <span className="text-sm text-ink/40">Verificando…</span>
+          ) : existingCard ? null : (
+            <button
+              type="submit"
+              disabled={submitting || !form.title || !form.slug}
+              className="rounded-lg bg-ember px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-ember/90 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {submitting ? 'Creando…' : 'Crear obra y ficha'}
+            </button>
+          )}
           <button
             type="button"
             onClick={() => router.back()}
