@@ -53,8 +53,9 @@ export function SuggestionModal({ sectionId, sectionLabel, originalContent }: Pr
     <>
       <button
         onClick={() => setOpen(true)}
-        className="mt-8 text-xs font-semibold text-ink/35 underline underline-offset-2 transition hover:text-ink/60"
+        className="mt-8 flex items-center gap-1.5 rounded border border-moss px-3 py-1.5 text-sm font-semibold text-moss transition-colors hover:bg-moss/10"
       >
+        <span>✏️</span>
         Sugerir corrección
       </button>
 
