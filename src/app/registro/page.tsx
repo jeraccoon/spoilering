@@ -1,38 +1,76 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
+const USERNAME_REGEX = /^[a-z0-9_]+$/
+
+type UsernameState = 'idle' | 'checking' | 'available' | 'taken' | 'invalid'
+
+function UsernameHint({ state }: { state: UsernameState }) {
+  if (state === 'checking') return <span className="text-ink/40">Comprobando…</span>
+  if (state === 'available') return <span className="font-semibold text-moss">✓ Disponible</span>
+  if (state === 'taken') return <span className="font-semibold text-ember">✗ Ya está en uso</span>
+  if (state === 'invalid') return <span className="text-ember">Mínimo 3, máximo 20. Solo letras minúsculas, números y guiones bajos.</span>
+  return <span className="text-ink/40">Solo letras, números y guiones bajos. Sin espacios.</span>
+}
+
 export default function RegistroPage() {
-  const router = useRouter()
-  const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
+  const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [usernameState, setUsernameState] = useState<UsernameState>('idle')
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    if (timerRef.current) clearTimeout(timerRef.current)
+
+    if (username.length === 0) {
+      setUsernameState('idle')
+      return
+    }
+
+    if (username.length < 3 || username.length > 20 || !USERNAME_REGEX.test(username)) {
+      setUsernameState('invalid')
+      return
+    }
+
+    setUsernameState('checking')
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/check-username?username=${encodeURIComponent(username)}`)
+        const data = await res.json()
+        setUsernameState(data.available ? 'available' : 'taken')
+      } catch {
+        setUsernameState('idle')
+      }
+    }, 500)
+    timerRef.current = timer
+
+    return () => clearTimeout(timer)
+  }, [username])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
-    setLoading(true)
 
-    if (username.length < 3) {
-      setError('El nombre de usuario debe tener al menos 3 caracteres.')
-      setLoading(false)
+    if (usernameState !== 'available') {
+      setError('Elige un nombre de usuario válido y disponible.')
       return
     }
 
     if (password.length < 6) {
       setError('La contraseña debe tener al menos 6 caracteres.')
-      setLoading(false)
       return
     }
 
+    setLoading(true)
     const supabase = createClient()
-    const { error } = await supabase.auth.signUp({
+    const { error: signUpError } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -41,11 +79,11 @@ export default function RegistroPage() {
       },
     })
 
-    if (error) {
+    if (signUpError) {
       setError(
-        error.message.includes('already registered')
+        signUpError.message.includes('already registered')
           ? 'Ya existe una cuenta con ese email.'
-          : error.message
+          : signUpError.message
       )
       setLoading(false)
       return
@@ -53,6 +91,12 @@ export default function RegistroPage() {
 
     setSuccess(true)
     setLoading(false)
+  }
+
+  const borderClass = (state: UsernameState) => {
+    if (state === 'available') return 'border-moss focus:border-moss focus:ring-moss/20'
+    if (state === 'taken' || state === 'invalid') return 'border-ember focus:border-ember focus:ring-ember/20'
+    return 'border-ink/20 focus:border-ember focus:ring-ember/20'
   }
 
   if (success) {
@@ -87,26 +131,7 @@ export default function RegistroPage() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="username" className="block text-sm font-semibold text-ink mb-1.5">
-              Nombre de usuario
-            </label>
-            <input
-              id="username"
-              type="text"
-              autoComplete="username"
-              required
-              value={username}
-              onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
-              className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2.5 text-sm text-ink placeholder-ink/30 outline-none transition focus:border-ember focus:ring-2 focus:ring-ember/20"
-              placeholder="tunombre"
-              minLength={3}
-              maxLength={30}
-            />
-            <p className="mt-1 text-[11px] text-ink/40">Solo letras minúsculas, números y guiones bajos.</p>
-          </div>
-
-          <div>
-            <label htmlFor="email" className="block text-sm font-semibold text-ink mb-1.5">
+            <label htmlFor="email" className="mb-1.5 block text-sm font-semibold text-ink">
               Email
             </label>
             <input
@@ -122,7 +147,27 @@ export default function RegistroPage() {
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-semibold text-ink mb-1.5">
+            <label htmlFor="username" className="mb-1.5 block text-sm font-semibold text-ink">
+              Nombre de usuario
+            </label>
+            <input
+              id="username"
+              type="text"
+              autoComplete="username"
+              required
+              value={username}
+              onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
+              className={`w-full rounded-lg border bg-paper px-3 py-2.5 text-sm text-ink placeholder-ink/30 outline-none transition focus:ring-2 ${borderClass(usernameState)}`}
+              placeholder="ej: juanperez"
+              maxLength={20}
+            />
+            <p className="mt-1 text-[11px]">
+              <UsernameHint state={usernameState} />
+            </p>
+          </div>
+
+          <div>
+            <label htmlFor="password" className="mb-1.5 block text-sm font-semibold text-ink">
               Contraseña
             </label>
             <input
@@ -146,7 +191,7 @@ export default function RegistroPage() {
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || usernameState !== 'available'}
             className="w-full rounded-lg bg-ember py-2.5 text-sm font-semibold text-white transition hover:bg-ember/90 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {loading ? 'Creando cuenta…' : 'Crear cuenta'}
