@@ -56,6 +56,7 @@ El git está en `C:\Proyectos\spoilering\spoilering\`. El `tsconfig.json` excluy
 - `PATCH /api/admin/users/[id]/status` — activa/desactiva usuario
 - `DELETE /api/admin/users/[id]` — elimina usuario
 - `GET /api/check-username?username=xxx` — comprueba disponibilidad de username
+- `GET /api/get-email-by-username?username=xxx` — obtiene email por username para login
 - `DELETE /api/account` — elimina la propia cuenta
 
 ## Tablas en Supabase
@@ -77,13 +78,15 @@ El git está en `C:\Proyectos\spoilering\spoilering\`. El `tsconfig.json` excluy
 - `rm -rf .next` ante errores de compilación extraños
 - El servidor dev arranca en puerto 3006+
 - El modelo de IA correcto es `claude-sonnet-4-6` — no cambiar nunca
-- El trigger `on_auth_user_created` llama a `handle_new_user()` que crea el perfil con el username elegido al registrarse
+- Los usernames NO llevan @ delante — se muestran sin prefijo
+- El login acepta email o username — si no contiene @ busca el email por username
 
 ## Estado actual (24 abril 2026)
 
 ### Funcionando correctamente
 - Autenticación completa con confirmación por email apuntando a www.spoilering.com
-- Registro con username elegido por el usuario + validación de disponibilidad en tiempo real
+- Login con email o nombre de usuario
+- Registro con username elegido + validación de disponibilidad en tiempo real
 - Recuperar contraseña, cambiar contraseña desde perfil, eliminar cuenta
 - Roles admin/editor/user con permisos diferenciados
 - Navbar con botón "+ Añadir obra" para todos los usuarios logueados
@@ -104,7 +107,7 @@ El git está en `C:\Proyectos\spoilering\spoilering\`. El `tsconfig.json` excluy
 
 ### Pendiente de resolver
 - Búsqueda por ISBN o enlace de Goodreads no funciona — pendiente de revisar
-- Ejecutar en Supabase las policies RLS para fichas de usuarios (si no se han ejecutado aún):
+- Ejecutar en Supabase las policies RLS para fichas de usuarios si no se han ejecutado:
   ```sql
   create policy "Usuarios autenticados pueden crear works"
     on works for insert to authenticated with check (true);

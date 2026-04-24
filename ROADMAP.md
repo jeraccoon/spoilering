@@ -13,11 +13,12 @@ Spoilering es una utilidad personal y colaborativa para gente que consume series
 - [x] Usuarios normales pueden crear fichas — límite 3, aprobación admin
 - [x] Perfil de usuario estilo admin
 - [x] Username elegido al registrarse con validación en tiempo real
+- [x] Login con email o nombre de usuario
 - [x] Recuperar contraseña, cambiar contraseña, eliminar cuenta
 - [x] Panel de gestión de usuarios (/admin/usuarios)
 
 ### Pendiente
-- [ ] **Búsqueda por ISBN o enlace de Goodreads** — implementado pero no funciona, pendiente revisar
+- [ ] **Búsqueda por ISBN o enlace de Goodreads** — implementado pero no funciona
 - [ ] **Gestión de temporadas y capítulos** — estructura series por temporada y episodio
 - [ ] **Corrección de fichas completa** — sugerir cambios en metadatos (director, año, póster, géneros)
 - [ ] **Borrar o regenerar ficha** — eliminar ficha o regenerar secciones con IA
