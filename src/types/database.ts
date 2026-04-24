@@ -26,8 +26,15 @@ export interface Work {
   genres: string[]
   authors: string[]
   directors: string[]
+  cast: string[] | null
   seasons_count: number | null
+  runtime: number | null
   overview: string | null
+  publisher: string | null
+  isbn: string | null
+  pages: number | null
+  saga: string | null
+  saga_order: number | null
   slug: string
   created_at: string
   updated_at: string

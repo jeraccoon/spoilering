@@ -63,6 +63,28 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 const TYPE_LABELS = { movie: 'Película', series: 'Serie', book: 'Libro' }
 
+function formatRuntime(minutes: number): string {
+  const h = Math.floor(minutes / 60)
+  const m = minutes % 60
+  if (h === 0) return `${m} min`
+  if (m === 0) return `${h}h`
+  return `${h}h ${m}min`
+}
+
+function ExternalLink({ href, label }: { href: string; label: string }) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="inline-flex items-center gap-1 rounded-md border border-ink/20 px-2.5 py-1 text-xs text-ink/60 transition hover:border-ember hover:text-ember"
+    >
+      {label}
+      <span aria-hidden className="text-[10px]">↗</span>
+    </a>
+  )
+}
+
 export default async function CardPage({ params }: Props) {
   const { slug } = await params
 
@@ -125,30 +147,25 @@ export default async function CardPage({ params }: Props) {
               <Image src={work.poster_url} alt={work.title} fill className="object-cover" priority />
             </div>
           )}
-          <div className="flex flex-col justify-end gap-2.5">
+          <div className="flex flex-col justify-end gap-3">
+            {/* Tipo + año + runtime/temporadas */}
             <div className="flex flex-wrap items-center gap-2 text-sm text-ink/50">
               <span>{TYPE_LABELS[work.type as keyof typeof TYPE_LABELS]}</span>
               {work.year && <><span>·</span><span>{work.year}</span></>}
+              {work.runtime && (
+                <><span>·</span><span>{formatRuntime(work.runtime)}</span></>
+              )}
               {work.seasons_count && (
                 <><span>·</span><span>{work.seasons_count} temporada{work.seasons_count !== 1 ? 's' : ''}</span></>
+              )}
+              {work.pages && (
+                <><span>·</span><span>{work.pages} páginas</span></>
               )}
             </div>
 
             <h1 className="text-3xl font-black tracking-tight text-ink sm:text-4xl">{work.title}</h1>
 
-            {work.directors && work.directors.length > 0 && (
-              <p className="text-sm text-ink/60">
-                <span className="font-semibold text-ink/70">Dirección:</span>{' '}
-                {work.directors.join(', ')}
-              </p>
-            )}
-            {work.authors && work.authors.length > 0 && (
-              <p className="text-sm text-ink/60">
-                <span className="font-semibold text-ink/70">Autor:</span>{' '}
-                {work.authors.join(', ')}
-              </p>
-            )}
-
+            {/* Géneros */}
             {work.genres && work.genres.length > 0 && (
               <div className="flex flex-wrap gap-1.5">
                 {work.genres.map((g) => (
@@ -162,13 +179,92 @@ export default async function CardPage({ params }: Props) {
               </div>
             )}
 
+            {/* Metadatos */}
+            <div className="flex flex-col gap-1">
+              {work.directors && work.directors.length > 0 && (
+                <p className="text-sm text-ink/60">
+                  <span className="font-medium text-ink/75">Dirección:</span>{' '}
+                  {work.directors.join(', ')}
+                </p>
+              )}
+              {work.authors && work.authors.length > 0 && (
+                <p className="text-sm text-ink/60">
+                  <span className="font-medium text-ink/75">Autor:</span>{' '}
+                  {work.authors.join(', ')}
+                </p>
+              )}
+              {work.cast && work.cast.length > 0 && (
+                <p className="text-sm text-ink/60">
+                  <span className="font-medium text-ink/75">Reparto:</span>{' '}
+                  {work.cast.slice(0, 5).join(', ')}
+                </p>
+              )}
+              {work.publisher && (
+                <p className="text-sm text-ink/60">
+                  <span className="font-medium text-ink/75">Editorial:</span>{' '}
+                  {work.publisher}
+                </p>
+              )}
+              {work.saga && (
+                <p className="text-sm text-ink/60">
+                  <span className="font-medium text-ink/75">Saga:</span>{' '}
+                  {work.saga_order != null ? `${work.saga} #${work.saga_order}` : work.saga}
+                </p>
+              )}
+              {work.isbn && (
+                <p className="text-sm text-ink/60">
+                  <span className="font-medium text-ink/75">ISBN:</span>{' '}
+                  {work.isbn}
+                </p>
+              )}
+            </div>
+
             {work.overview && (
               <p className="max-w-2xl text-sm leading-relaxed text-ink/60">{work.overview}</p>
             )}
 
+            {/* Badge spoilers */}
             <span className="w-fit rounded-full bg-ember/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-ember">
               ⚠ Contiene spoilers
             </span>
+
+            {/* Enlaces externos */}
+            {(work.type === 'movie' || work.type === 'series') && (
+              <div className="flex flex-wrap gap-2">
+                {work.tmdb_id && (
+                  <ExternalLink
+                    href={`https://www.themoviedb.org/${work.type === 'movie' ? 'movie' : 'tv'}/${work.tmdb_id}`}
+                    label="TMDb"
+                  />
+                )}
+                <ExternalLink
+                  href={`https://www.imdb.com/find?q=${encodeURIComponent(work.title)}`}
+                  label="IMDb"
+                />
+                <ExternalLink
+                  href={`https://www.filmaffinity.com/es/search.php?query=${encodeURIComponent(work.title)}`}
+                  label="Filmaffinity"
+                />
+              </div>
+            )}
+            {work.type === 'book' && (
+              <div className="flex flex-wrap gap-2">
+                {work.google_books_id && (
+                  <ExternalLink
+                    href={`https://books.google.com/books?id=${work.google_books_id}`}
+                    label="Google Books"
+                  />
+                )}
+                <ExternalLink
+                  href={`https://www.goodreads.com/search?q=${encodeURIComponent(work.title)}`}
+                  label="Goodreads"
+                />
+                <ExternalLink
+                  href={`https://openlibrary.org/search?q=${encodeURIComponent(work.title)}`}
+                  label="Open Library"
+                />
+              </div>
+            )}
           </div>
         </div>
       </section>
