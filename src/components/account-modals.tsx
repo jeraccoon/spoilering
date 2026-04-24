@@ -6,9 +6,10 @@ import { createClient } from '@/lib/supabase/client'
 
 interface Props {
   username: string
+  signOutButton: React.ReactNode
 }
 
-export function AccountModals({ username }: Props) {
+export function AccountModals({ username, signOutButton }: Props) {
   const router = useRouter()
   const [modal, setModal] = useState<'none' | 'password' | 'delete'>('none')
 
@@ -109,18 +110,32 @@ export function AccountModals({ username }: Props) {
 
   return (
     <>
-      <button
-        onClick={() => setModal('password')}
-        className="rounded-lg border border-ink/20 px-4 py-2 text-sm font-semibold text-ink/70 transition hover:border-ink/40 hover:bg-ink/5 hover:text-ink"
-      >
-        Cambiar contraseña
-      </button>
-      <button
-        onClick={() => setModal('delete')}
-        className="text-xs text-ink/30 underline underline-offset-2 hover:text-ember"
-      >
-        Eliminar cuenta
-      </button>
+      {/* Acciones principales */}
+      <div className="flex flex-wrap items-center gap-2">
+        <button
+          onClick={() => setModal('password')}
+          className="rounded-lg border border-ink/20 px-4 py-2 text-sm font-semibold text-ink/70 transition hover:border-ink/40 hover:bg-ink/5 hover:text-ink"
+        >
+          Cambiar contraseña
+        </button>
+        {signOutButton}
+      </div>
+
+      {/* Zona de peligro */}
+      <div className="mt-4 rounded-lg border border-red-200 bg-red-50/60 px-4 py-3">
+        <p className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-red-400">
+          Zona de peligro
+        </p>
+        <p className="mb-2 text-xs text-red-400/80">
+          Esta acción es irreversible y eliminará tu cuenta y todos tus datos.
+        </p>
+        <button
+          onClick={() => setModal('delete')}
+          className="text-xs text-red-400 underline underline-offset-2 transition hover:text-red-600"
+        >
+          Eliminar cuenta
+        </button>
+      </div>
 
       {/* Overlay */}
       {modal !== 'none' && (

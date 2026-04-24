@@ -415,21 +415,21 @@ export default async function PerfilPage() {
       {/* Mi cuenta */}
       <section>
         <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-ink/40">Mi cuenta</h2>
-        <div className="flex flex-wrap items-center gap-6 rounded-lg border border-ink/10 bg-paper px-6 py-5 shadow-sm">
-          <div className="flex size-14 flex-shrink-0 items-center justify-center rounded-full bg-ember text-2xl font-black text-paper">
-            {initial}
-          </div>
-          <div className="flex min-w-0 flex-col gap-1">
-            <p className="truncate font-semibold text-ink">{user.email}</p>
-            <p className="text-sm text-ink/50">Miembro desde {joinedAt}</p>
-            <span className={`mt-0.5 inline-block w-fit rounded-full px-2.5 py-0.5 text-xs font-semibold ${ROLE_COLORS[role as keyof typeof ROLE_COLORS] ?? ROLE_COLORS.user}`}>
-              {ROLE_LABELS[role as keyof typeof ROLE_LABELS] ?? role}
-            </span>
-          </div>
-          <div className="ml-auto flex flex-col items-end gap-2">
-            <div className="flex items-center gap-2">
-              <AccountModals username={username} />
-              <SignOutButton />
+        <div className="overflow-hidden rounded-lg border border-ink/10 bg-paper shadow-sm">
+          {/* Info + acciones */}
+          <div className="flex flex-wrap items-center gap-6 px-6 py-5">
+            <div className="flex size-14 flex-shrink-0 items-center justify-center rounded-full bg-ember text-2xl font-black text-paper">
+              {initial}
+            </div>
+            <div className="flex min-w-0 flex-col gap-1">
+              <p className="truncate font-semibold text-ink">{user.email}</p>
+              <p className="text-sm text-ink/50">Miembro desde {joinedAt}</p>
+              <span className={`mt-0.5 inline-block w-fit rounded-full px-2.5 py-0.5 text-xs font-semibold ${ROLE_COLORS[role as keyof typeof ROLE_COLORS] ?? ROLE_COLORS.user}`}>
+                {ROLE_LABELS[role as keyof typeof ROLE_LABELS] ?? role}
+              </span>
+            </div>
+            <div className="ml-auto">
+              <AccountModals username={username} signOutButton={<SignOutButton />} />
             </div>
           </div>
         </div>
