@@ -8,50 +8,53 @@ Spoilering es una utilidad personal y colaborativa para gente que consume series
 ## Fase 1 — Antes de la beta
 
 ### Obligatorio
-- [ ] **Textos legales** — Aviso legal, Política de privacidad, Política de cookies. Sin esto no se puede invitar a usuarios externos.
+- [x] **Textos legales** — Aviso legal, Política de privacidad, Política de cookies ✅
 
 ### Producto
-- [ ] **Mejorar libros** — Integrar Open Library como fuente alternativa a Google Books. Añadir campos específicos: ISBN, editorial, número de páginas, saga.
-- [ ] **Gestión de temporadas y capítulos** — Nueva estructura de datos para series: temporadas > episodios. Rediseñar secciones para series.
-- [ ] **Corrección de fichas completa** — El sistema de sugerencias actual solo permite cambiar el texto de una sección. Ampliar para poder sugerir cambios en director, año, póster, géneros y otros metadatos.
-- [ ] **Enlaces externos en fichas** — IMDb, Letterboxd, Goodreads, Netflix, etc. según el tipo de obra.
-- [ ] **Home mejorada** — Reescribir el copy para dejar claro el propósito (utilidad personal, sin valoraciones). Añadir opciones de visualización: grid (actual), lista compacta. Filtros por tipo (película/serie/libro).
-- [ ] **Diseño ficha pública** — Estilos de markdown más cuidados, texto justificado, mejor tipografía.
+- [x] **Mejorar libros** — Open Library integrado, campos ISBN, editorial, páginas, saga ✅
+- [ ] **Búsqueda por ISBN o enlace de Goodreads** — implementado pero no funciona, pendiente de revisar
+- [ ] **Gestión de temporadas y capítulos** — Nueva estructura para series: temporadas > episodios
+- [ ] **Corrección de fichas completa** — Sugerir cambios en metadatos: director, año, póster, géneros
+- [ ] **Borrar o regenerar ficha** — opción para que el creador o admin elimine una ficha o regenere secciones con IA
+- [ ] **Enlaces externos en fichas** — IMDb, Letterboxd, Goodreads, Netflix según el tipo de obra
+- [ ] **Home mejorada** — copy claro sobre el propósito, opciones de visualización grid/lista, filtros por tipo
+- [ ] **Diseño ficha pública** — markdown más cuidado, texto justificado, mejor tipografía
 
 ### Usuarios
-- [ ] **Panel de gestión de usuarios** — Interfaz estilo /admin para ver usuarios, cambiar roles, ver actividad, desactivar cuentas.
-- [ ] **Recuperar y cambiar contraseña** — Flujo de recuperación por email y cambio desde el perfil. Supabase ya lo soporta.
-- [ ] **Nombres de usuario con mayúsculas** — Mostrar con mayúsculas aunque se guarden en minúsculas internamente para evitar duplicados.
-- [ ] **Notas privadas** — Cada usuario puede añadir notas a cualquier ficha, solo visibles para él. Tabla `notes` con `user_id`, `card_id`, `content`. RLS estricto. Ejemplo de uso: "vi esto con María en 2019", "me quedé en el capítulo 4".
-- [ ] **FAQ** — Explicar qué es Spoilering, cómo funciona, quién puede contribuir, qué son los spoilers en este contexto.
-- [ ] **Sistema de incentivos** — Borradores básicos de IA con huecos evidentes. Badges de colaborador en el perfil. Sello visible "editado por humanos" vs "generado por IA".
+- [x] **Usuarios normales pueden crear fichas** — límite de 3, pendientes de aprobación admin ✅
+- [ ] **Perfil de usuario mejorado** — diseño similar al panel de /admin (PRÓXIMO PASO)
+- [ ] **Username elegido al registrarse** — pedir username en el registro con validación de duplicados
+- [ ] **Panel de gestión de usuarios** — ver usuarios, cambiar roles, ver actividad, desactivar cuentas
+- [ ] **Recuperar y cambiar contraseña** — flujo de recuperación por email y cambio desde el perfil
+- [ ] **Notas privadas** — cada usuario puede añadir notas a cualquier ficha, solo visibles para él. Tabla `notes` con user_id, card_id, content. RLS estricto.
+- [ ] **FAQ** — qué es Spoilering, cómo funciona, quién puede contribuir
+- [ ] **Sistema de incentivos** — badges de colaborador, sello "editado por humanos" vs "generado por IA"
 
 ---
 
 ## Fase 2 — Beta cerrada
-
-- [ ] Invitar a un grupo pequeño de usuarios de confianza
+- [ ] Invitar grupo pequeño de usuarios de confianza
 - [ ] Recoger feedback sobre bugs, UX y calidad del contenido
 - [ ] Iterar y corregir según prioridad de impacto
-- [ ] Evaluar si el flujo de creación y edición de fichas es intuitivo para usuarios nuevos
+- [ ] Evaluar si el flujo de creación y edición es intuitivo para usuarios nuevos
 
 ---
 
 ## Fase 3 — Post-beta
 
 ### Crecimiento y visibilidad
-- [ ] **SEO y sitemap automático** — Metadatos dinámicos por ficha, og:image, sitemap.xml para que Google indexe las fichas.
-- [ ] **Buscador público mejorado** — Filtros por tipo, género, año. Paginación.
-- [ ] **Idiomas** — Internacionalización con Next.js. Español + inglés de entrada.
-- [ ] **Alojamiento propio** — Evaluar migración desde Vercel cuando haya más tráfico o coste lo justifique.
-- [ ] **Monetización** — Suscripción premium (sin anuncios, funciones extra) o donaciones tipo Ko-fi.
+- [ ] **SEO y sitemap automático** — metadatos dinámicos, og:image, sitemap.xml
+- [ ] **Buscador público mejorado** — filtros por tipo, género, año. Paginación
+- [ ] **Idiomas** — i18n con Next.js, español + inglés
+- [ ] **Alojamiento propio** — evaluar migración desde Vercel cuando haya más tráfico
+- [ ] **Monetización** — suscripción premium o donaciones tipo Ko-fi
 
 ### Comunidad
-- [ ] **Sistema de revisiones con votación** — Fase 2 del sistema de sugerencias: sugerencias públicas, votos, aprobación automática al llegar a X votos.
-- [ ] **Favoritos** — Guardar fichas para leer después.
-- [ ] **Notificaciones** — Avisar cuando una sugerencia es aprobada o se publica una ficha de interés.
-- [ ] **Fichas relacionadas** — Basadas en géneros: "si te gustó X, quizás te interese Y".
-- [ ] **Comentarios** — Sistema ligero para que los usuarios debatan sobre las fichas.
+- [ ] **Sistema de revisiones con votación** — sugerencias públicas, votos, aprobación automática
+- [ ] **Favoritos** — guardar fichas para leer después
+- [ ] **Notificaciones** — avisar cuando una sugerencia es aprobada o se publica una ficha de interés
+- [ ] **Fichas relacionadas** — basadas en géneros
+- [ ] **Comentarios** — sistema ligero para debatir sobre las fichas
 
 ---
 
