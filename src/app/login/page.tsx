@@ -88,7 +88,13 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-ink/50">
+        <p className="mt-4 text-center text-sm text-ink/50">
+          <Link href="/recuperar-contrasena" className="text-ink/40 hover:text-ink hover:underline">
+            ¿Olvidaste tu contraseña?
+          </Link>
+        </p>
+
+        <p className="mt-3 text-center text-sm text-ink/50">
           ¿No tienes cuenta?{' '}
           <Link href="/registro" className="font-semibold text-ink underline hover:text-ember">
             Regístrate

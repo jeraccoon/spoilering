@@ -3,6 +3,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase/server'
 import { SignOutButton } from '@/components/sign-out-button'
+import { AccountModals } from '@/components/account-modals'
 import type { CardWithWork } from '@/types/database'
 
 const ROLE_LABELS = { admin: 'Administrador', editor: 'Editor', user: 'Usuario' }
@@ -313,8 +314,11 @@ export default async function PerfilPage() {
               {ROLE_LABELS[role as keyof typeof ROLE_LABELS] ?? role}
             </span>
           </div>
-          <div className="ml-auto">
-            <SignOutButton />
+          <div className="ml-auto flex flex-col items-end gap-2">
+            <div className="flex items-center gap-2">
+              <AccountModals username={username} />
+              <SignOutButton />
+            </div>
           </div>
         </div>
       </section>
