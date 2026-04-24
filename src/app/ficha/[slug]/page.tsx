@@ -2,16 +2,14 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import type { Metadata } from 'next'
-import ReactMarkdown from 'react-markdown'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { SuggestionModal } from '@/components/suggestion-modal'
-import { SpoilerGate } from '@/components/spoiler-gate'
+import { CardContent } from '@/components/card-content'
 import type { CardFull } from '@/types/database'
 
 interface Props {
   params: Promise<{ slug: string }>
-  searchParams: Promise<{ seccion?: string }>
+  searchParams: Promise<Record<string, string>>
 }
 
 async function getCard(slug: string): Promise<CardFull | null> {
@@ -65,9 +63,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 const TYPE_LABELS = { movie: 'Película', series: 'Serie', book: 'Libro' }
 
-export default async function CardPage({ params, searchParams }: Props) {
+export default async function CardPage({ params }: Props) {
   const { slug } = await params
-  const { seccion } = await searchParams
 
   const [card, { role, isLoggedIn }] = await Promise.all([getCard(slug), getAuthInfo()])
   if (!card) notFound()
@@ -91,13 +88,12 @@ export default async function CardPage({ params, searchParams }: Props) {
   }
 
   const { work, sections } = card
-  const activeSection = sections.find((s) => s.id === seccion) ?? sections[0]
 
   return (
     <div>
       {card.is_complete === false && card.status === 'published' && (
         <div className="border-b border-amber-200 bg-amber-50 px-4 py-3">
-          <div className="mx-auto flex max-w-5xl items-center justify-between gap-4">
+          <div className="mx-auto max-w-5xl">
             <p className="text-sm text-amber-800">
               ⚠️ Esta ficha está incompleta. ¿La conoces? Ayúdanos a completarla usando el botón &quot;Sugerir corrección&quot; en cada sección.
             </p>
@@ -122,106 +118,62 @@ export default async function CardPage({ params, searchParams }: Props) {
       )}
 
       {/* Cabecera de la obra */}
-      <section className="border-b border-ink/10">
-        <div className="mx-auto flex max-w-5xl gap-6 px-4 py-8">
+      <section className="border-b border-ink/10 bg-paper">
+        <div className="mx-auto flex max-w-5xl gap-6 px-4 py-8 sm:gap-8">
           {work.poster_url && (
-            <div className="relative hidden h-48 w-32 shrink-0 overflow-hidden rounded-lg border border-ink/10 sm:block">
+            <div className="relative hidden h-64 w-44 shrink-0 overflow-hidden rounded-lg border border-ink/10 shadow-md sm:block">
               <Image src={work.poster_url} alt={work.title} fill className="object-cover" priority />
             </div>
           )}
-          <div className="flex flex-col justify-end gap-2">
-            <div className="flex items-center gap-2 text-sm text-ink/50">
+          <div className="flex flex-col justify-end gap-2.5">
+            <div className="flex flex-wrap items-center gap-2 text-sm text-ink/50">
               <span>{TYPE_LABELS[work.type as keyof typeof TYPE_LABELS]}</span>
               {work.year && <><span>·</span><span>{work.year}</span></>}
+              {work.seasons_count && (
+                <><span>·</span><span>{work.seasons_count} temporada{work.seasons_count !== 1 ? 's' : ''}</span></>
+              )}
             </div>
-            <h1 className="text-3xl font-black tracking-tight text-ink">{work.title}</h1>
-            {work.overview && (
-              <p className="mt-1 max-w-2xl text-sm leading-relaxed text-ink/60">{work.overview}</p>
+
+            <h1 className="text-3xl font-black tracking-tight text-ink sm:text-4xl">{work.title}</h1>
+
+            {work.directors && work.directors.length > 0 && (
+              <p className="text-sm text-ink/60">
+                <span className="font-semibold text-ink/70">Dirección:</span>{' '}
+                {work.directors.join(', ')}
+              </p>
             )}
-            <span className="mt-2 w-fit rounded-full bg-ember/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-ember">
+            {work.authors && work.authors.length > 0 && (
+              <p className="text-sm text-ink/60">
+                <span className="font-semibold text-ink/70">Autor:</span>{' '}
+                {work.authors.join(', ')}
+              </p>
+            )}
+
+            {work.genres && work.genres.length > 0 && (
+              <div className="flex flex-wrap gap-1.5">
+                {work.genres.map((g) => (
+                  <span
+                    key={g}
+                    className="rounded-full bg-moss/10 px-2.5 py-0.5 text-xs font-medium text-moss"
+                  >
+                    {g}
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {work.overview && (
+              <p className="max-w-2xl text-sm leading-relaxed text-ink/60">{work.overview}</p>
+            )}
+
+            <span className="w-fit rounded-full bg-ember/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-ember">
               ⚠ Contiene spoilers
             </span>
           </div>
         </div>
       </section>
 
-      {/* Contenido */}
-      <SpoilerGate slug={slug}>
-      <div className="mx-auto flex max-w-5xl gap-8 px-4 py-8">
-
-        {/* Navegación lateral */}
-        <aside className="hidden w-56 shrink-0 sm:block">
-          <div className="sticky top-6">
-            <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-ink/40">Contenido</p>
-            <nav className="space-y-0.5">
-              {sections.map((section) => (
-                <a
-                  key={section.id}
-                  href={`/ficha/${slug}?seccion=${section.id}`}
-                  className={`block rounded-lg px-2.5 py-1.5 text-sm transition-colors ${
-                    activeSection?.id === section.id
-                      ? 'bg-ember/10 font-semibold text-ember'
-                      : 'text-ink/60 hover:bg-ink/5 hover:text-ink'
-                  }`}
-                >
-                  {section.short_label ?? section.label}
-                </a>
-              ))}
-            </nav>
-          </div>
-        </aside>
-
-        {/* Artículo */}
-        <div className="min-w-0 flex-1">
-          {activeSection ? (
-            <article>
-              <h2 className="mb-6 text-xl font-black text-ink">{activeSection.label}</h2>
-              {activeSection.content ? (
-                <ReactMarkdown
-                  components={{
-                    p: ({ children }) => (
-                      <p className="mb-4 text-justify leading-relaxed text-ink/80">{children}</p>
-                    ),
-                    h2: ({ children }) => (
-                      <h2 className="mb-3 mt-6 text-lg font-black text-ink">{children}</h2>
-                    ),
-                    h3: ({ children }) => (
-                      <h3 className="mb-2 mt-5 text-base font-black text-ink">{children}</h3>
-                    ),
-                    ul: ({ children }) => (
-                      <ul className="mb-4 space-y-1 pl-5 text-ink/80 [list-style:disc]">{children}</ul>
-                    ),
-                    ol: ({ children }) => (
-                      <ol className="mb-4 space-y-1 pl-5 text-ink/80 [list-style:decimal]">{children}</ol>
-                    ),
-                    li: ({ children }) => (
-                      <li className="text-justify leading-relaxed">{children}</li>
-                    ),
-                    strong: ({ children }) => (
-                      <strong className="font-semibold text-ink">{children}</strong>
-                    ),
-                  }}
-                >
-                  {activeSection.content}
-                </ReactMarkdown>
-              ) : (
-                <p className="text-ink/30">Esta sección todavía no tiene contenido.</p>
-              )}
-
-              {isLoggedIn && (
-                <SuggestionModal
-                  sectionId={activeSection.id}
-                  sectionLabel={activeSection.label}
-                  originalContent={activeSection.content ?? ''}
-                />
-              )}
-            </article>
-          ) : (
-            <p className="text-ink/30">Esta ficha todavía no tiene contenido.</p>
-          )}
-        </div>
-      </div>
-      </SpoilerGate>
+      <CardContent sections={sections} isLoggedIn={isLoggedIn} slug={slug} />
     </div>
   )
 }
