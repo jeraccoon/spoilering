@@ -5,89 +5,106 @@ Spoilering es una web colaborativa de resúmenes con spoilers de series, pelícu
 
 ## Stack tecnológico
 - Next.js 15 con App Router y TypeScript
-- Tailwind CSS para estilos — paleta personalizada: `ink` (#18181b), `paper` (#fbfaf7), `ember` (#d84f2a), `moss` (#52715a), `plum` (#6d4f72)
-- Supabase como backend completo (base de datos PostgreSQL, autenticación, RLS)
+- Tailwind CSS — paleta: `ink` (#18181b), `paper` (#fbfaf7), `ember` (#d84f2a), `moss` (#52715a), `plum` (#6d4f72)
+- Supabase como backend completo (PostgreSQL, autenticación, RLS)
 - Vercel para deploy
-- TMDb API para datos de películas y series
+- TMDb API para películas y series
 - Google Books API + Open Library para libros
 - Anthropic API (claude-sonnet-4-6) para generación de contenido
 
 ## Estructura del repositorio
-El repo tiene dos niveles — el git está en `C:\Proyectos\spoilering\spoilering\`, no en el padre. El `tsconfig.json` excluye el directorio `"spoilering"` para evitar que el padre compile el proyecto hijo.
+El git está en `C:\Proyectos\spoilering\spoilering\`. El `tsconfig.json` excluye el directorio `"spoilering"` para evitar que el padre compile el proyecto hijo.
 
-## Decisiones de arquitectura tomadas
-- Se eliminó Prisma — Supabase sustituye toda la capa de base de datos
-- Tipos de Supabase simplificados en `src/types/database.ts`; se usa `(supabase.from('tabla') as any)` para evitar errores de tipo `never`
-- Las fichas son documentos colectivos (no hay versiones por usuario)
+## Decisiones de arquitectura
+- Sin Prisma — Supabase sustituye toda la capa de base de datos
+- Se usa `(supabase.from('tabla') as any)` para evitar errores de tipo `never`
 - Middleware en `src/middleware.ts` — protege /admin por rol
-- Autenticación SSR con `@supabase/ssr` y propagación de cookies en redirects del middleware
+- Autenticación SSR con `@supabase/ssr`
 - El modelo de IA es `claude-sonnet-4-6` — NO usar claude-sonnet-4-20250514, no existe
+- El cliente admin de Supabase está en `src/lib/supabase/admin.ts` con `import 'server-only'` y usa `SUPABASE_SERVICE_ROLE_KEY`
+
+## Roles de usuario
+- **user** — hasta 3 fichas (pendientes de aprobación), sugerir correcciones, gestionar perfil
+- **editor** — fichas ilimitadas, publicación directa, editar cualquier ficha, aprobar sugerencias, acceso parcial al admin
+- **admin** — acceso completo: gestión de usuarios, aprobar/rechazar fichas, todo lo del editor
 
 ## Rutas principales
 - `/` — home con grid de fichas publicadas
-- `/ficha/[slug]` — página pública de ficha con navegación lateral por secciones
-- `/buscar` — búsqueda pública de obras
-- `/perfil` — perfil del usuario logueado con sus fichas y sugerencias
-- `/nueva-obra` — ruta pública que redirige a /admin/nueva-obra para todos los roles
+- `/ficha/[slug]` — ficha pública con advertencia de spoilers
+- `/buscar` — búsqueda pública
+- `/perfil` — mini panel del usuario (fichas, sugerencias, cuenta)
+- `/nueva-obra` — redirect a /admin/nueva-obra para todos los roles
 - `/login`, `/registro`, `/auth/callback` — autenticación
-- `/admin` — panel de administración (protegido por middleware)
-- `/admin/nueva-obra` — crear obra buscando en TMDb/Google Books/Open Library o manualmente
-- `/admin/ficha/[id]` — editor de fichas con secciones
-- `/admin/sugerencias` — revisión de sugerencias de corrección pendientes
+- `/recuperar-contrasena`, `/nueva-contrasena` — flujo de recuperación
 - `/aviso-legal`, `/privacidad`, `/cookies` — textos legales
+- `/admin` — panel de administración
+- `/admin/nueva-obra` — crear obra
+- `/admin/ficha/[id]` — editor de fichas
+- `/admin/sugerencias` — revisión de sugerencias
+- `/admin/usuarios` — gestión de usuarios (solo admin)
 
 ## APIs internas
-- `POST /api/admin/create-work` — crea work + card + 4 secciones. Limita a 3 fichas para rol 'user'
-- `GET /api/admin/search-works?q=` — busca en TMDb, Google Books y Open Library simultáneamente
-- `POST /api/admin/sections` — crea sección
-- `PUT /api/admin/sections/[id]` — actualiza contenido de sección
-- `POST /api/admin/sections/[id]/generate` — genera contenido de una sección con Claude
-- `POST /api/admin/cards/[id]/generate-all` — genera las secciones en paralelo
+- `POST /api/admin/create-work` — crea work + card + secciones. Límite 3 fichas para rol 'user'
+- `GET /api/admin/search-works?q=` — busca en TMDb, Google Books y Open Library
+- `POST /api/admin/sections/[id]/generate` — genera sección con Claude
+- `POST /api/admin/cards/[id]/generate-all` — genera todas las secciones en paralelo
 - `PATCH /api/admin/cards/[id]/status` — cambia estado draft/published
-- `DELETE /api/admin/cards/[id]` — elimina card y sus secciones
-- `POST /api/suggestions` — crea una sugerencia de corrección
+- `DELETE /api/admin/cards/[id]` — elimina card y secciones
+- `POST /api/suggestions` — crea sugerencia de corrección
+- `GET /api/admin/users` — lista usuarios (requiere service role)
+- `PATCH /api/admin/users/[id]/role` — cambia rol
+- `PATCH /api/admin/users/[id]/status` — activa/desactiva usuario
+- `DELETE /api/admin/users/[id]` — elimina usuario
+- `GET /api/check-username?username=xxx` — comprueba disponibilidad de username
+- `DELETE /api/account` — elimina la propia cuenta
 
 ## Tablas en Supabase
-- `works` — obras. Unique constraint en tmdb_id y google_books_id. Columnas extra para libros: isbn, publisher, pages, saga, saga_order
+- `works` — obras. Unique en tmdb_id y google_books_id. Extra para libros: isbn, publisher, pages, saga, saga_order
 - `cards` — fichas (status: draft/published, is_complete: boolean, created_by: uuid)
-- `sections` — secciones de cada ficha (contenido en markdown)
-- `profiles` — perfil de usuario con rol (admin/editor/user), username único
-- `suggestions` — sugerencias de corrección (status: pending/approved/rejected, user_id: uuid)
+- `sections` — secciones en markdown
+- `profiles` — usuario con rol (admin/editor/user), username único, is_active boolean
+- `suggestions` — correcciones (status: pending/approved/rejected, user_id: uuid)
+
+## Variables de entorno necesarias (Vercel)
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY` — sin NEXT_PUBLIC, solo servidor
+- `ANTHROPIC_API_KEY`
+- `TMDB_API_KEY`
+- `GOOGLE_BOOKS_API_KEY`
 
 ## Patrones importantes
-- `rm -rf .next` al cambiar dependencias o ante errores de compilación extraños
-- El servidor dev suele arrancar en puerto 3006+ porque el 3000 está ocupado
-- El modelo de IA correcto es `claude-sonnet-4-6` — no cambiar esto nunca
-- El trigger `on_auth_user_created` llama a `handle_new_user()` que crea el perfil automáticamente con username único (añade número si hay duplicado)
+- `rm -rf .next` ante errores de compilación extraños
+- El servidor dev arranca en puerto 3006+
+- El modelo de IA correcto es `claude-sonnet-4-6` — no cambiar nunca
+- El trigger `on_auth_user_created` llama a `handle_new_user()` que crea el perfil con el username elegido al registrarse
 
-## Estado actual (23 abril 2026)
+## Estado actual (24 abril 2026)
 
 ### Funcionando correctamente
-- Supabase conectado con todas las tablas y RLS configurado
-- Autenticación completa: registro, login, logout, confirmación por email apuntando a www.spoilering.com
-- Trigger de creación de perfil con username único automático
-- Roles: admin, editor, user — middleware protege /admin
+- Autenticación completa con confirmación por email apuntando a www.spoilering.com
+- Registro con username elegido por el usuario + validación de disponibilidad en tiempo real
+- Recuperar contraseña, cambiar contraseña desde perfil, eliminar cuenta
+- Roles admin/editor/user con permisos diferenciados
 - Navbar con botón "+ Añadir obra" para todos los usuarios logueados
 - Home con grid de fichas publicadas
-- Panel de admin con estadísticas, fichas en borrador, fichas pendientes de revisión de usuarios, sugerencias
-- Búsqueda en TMDb, Google Books y Open Library con deduplicación por título+autor
-- Campos específicos para libros: ISBN, editorial, páginas, saga, número en saga
+- Panel de admin completo: estadísticas, fichas, sugerencias, fichas pendientes de usuarios
+- Gestión de usuarios en /admin/usuarios: cambiar rol, activar/desactivar, eliminar
+- Búsqueda en TMDb, Google Books y Open Library con deduplicación
+- Campos específicos para libros: ISBN, editorial, páginas, saga
 - Creación de obras: slug automático, toggle URL/subir imagen para póster
-- Usuarios normales pueden crear hasta 3 fichas (quedan en borrador pendientes de aprobación)
-- Admin puede aprobar o rechazar fichas de usuarios desde el panel
+- Usuarios normales pueden crear hasta 3 fichas pendientes de aprobación
 - Generación de secciones en paralelo con indicador de progreso
 - Prompts con SECTION_GUIDES: 500-900 palabras, subtítulos markdown
-- Página pública de ficha visible sin login, con advertencia de spoilers
-- Fichas en borrador visibles para admin/editor con banner
-- Perfil de usuario: avatar, datos, contador X/3 fichas, lista de fichas con estado, sección de sugerencias
-- Sistema de sugerencias: botón en ficha, modal, panel admin con comparación y textarea editable
-- Textos legales: /aviso-legal, /privacidad, /cookies con footer en todas las páginas
+- Página pública de ficha visible sin login con advertencia de spoilers
+- Perfil de usuario estilo admin: stats, fichas, sugerencias, cuenta
+- Sistema de sugerencias end-to-end
+- Textos legales + footer en todas las páginas
 - Deploy en producción en www.spoilering.com
 
 ### Pendiente de resolver
 - Búsqueda por ISBN o enlace de Goodreads no funciona — pendiente de revisar
-- Perfil de usuario: mejorar diseño para que se parezca más al panel de /admin
-- Ejecutar en Supabase las policies RLS para fichas de usuarios:
+- Ejecutar en Supabase las policies RLS para fichas de usuarios (si no se han ejecutado aún):
   ```sql
   create policy "Usuarios autenticados pueden crear works"
     on works for insert to authenticated with check (true);
