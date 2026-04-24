@@ -229,21 +229,11 @@ export default async function CardPage({ params }: Props) {
             </span>
 
             {/* Enlaces externos */}
-            {(work.type === 'movie' || work.type === 'series') && (
+            {(work.type === 'movie' || work.type === 'series') && work.tmdb_id && (
               <div className="flex flex-wrap gap-2">
-                {work.tmdb_id && (
-                  <ExternalLink
-                    href={`https://www.themoviedb.org/${work.type === 'movie' ? 'movie' : 'tv'}/${work.tmdb_id}`}
-                    label="TMDb"
-                  />
-                )}
                 <ExternalLink
-                  href={`https://www.imdb.com/find?q=${encodeURIComponent(work.title)}`}
-                  label="IMDb"
-                />
-                <ExternalLink
-                  href={`https://www.filmaffinity.com/es/search.php?query=${encodeURIComponent(work.title)}`}
-                  label="Filmaffinity"
+                  href={`https://www.themoviedb.org/${work.type === 'movie' ? 'movie' : 'tv'}/${work.tmdb_id}`}
+                  label="TMDb"
                 />
               </div>
             )}
