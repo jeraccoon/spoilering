@@ -5,15 +5,17 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { SpoilerGate } from '@/components/spoiler-gate'
 import { SuggestionModal } from '@/components/suggestion-modal'
+import { NoteWidget } from '@/components/note-widget'
 import type { SectionWithChildren } from '@/types/database'
 
 interface Props {
   sections: SectionWithChildren[]
   isLoggedIn: boolean
   slug: string
+  cardId: string
 }
 
-export function CardContent({ sections, isLoggedIn, slug }: Props) {
+export function CardContent({ sections, isLoggedIn, slug, cardId }: Props) {
   const [activeId, setActiveId] = useState<string>(sections[0]?.id ?? '')
 
   const activeSection = sections.find((s) => s.id === activeId) ?? sections[0]
@@ -121,6 +123,8 @@ export function CardContent({ sections, isLoggedIn, slug }: Props) {
           ) : (
             <p className="text-ink/30">Esta ficha todavía no tiene contenido.</p>
           )}
+
+          {isLoggedIn && <NoteWidget cardId={cardId} />}
         </div>
       </div>
     </SpoilerGate>

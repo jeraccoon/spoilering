@@ -81,7 +81,7 @@ export default async function PerfilPage() {
     .eq('id', user.id)
     .single()
 
-  const [{ data: cards }, { data: suggestions }] = await Promise.all([
+  const [{ data: cards }, { data: suggestions }, { data: notes }] = await Promise.all([
     (supabase.from('cards') as any)
       .select('*, work:works(*)')
       .eq('created_by', user.id)
@@ -91,6 +91,10 @@ export default async function PerfilPage() {
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
       .limit(20),
+    (supabase.from('notes') as any)
+      .select('id, content, updated_at, card:cards(work:works(title, slug))')
+      .eq('user_id', user.id)
+      .order('updated_at', { ascending: false }),
   ])
 
   const role: string = profile?.role ?? 'user'
@@ -100,6 +104,7 @@ export default async function PerfilPage() {
   const initial = username[0].toUpperCase()
   const cardList: CardWithWork[] = cards ?? []
   const suggestionList: any[] = suggestions ?? []
+  const noteList: any[] = notes ?? []
   const atLimit = isUser && cardList.length >= USER_CARD_LIMIT
 
   const publishedCount = cardList.filter((c) => c.status === 'published').length
@@ -296,6 +301,42 @@ export default async function PerfilPage() {
                 })}
               </tbody>
             </table>
+          </div>
+        )}
+      </section>
+
+      {/* Mis notas */}
+      <section className="mb-10">
+        <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-ink/40">Mis notas</h2>
+        {noteList.length === 0 ? (
+          <div className="rounded-lg border border-ink/10 bg-ink/5 px-6 py-10 text-center text-sm text-ink/40">
+            Todavía no has añadido ninguna nota.{' '}
+            <Link href="/buscar" className="font-semibold text-ember hover:underline">
+              Explorar fichas →
+            </Link>
+          </div>
+        ) : (
+          <div className="flex flex-col divide-y divide-ink/10 overflow-hidden rounded-lg border border-ink/10">
+            {noteList.map((n: any) => {
+              const work = n.card?.work
+              return (
+                <div key={n.id} className="flex flex-col gap-1 bg-paper px-4 py-3 transition hover:bg-ink/5">
+                  <div className="flex items-center justify-between gap-4">
+                    <p className="font-semibold text-ink">
+                      {work ? (
+                        <Link href={`/ficha/${work.slug}`} className="hover:text-ember hover:underline">
+                          {work.title}
+                        </Link>
+                      ) : (
+                        <span className="text-ink/40">—</span>
+                      )}
+                    </p>
+                    <span className="shrink-0 text-xs text-ink/40">{formatDate(n.updated_at)}</span>
+                  </div>
+                  <p className="line-clamp-2 text-sm leading-relaxed text-ink/50">{n.content}</p>
+                </div>
+              )
+            })}
           </div>
         )}
       </section>

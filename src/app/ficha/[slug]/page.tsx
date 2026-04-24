@@ -259,7 +259,7 @@ export default async function CardPage({ params }: Props) {
         </div>
       </section>
 
-      <CardContent sections={sections} isLoggedIn={isLoggedIn} slug={slug} />
+      <CardContent sections={sections} isLoggedIn={isLoggedIn} slug={slug} cardId={card.id} />
     </div>
   )
 }
