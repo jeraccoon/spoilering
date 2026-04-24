@@ -84,12 +84,20 @@ export default async function AdminPage() {
             Bienvenido, <span className="font-semibold text-ink">@{username}</span>
           </p>
         </div>
-        <Link
-          href="/admin/nueva-obra"
-          className="rounded-lg bg-ember px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-ember/90"
-        >
-          + Nueva obra
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link
+            href="/admin/usuarios"
+            className="rounded-lg border border-ink/20 px-5 py-2.5 text-sm font-semibold text-ink/70 transition hover:border-ink/40 hover:bg-ink/5 hover:text-ink"
+          >
+            Usuarios
+          </Link>
+          <Link
+            href="/admin/nueva-obra"
+            className="rounded-lg bg-ember px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-ember/90"
+          >
+            + Nueva obra
+          </Link>
+        </div>
       </div>
 
       {/* Estadísticas */}
