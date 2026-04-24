@@ -26,6 +26,41 @@ const SUGGESTION_STATUS: Record<string, { label: string; className: string }> = 
 
 const USER_CARD_LIMIT = 3
 
+const COLOR_STYLES = {
+  plum:  { card: 'bg-plum/10 border-plum/20 hover:bg-plum/15',  icon: 'text-plum',  text: 'text-plum' },
+  moss:  { card: 'bg-moss/10 border-moss/20 hover:bg-moss/15',  icon: 'text-moss',  text: 'text-moss' },
+  ember: { card: 'bg-ember/10 border-ember/20 hover:bg-ember/15', icon: 'text-ember', text: 'text-ember' },
+}
+
+function QuickLink({
+  href, icon, label, color, disabled = false,
+}: {
+  href: string
+  icon: string
+  label: string
+  color: keyof typeof COLOR_STYLES
+  disabled?: boolean
+}) {
+  const styles = COLOR_STYLES[color]
+  if (disabled) {
+    return (
+      <span className={`inline-flex cursor-not-allowed items-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-medium opacity-40 ${styles.card} ${styles.text}`}>
+        <span aria-hidden>{icon}</span>
+        {label}
+      </span>
+    )
+  }
+  return (
+    <Link
+      href={href}
+      className={`inline-flex items-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-medium transition ${styles.card} ${styles.text}`}
+    >
+      <span aria-hidden>{icon}</span>
+      {label}
+    </Link>
+  )
+}
+
 function StatCard({
   value,
   label,
@@ -165,6 +200,42 @@ export default async function PerfilPage() {
             Has alcanzado el límite de {USER_CARD_LIMIT} fichas. Contacta con nosotros para ampliar tu acceso.
           </p>
         )}
+      </section>
+
+      {/* Accesos rápidos */}
+      <section className="mb-10">
+        <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-ink/40">Accesos rápidos</h2>
+        <div className="flex flex-wrap gap-3">
+          {role === 'admin' && (
+            <>
+              <QuickLink href="/admin" icon="⚙️" label="Panel de administración" color="plum" />
+              <QuickLink href="/admin/usuarios" icon="👥" label="Gestión de usuarios" color="plum" />
+              <QuickLink href="/admin/sugerencias" icon="✏️" label="Sugerencias pendientes" color="plum" />
+              <QuickLink href="/admin" icon="📋" label="Fichas pendientes" color="plum" />
+              <QuickLink href="/admin/nueva-obra" icon="➕" label="Nueva obra" color="plum" />
+            </>
+          )}
+          {role === 'editor' && (
+            <>
+              <QuickLink href="/admin" icon="⚙️" label="Panel de administración" color="moss" />
+              <QuickLink href="/admin/sugerencias" icon="✏️" label="Sugerencias pendientes" color="moss" />
+              <QuickLink href="/admin/nueva-obra" icon="➕" label="Nueva obra" color="moss" />
+            </>
+          )}
+          {role === 'user' && (
+            <>
+              <QuickLink
+                href={atLimit ? '#' : '/nueva-obra'}
+                icon="➕"
+                label={`Añadir una obra (${USER_CARD_LIMIT - cardList.length} de ${USER_CARD_LIMIT} disponibles)`}
+                color="ember"
+                disabled={atLimit}
+              />
+              <QuickLink href="/buscar" icon="🔍" label="Explorar fichas" color="ember" />
+              <QuickLink href="/faq" icon="❓" label="Ver el FAQ" color="ember" />
+            </>
+          )}
+        </div>
       </section>
 
       {/* Mis fichas */}
