@@ -7,7 +7,7 @@ import { createClient } from '@/lib/supabase/client'
 
 export default function LoginPage() {
   const router = useRouter()
-  const [email, setEmail] = useState('')
+  const [identifier, setIdentifier] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
@@ -17,13 +17,28 @@ export default function LoginPage() {
     setError(null)
     setLoading(true)
 
-    const supabase = createClient()
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    let email = identifier.trim()
 
-    if (error) {
-      setError(error.message === 'Invalid login credentials'
-        ? 'Email o contraseña incorrectos.'
-        : error.message)
+    if (!email.includes('@')) {
+      const res = await fetch(`/api/get-email-by-username?username=${encodeURIComponent(email)}`)
+      if (!res.ok) {
+        setError('Usuario no encontrado.')
+        setLoading(false)
+        return
+      }
+      const data = await res.json()
+      email = data.email
+    }
+
+    const supabase = createClient()
+    const { error: signInError } = await supabase.auth.signInWithPassword({ email, password })
+
+    if (signInError) {
+      setError(
+        signInError.message === 'Invalid login credentials'
+          ? 'Email o contraseña incorrectos.'
+          : signInError.message
+      )
       setLoading(false)
       return
     }
@@ -42,23 +57,23 @@ export default function LoginPage() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="email" className="block text-sm font-semibold text-ink mb-1.5">
-              Email
+            <label htmlFor="identifier" className="mb-1.5 block text-sm font-semibold text-ink">
+              Email o nombre de usuario
             </label>
             <input
-              id="email"
-              type="email"
-              autoComplete="email"
+              id="identifier"
+              type="text"
+              autoComplete="username"
               required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={identifier}
+              onChange={(e) => setIdentifier(e.target.value)}
               className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2.5 text-sm text-ink placeholder-ink/30 outline-none transition focus:border-ember focus:ring-2 focus:ring-ember/20"
-              placeholder="tu@email.com"
+              placeholder="tu@email.com o tunombre"
             />
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-semibold text-ink mb-1.5">
+            <label htmlFor="password" className="mb-1.5 block text-sm font-semibold text-ink">
               Contraseña
             </label>
             <input

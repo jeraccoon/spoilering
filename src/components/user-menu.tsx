@@ -20,7 +20,7 @@ export function UserMenu({ username }: Props) {
 
   return (
     <div className="flex items-center gap-3">
-      <span className="hidden text-sm font-medium text-ink/50 sm:block">@{username}</span>
+      <span className="hidden text-sm font-medium text-ink/50 sm:block">{username}</span>
       <Link
         href="/perfil"
         className="text-sm font-semibold text-ink/70 transition hover:text-ember"

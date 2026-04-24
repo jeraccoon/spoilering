@@ -81,7 +81,7 @@ export default async function AdminPage() {
         <div>
           <h1 className="text-3xl font-black tracking-tight text-ink">Panel de administración</h1>
           <p className="mt-1 text-sm text-ink/50">
-            Bienvenido, <span className="font-semibold text-ink">@{username}</span>
+            Bienvenido, <span className="font-semibold text-ink">{username}</span>
           </p>
         </div>
         <div className="flex items-center gap-3">

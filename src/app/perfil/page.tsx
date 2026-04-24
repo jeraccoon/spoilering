@@ -117,7 +117,7 @@ export default async function PerfilPage() {
         <div>
           <h1 className="text-3xl font-black tracking-tight text-ink">Mi perfil</h1>
           <p className="mt-1 text-sm text-ink/50">
-            Bienvenido, <span className="font-semibold text-ink">@{username}</span>
+            Bienvenido, <span className="font-semibold text-ink">{username}</span>
           </p>
         </div>
         {atLimit ? (

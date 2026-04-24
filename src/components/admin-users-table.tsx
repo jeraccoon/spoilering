@@ -174,7 +174,7 @@ export function AdminUsersTable({
                         <Avatar name={u.username ?? u.email} />
                         <div className="min-w-0">
                           <p className="truncate font-semibold text-ink">
-                            {u.username ? `@${u.username}` : <span className="text-ink/40 italic">sin username</span>}
+                            {u.username ?? <span className="text-ink/40 italic">sin username</span>}
                             {isSelf && <span className="ml-1.5 text-[10px] font-normal text-ink/30">(tú)</span>}
                           </p>
                           <p className="truncate text-xs text-ink/40">{u.email}</p>
@@ -261,7 +261,7 @@ export function AdminUsersTable({
             <p className="mb-5 text-sm text-ink/60">
               ¿Eliminar a{' '}
               <span className="font-semibold text-ink">
-                {deleteTarget.username ? `@${deleteTarget.username}` : deleteTarget.email}
+                {deleteTarget.username ?? deleteTarget.email}
               </span>
               ? Esta acción es irreversible.
             </p>

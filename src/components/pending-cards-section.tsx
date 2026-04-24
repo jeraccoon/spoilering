@@ -82,7 +82,7 @@ export function PendingCardsSection({ initialCards }: { initialCards: PendingCar
                 {TYPE_LABELS[card.work?.type ?? ''] ?? '—'}
               </td>
               <td className="px-4 py-3 text-ink/60">
-                @{card.creator?.username ?? '—'}
+                {card.creator?.username ?? '—'}
               </td>
               <td className="px-4 py-3 text-ink/50">
                 {card.created_at ? formatDate(card.created_at) : '—'}
