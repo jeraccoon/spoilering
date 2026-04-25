@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { useRouter } from 'next/navigation'
 
 const TYPE_LABELS = { movie: 'Película', series: 'Serie', book: 'Libro' }
 const TYPE_COLORS = {
@@ -72,7 +71,6 @@ export function PerfilCardsSection({
   addHref: string
   suggestionCount: number
 }) {
-  const router = useRouter()
   const [cards, setCards] = useState<Card[]>(initialCards)
   const [activeFilter, setActiveFilter] = useState<FilterKey>('all')
   const [deleting, setDeleting] = useState<string | null>(null)
@@ -96,10 +94,7 @@ export function PerfilCardsSection({
     setDeleting(cardId)
     try {
       const res = await fetch(`/api/admin/cards/${cardId}`, { method: 'DELETE' })
-      if (res.ok) {
-        setCards((prev) => prev.filter((c) => c.id !== cardId))
-        router.refresh()
-      }
+      if (res.ok) setCards((prev) => prev.filter((c) => c.id !== cardId))
     } finally {
       setDeleting(null)
     }

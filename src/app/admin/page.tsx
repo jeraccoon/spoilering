@@ -77,22 +77,9 @@ async function getAdminData() {
   }
 }
 
-const TYPE_LABELS: Record<string, string> = {
-  movie: 'Película',
-  series: 'Serie',
-  book: 'Libro',
-}
-
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString('es-ES', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  })
-}
 
 export default async function AdminPage() {
-  const { stats, draftCards, pendingCards, orphanWorks, inactiveDrafts, username } = await getAdminData()
+  const { stats, allCards, pendingCards, orphanWorks, inactiveDrafts, username } = await getAdminData()
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
@@ -121,19 +108,8 @@ export default async function AdminPage() {
         </div>
       </div>
 
-      {/* Estadísticas */}
-      <section className="mb-10">
-        <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-ink/40">Resumen</h2>
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-          <StatCard value={stats.works}      label="Obras totales" />
-          <StatCard value={stats.published}  label="Fichas publicadas" accent="text-moss" />
-          <StatCard value={stats.drafts}     label="En borrador"       accent="text-ember" />
-          <StatCard value={stats.users}      label="Usuarios" />
-          {stats.incomplete > 0 && (
-            <StatCard value={stats.incomplete} label="Fichas incompletas" accent="text-amber-600" />
-          )}
-        </div>
-      </section>
+      {/* Estadísticas + fichas filtrables */}
+      <AdminCardsFilter allCards={allCards} stats={stats} />
 
       {/* Fichas pendientes de revisión (enviadas por usuarios) */}
       <section className="mb-10">
@@ -142,14 +118,6 @@ export default async function AdminPage() {
         </h2>
         <p className="mb-4 text-xs text-ink/40">Enviadas por usuarios registrados, esperando aprobación.</p>
         <PendingCardsSection initialCards={pendingCards} />
-      </section>
-
-      {/* Fichas en borrador (admin / editor) */}
-      <section className="mb-10">
-        <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-ink/40">
-          Fichas en borrador
-        </h2>
-        <DraftCardsSection initialCards={draftCards} />
       </section>
 
       {/* Borradores inactivos */}
@@ -227,19 +195,3 @@ export default async function AdminPage() {
   )
 }
 
-function StatCard({
-  value,
-  label,
-  accent = 'text-ink',
-}: {
-  value: number
-  label: string
-  accent?: string
-}) {
-  return (
-    <div className="rounded-lg border border-ink/10 bg-paper px-5 py-5 shadow-sm">
-      <p className={`text-4xl font-black tabular-nums ${accent}`}>{value}</p>
-      <p className="mt-1.5 text-sm text-ink/50">{label}</p>
-    </div>
-  )
-}

@@ -1,10 +1,9 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import Image from 'next/image'
 import { createClient } from '@/lib/supabase/server'
 import { SignOutButton } from '@/components/sign-out-button'
 import { AccountModals } from '@/components/account-modals'
-import { DeleteCardButton } from '@/components/delete-card-button'
+import { PerfilCardsSection } from '@/components/perfil-cards-section'
 import type { CardWithWork } from '@/types/database'
 
 const ROLE_LABELS = { admin: 'Administrador', editor: 'Editor', user: 'Usuario' }
@@ -12,12 +11,6 @@ const ROLE_COLORS = {
   admin: 'bg-ember/10 text-ember',
   editor: 'bg-moss/10 text-moss',
   user: 'bg-ink/10 text-ink/60',
-}
-const TYPE_LABELS = { movie: 'Película', series: 'Serie', book: 'Libro' }
-const TYPE_COLORS = {
-  movie: 'bg-blue-600 text-white',
-  series: 'bg-purple-600 text-white',
-  book: 'bg-amber-600 text-white',
 }
 const SUGGESTION_STATUS: Record<string, { label: string; className: string }> = {
   pending:  { label: 'Pendiente',  className: 'bg-amber-100 text-amber-700' },
@@ -36,75 +29,25 @@ const COLOR_STYLES = {
 function QuickLink({
   href, icon, label, color, disabled = false,
 }: {
-  href: string
-  icon: string
-  label: string
-  color: keyof typeof COLOR_STYLES
-  disabled?: boolean
+  href: string; icon: string; label: string; color: keyof typeof COLOR_STYLES; disabled?: boolean
 }) {
   const styles = COLOR_STYLES[color]
   if (disabled) {
     return (
       <span className={`inline-flex cursor-not-allowed items-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-medium opacity-40 ${styles.card} ${styles.text}`}>
-        <span aria-hidden>{icon}</span>
-        {label}
+        <span aria-hidden>{icon}</span>{label}
       </span>
     )
   }
   return (
-    <Link
-      href={href}
-      className={`inline-flex items-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-medium transition ${styles.card} ${styles.text}`}
-    >
-      <span aria-hidden>{icon}</span>
-      {label}
+    <Link href={href} className={`inline-flex items-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-medium transition ${styles.card} ${styles.text}`}>
+      <span aria-hidden>{icon}</span>{label}
     </Link>
   )
 }
 
-function StatCard({
-  value,
-  label,
-  accent = 'text-ink',
-}: {
-  value: number | string
-  label: string
-  accent?: string
-}) {
-  return (
-    <div className="rounded-lg border border-ink/10 bg-paper px-5 py-5 shadow-sm">
-      <p className={`text-4xl font-black tabular-nums ${accent}`}>{value}</p>
-      <p className="mt-1.5 text-sm text-ink/50">{label}</p>
-    </div>
-  )
-}
-
-function CardStatusBadge({ status, isUser }: { status: string; isUser: boolean }) {
-  if (status === 'published') {
-    return (
-      <span className="rounded px-2 py-0.5 text-[11px] font-semibold bg-moss/10 text-moss">
-        Publicada
-      </span>
-    )
-  }
-  if (isUser) {
-    return (
-      <span className="rounded px-2 py-0.5 text-[11px] font-semibold bg-amber-100 text-amber-700">
-        Pendiente de revisión
-      </span>
-    )
-  }
-  return (
-    <span className="rounded px-2 py-0.5 text-[11px] font-semibold bg-ink/10 text-ink/50">
-      Borrador
-    </span>
-  )
-}
-
 function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString('es-ES', {
-    day: 'numeric', month: 'short', year: 'numeric',
-  })
+  return new Date(iso).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })
 }
 
 export default async function PerfilPage() {
@@ -142,9 +85,6 @@ export default async function PerfilPage() {
   const suggestionList: any[] = suggestions ?? []
   const noteList: any[] = notes ?? []
   const atLimit = isUser && cardList.length >= USER_CARD_LIMIT
-
-  const publishedCount = cardList.filter((c) => c.status === 'published').length
-  const pendingCount = cardList.filter((c) => c.status !== 'published').length
   const joinedAt = new Date(profile?.created_at ?? user.created_at).toLocaleDateString('es-ES', {
     year: 'numeric', month: 'long', day: 'numeric',
   })
@@ -175,33 +115,15 @@ export default async function PerfilPage() {
         )}
       </div>
 
-      {/* Resumen */}
-      <section className="mb-10">
-        <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-ink/40">Resumen</h2>
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-          <StatCard
-            value={isUser ? `${cardList.length}/${USER_CARD_LIMIT}` : cardList.length}
-            label="Fichas creadas"
-            accent={isUser && atLimit ? 'text-ember' : 'text-ink'}
-          />
-          <StatCard
-            value={publishedCount}
-            label="Publicadas"
-            accent={publishedCount > 0 ? 'text-moss' : 'text-ink'}
-          />
-          <StatCard
-            value={pendingCount}
-            label={isUser ? 'Pendientes de revisión' : 'En borrador'}
-            accent={pendingCount > 0 ? 'text-amber-600' : 'text-ink'}
-          />
-          <StatCard value={suggestionList.length} label="Sugerencias enviadas" />
-        </div>
-        {isUser && atLimit && (
-          <p className="mt-3 text-sm text-ember">
-            Has alcanzado el límite de {USER_CARD_LIMIT} fichas. Contacta con nosotros para ampliar tu acceso.
-          </p>
-        )}
-      </section>
+      {/* Resumen + Mis fichas (con filtro interactivo) */}
+      <PerfilCardsSection
+        initialCards={cardList as any[]}
+        role={role}
+        isUser={isUser}
+        isPrivileged={isPrivileged}
+        addHref={addHref}
+        suggestionCount={suggestionList.length}
+      />
 
       {/* Accesos rápidos */}
       <section className="mb-10">
@@ -239,88 +161,6 @@ export default async function PerfilPage() {
         </div>
       </section>
 
-      {/* Mis fichas */}
-      <section className="mb-10">
-        <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-ink/40">Mis fichas</h2>
-        {cardList.length === 0 ? (
-          <div className="rounded-lg border border-ink/10 bg-ink/5 px-6 py-10 text-center text-sm text-ink/40">
-            Todavía no has creado ninguna ficha.{' '}
-            <Link href={addHref} className="font-semibold text-ember hover:underline">
-              Añadir una obra →
-            </Link>
-          </div>
-        ) : (
-          <div className="overflow-hidden rounded-lg border border-ink/10">
-            <table className="w-full text-sm">
-              <thead className="border-b border-ink/10 bg-ink/5 text-xs text-ink/50">
-                <tr>
-                  <th className="px-4 py-3 text-left font-semibold">Obra</th>
-                  <th className="px-4 py-3 text-left font-semibold hidden sm:table-cell">Tipo</th>
-                  <th className="px-4 py-3 text-left font-semibold hidden md:table-cell">Actualizada</th>
-                  <th className="px-4 py-3 text-left font-semibold">Estado</th>
-                  <th className="px-4 py-3 text-right font-semibold">Acciones</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-ink/10">
-                {cardList.map((card) => (
-                  <tr key={card.id} className="transition hover:bg-ink/5">
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-3">
-                        <div className="relative size-8 flex-shrink-0 overflow-hidden rounded">
-                          {card.work.poster_url ? (
-                            <Image
-                              src={card.work.poster_url}
-                              alt={card.work.title}
-                              fill
-                              sizes="32px"
-                              className="object-cover"
-                            />
-                          ) : (
-                            <div className="flex h-full items-center justify-center bg-ink/5 text-sm">📖</div>
-                          )}
-                        </div>
-                        <span className="font-semibold text-ink">{card.work.title}</span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 hidden sm:table-cell">
-                      <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${TYPE_COLORS[card.work.type as keyof typeof TYPE_COLORS]}`}>
-                        {TYPE_LABELS[card.work.type as keyof typeof TYPE_LABELS]}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-ink/50 hidden md:table-cell">
-                      {formatDate(card.updated_at)}
-                    </td>
-                    <td className="px-4 py-3">
-                      <CardStatusBadge status={card.status} isUser={isUser} />
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <div className="flex items-center justify-end gap-3">
-                        {card.status === 'published' && (
-                          <Link
-                            href={`/ficha/${card.work.slug}`}
-                            className="text-xs font-semibold text-ink/50 underline underline-offset-2 hover:text-ink"
-                          >
-                            Ver
-                          </Link>
-                        )}
-                        {isPrivileged && (
-                          <Link
-                            href={`/admin/ficha/${card.id}`}
-                            className="text-xs font-semibold text-ink/50 underline underline-offset-2 hover:text-ink"
-                          >
-                            Editar
-                          </Link>
-                        )}
-                        <DeleteCardButton cardId={card.id} />
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </section>
 
       {/* Mis sugerencias */}
       <section className="mb-10">
