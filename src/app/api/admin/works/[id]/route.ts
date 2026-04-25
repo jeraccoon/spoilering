@@ -2,6 +2,43 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id: workId } = await params
+  const supabase = await createClient()
+
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return NextResponse.json({ error: 'No autenticado' }, { status: 401 })
+
+  const { data: profile } = await (supabase.from('profiles') as any)
+    .select('role').eq('id', user.id).single()
+  const role: string = profile?.role ?? 'user'
+  if (!['editor', 'admin'].includes(role)) {
+    return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
+  }
+
+  const body = await request.json()
+  const allowed = ['cast', 'runtime', 'imdb_id', 'letterboxd_url', 'goodreads_url', 'netflix_url']
+  const update: Record<string, unknown> = {}
+  for (const key of allowed) {
+    if (key in body) update[key] = body[key]
+  }
+  if (Object.keys(update).length === 0) {
+    return NextResponse.json({ error: 'Sin campos a actualizar' }, { status: 400 })
+  }
+
+  const admin = createAdminClient()
+  const { error } = await (admin.from('works') as any).update(update).eq('id', workId)
+  if (error) {
+    console.error('[PATCH work]', workId, error)
+    return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+
+  return NextResponse.json({ ok: true })
+}
+
 export async function DELETE(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }

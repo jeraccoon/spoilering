@@ -67,6 +67,39 @@ export async function POST(request: NextRequest) {
     const slug = await findUniqueSlug(supabase, title)
     console.log('[create-work] paso 3b OK — slug:', slug)
 
+    // Enriquecimiento TMDb: cast, runtime, imdb_id
+    let enrichedCast: string[] = []
+    let enrichedRuntime: number | null = null
+    let enrichedImdbId: string | null = null
+
+    if (tmdb_id && (type === 'movie' || type === 'series')) {
+      const tmdbKey = process.env.TMDB_API_KEY
+      if (tmdbKey) {
+        const endpoint = type === 'movie' ? 'movie' : 'tv'
+        const [detailsRes, creditsRes, externalRes] = await Promise.allSettled([
+          type === 'movie'
+            ? fetch(`https://api.themoviedb.org/3/movie/${tmdb_id}?api_key=${tmdbKey}&language=es-ES`)
+            : Promise.resolve(null),
+          fetch(`https://api.themoviedb.org/3/${endpoint}/${tmdb_id}/credits?api_key=${tmdbKey}&language=es-ES`),
+          type === 'movie'
+            ? fetch(`https://api.themoviedb.org/3/movie/${tmdb_id}/external_ids?api_key=${tmdbKey}`)
+            : Promise.resolve(null),
+        ])
+        if (detailsRes.status === 'fulfilled' && detailsRes.value?.ok) {
+          const d = await detailsRes.value.json()
+          if (d.runtime) enrichedRuntime = d.runtime
+        }
+        if (creditsRes.status === 'fulfilled' && creditsRes.value?.ok) {
+          const d = await creditsRes.value.json()
+          enrichedCast = ((d.cast ?? []) as { name: string }[]).slice(0, 5).map((c) => c.name)
+        }
+        if (externalRes.status === 'fulfilled' && externalRes.value?.ok) {
+          const d = await externalRes.value.json()
+          if (d.imdb_id) enrichedImdbId = d.imdb_id
+        }
+      }
+    }
+
     const genres_arr: string[] = genres ?? []
     const is_complete = Boolean(poster_url && overview && genres_arr.length > 0)
 
@@ -80,10 +113,13 @@ export async function POST(request: NextRequest) {
       genres: genres_arr,
       authors: authors ?? [],
       directors: directors ?? [],
+      cast: enrichedCast.length > 0 ? enrichedCast : [],
       seasons_count: seasons_count ? parseInt(seasons_count) : null,
+      runtime: enrichedRuntime,
       slug,
       tmdb_id: tmdb_id ?? null,
       google_books_id: google_books_id ?? null,
+      imdb_id: enrichedImdbId,
       isbn: isbn ?? null,
       publisher: publisher ?? null,
       pages: pages ?? null,

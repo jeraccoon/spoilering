@@ -23,6 +23,12 @@ interface Work {
   type: string
   year: number | null
   poster_url: string | null
+  cast: string[] | null
+  runtime: number | null
+  imdb_id: string | null
+  letterboxd_url: string | null
+  goodreads_url: string | null
+  netflix_url: string | null
 }
 
 interface Card {
@@ -144,6 +150,18 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
   const [statusLoading, setStatusLoading] = useState(false)
   const [modal, setModal] = useState<{ parentId: string | null; parentLabel?: string } | null>(null)
 
+  const [meta, setMeta] = useState({
+    cast: (initialCard.work.cast ?? []).join(', '),
+    runtime: initialCard.work.runtime?.toString() ?? '',
+    imdb_id: initialCard.work.imdb_id ?? '',
+    letterboxd_url: initialCard.work.letterboxd_url ?? '',
+    goodreads_url: initialCard.work.goodreads_url ?? '',
+    netflix_url: initialCard.work.netflix_url ?? '',
+  })
+  const [savingMeta, setSavingMeta] = useState(false)
+  const [savedMeta, setSavedMeta] = useState(false)
+  const [metaError, setMetaError] = useState<string | null>(null)
+
   const allSections: Section[] = []
   function flatten(sections: Section[]) {
     for (const s of sections) { allSections.push(s); flatten(s.children) }
@@ -226,6 +244,38 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
     })
     if (res.ok) setCard((c) => ({ ...c, status: next }))
     setStatusLoading(false)
+  }
+
+  async function saveMeta() {
+    setSavingMeta(true)
+    setSavedMeta(false)
+    setMetaError(null)
+    try {
+      const castArr = meta.cast.split(',').map((s) => s.trim()).filter(Boolean)
+      const res = await fetch(`/api/admin/works/${card.work.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          cast: castArr,
+          runtime: meta.runtime ? parseInt(meta.runtime) : null,
+          imdb_id: meta.imdb_id.trim() || null,
+          letterboxd_url: meta.letterboxd_url.trim() || null,
+          goodreads_url: meta.goodreads_url.trim() || null,
+          netflix_url: meta.netflix_url.trim() || null,
+        }),
+      })
+      if (!res.ok) {
+        const d = await res.json()
+        setMetaError(d.error ?? 'Error al guardar')
+      } else {
+        setSavedMeta(true)
+        setTimeout(() => setSavedMeta(false), 2500)
+      }
+    } catch {
+      setMetaError('Error de red')
+    } finally {
+      setSavingMeta(false)
+    }
   }
 
   async function deleteCard() {
@@ -439,6 +489,95 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
 
       {/* Panel de temporadas — solo para series */}
       <SeasonsPanel workId={card.work.id} workType={card.work.type} />
+
+      {/* Metadatos y enlaces */}
+      <section className="mt-10 border-t border-ink/10 pt-8">
+        <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-ink/40">Metadatos y enlaces</h2>
+          <div className="flex items-center gap-3">
+            {savedMeta && <span className="text-xs text-moss">Guardado ✓</span>}
+            {metaError && <span className="text-xs text-ember">{metaError}</span>}
+            <button
+              onClick={saveMeta}
+              disabled={savingMeta}
+              className="rounded-lg bg-ink px-3 py-1.5 text-xs font-semibold text-paper transition hover:bg-ember disabled:opacity-50"
+            >
+              {savingMeta ? 'Guardando…' : 'Guardar metadatos'}
+            </button>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="sm:col-span-2">
+            <label className="mb-1.5 block text-xs font-semibold text-ink/60">Reparto principal (separado por comas)</label>
+            <input
+              type="text"
+              value={meta.cast}
+              onChange={(e) => setMeta((p) => ({ ...p, cast: e.target.value }))}
+              placeholder="Actor 1, Actor 2, Actor 3…"
+              className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder-ink/30 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
+            />
+          </div>
+          {card.work.type !== 'book' && (
+            <div>
+              <label className="mb-1.5 block text-xs font-semibold text-ink/60">Duración (minutos)</label>
+              <input
+                type="number"
+                min="0"
+                value={meta.runtime}
+                onChange={(e) => setMeta((p) => ({ ...p, runtime: e.target.value }))}
+                placeholder="Ej: 120"
+                className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder-ink/30 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
+              />
+            </div>
+          )}
+          {card.work.type !== 'book' && (
+            <div>
+              <label className="mb-1.5 block text-xs font-semibold text-ink/60">ID de IMDb (ej: tt1234567)</label>
+              <input
+                type="text"
+                value={meta.imdb_id}
+                onChange={(e) => setMeta((p) => ({ ...p, imdb_id: e.target.value }))}
+                placeholder="tt1234567"
+                className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder-ink/30 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
+              />
+            </div>
+          )}
+          {card.work.type === 'movie' && (
+            <div>
+              <label className="mb-1.5 block text-xs font-semibold text-ink/60">URL de Letterboxd</label>
+              <input
+                type="url"
+                value={meta.letterboxd_url}
+                onChange={(e) => setMeta((p) => ({ ...p, letterboxd_url: e.target.value }))}
+                placeholder="https://letterboxd.com/film/..."
+                className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder-ink/30 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
+              />
+            </div>
+          )}
+          {card.work.type === 'book' && (
+            <div>
+              <label className="mb-1.5 block text-xs font-semibold text-ink/60">URL de Goodreads</label>
+              <input
+                type="url"
+                value={meta.goodreads_url}
+                onChange={(e) => setMeta((p) => ({ ...p, goodreads_url: e.target.value }))}
+                placeholder="https://www.goodreads.com/book/show/..."
+                className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder-ink/30 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
+              />
+            </div>
+          )}
+          <div>
+            <label className="mb-1.5 block text-xs font-semibold text-ink/60">URL de Netflix</label>
+            <input
+              type="url"
+              value={meta.netflix_url}
+              onChange={(e) => setMeta((p) => ({ ...p, netflix_url: e.target.value }))}
+              placeholder="https://www.netflix.com/title/..."
+              className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder-ink/30 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
+            />
+          </div>
+        </div>
+      </section>
 
       {/* Zona de peligro */}
       <div className="mt-12 border-t border-ink/10 pt-6">

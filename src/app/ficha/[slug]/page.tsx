@@ -229,32 +229,30 @@ export default async function CardPage({ params }: Props) {
             </span>
 
             {/* Enlaces externos */}
-            {(work.type === 'movie' || work.type === 'series') && work.tmdb_id && (
-              <div className="flex flex-wrap gap-2">
-                <ExternalLink
-                  href={`https://www.themoviedb.org/${work.type === 'movie' ? 'movie' : 'tv'}/${work.tmdb_id}`}
-                  label="TMDb"
-                />
-              </div>
-            )}
-            {work.type === 'book' && (
-              <div className="flex flex-wrap gap-2">
-                {work.google_books_id && (
-                  <ExternalLink
-                    href={`https://books.google.com/books?id=${work.google_books_id}`}
-                    label="Google Books"
-                  />
-                )}
-                <ExternalLink
-                  href={`https://www.goodreads.com/search?q=${encodeURIComponent(work.title)}`}
-                  label="Goodreads"
-                />
-                <ExternalLink
-                  href={`https://openlibrary.org/search?q=${encodeURIComponent(work.title)}`}
-                  label="Open Library"
-                />
-              </div>
-            )}
+            {(() => {
+              const w = work as any
+              const links: { href: string; label: string }[] = []
+              if (work.type === 'movie' || work.type === 'series') {
+                if (w.imdb_id) links.push({ href: `https://www.imdb.com/title/${w.imdb_id}/`, label: 'IMDb' })
+                if (work.tmdb_id) links.push({ href: `https://www.themoviedb.org/${work.type === 'movie' ? 'movie' : 'tv'}/${work.tmdb_id}`, label: 'TMDb' })
+                if (w.letterboxd_url) links.push({ href: w.letterboxd_url, label: 'Letterboxd' })
+              }
+              if (work.type === 'book') {
+                if (w.goodreads_url) links.push({ href: w.goodreads_url, label: 'Goodreads' })
+                else links.push({ href: `https://www.goodreads.com/search?q=${encodeURIComponent(work.title)}`, label: 'Goodreads' })
+                if (work.google_books_id) links.push({ href: `https://books.google.com/books?id=${work.google_books_id}`, label: 'Google Books' })
+                links.push({ href: `https://openlibrary.org/search?q=${encodeURIComponent(work.title)}`, label: 'Open Library' })
+              }
+              if (w.netflix_url) links.push({ href: w.netflix_url, label: 'Netflix' })
+              if (links.length === 0) return null
+              return (
+                <div className="flex flex-wrap gap-2">
+                  {links.map(({ href, label }) => (
+                    <ExternalLink key={label} href={href} label={label} />
+                  ))}
+                </div>
+              )
+            })()}
           </div>
         </div>
       </section>
