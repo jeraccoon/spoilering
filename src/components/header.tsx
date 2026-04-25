@@ -1,10 +1,10 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { UserMenu } from '@/components/user-menu'
+import { NavSearch } from '@/components/NavSearch'
 
 const navItems = [
   { href: '/', label: 'Inicio' },
-  { href: '/buscar', label: 'Buscar' },
 ]
 
 async function getUser() {
@@ -62,6 +62,7 @@ export async function Header() {
         </nav>
 
         <div className="flex items-center gap-3">
+          <NavSearch />
           {auth?.user ? (
             <>
               <Link
