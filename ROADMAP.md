@@ -26,6 +26,7 @@ Spoilering es una utilidad personal y colaborativa para gente que consume series
 
 ### Pendiente
 - [ ] **Búsqueda por ISBN o enlace de Goodreads** — implementado pero no funciona
+- [ ] **Sugerir cambios desde ficha pública** — botón visible para todos; si no estás logueado redirige al login con mensaje "Regístrate para sugerir cambios" y al terminar vuelve a la ficha. Solo usuarios registrados pueden enviar sugerencias.
 - [ ] **Corrección de fichas completa** — sugerir cambios en metadatos (director, año, póster, géneros)
 - [ ] **Borrar o regenerar ficha** — eliminar ficha o regenerar secciones con IA
 - [ ] **Enlaces externos en fichas** — IMDb, Letterboxd, Goodreads, Netflix según tipo
