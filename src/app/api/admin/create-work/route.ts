@@ -72,9 +72,12 @@ export async function POST(request: NextRequest) {
     let enrichedRuntime: number | null = null
     let enrichedImdbId: string | null = null
 
+    console.log('[create-work] paso 3c: enriquecimiento TMDb — tmdb_id:', tmdb_id, 'type:', type)
     if (tmdb_id && (type === 'movie' || type === 'series')) {
       const tmdbKey = process.env.TMDB_API_KEY
-      if (tmdbKey) {
+      if (!tmdbKey) {
+        console.warn('[create-work] TMDB_API_KEY no definida — saltando enriquecimiento')
+      } else {
         const endpoint = type === 'movie' ? 'movie' : 'tv'
         const [detailsRes, creditsRes, externalRes] = await Promise.allSettled([
           type === 'movie'
@@ -87,18 +90,30 @@ export async function POST(request: NextRequest) {
         ])
         if (detailsRes.status === 'fulfilled' && detailsRes.value?.ok) {
           const d = await detailsRes.value.json()
-          if (d.runtime) enrichedRuntime = d.runtime
+          enrichedRuntime = d.runtime ?? null
+          console.log('[create-work] TMDb details OK — runtime:', enrichedRuntime)
+        } else {
+          console.warn('[create-work] TMDb details FAIL —', detailsRes.status === 'rejected' ? detailsRes.reason : 'http error')
         }
         if (creditsRes.status === 'fulfilled' && creditsRes.value?.ok) {
           const d = await creditsRes.value.json()
           enrichedCast = ((d.cast ?? []) as { name: string }[]).slice(0, 5).map((c) => c.name)
+          console.log('[create-work] TMDb credits OK — cast:', enrichedCast)
+        } else {
+          console.warn('[create-work] TMDb credits FAIL —', creditsRes.status === 'rejected' ? creditsRes.reason : 'http error')
         }
         if (externalRes.status === 'fulfilled' && externalRes.value?.ok) {
           const d = await externalRes.value.json()
-          if (d.imdb_id) enrichedImdbId = d.imdb_id
+          enrichedImdbId = d.imdb_id ?? null
+          console.log('[create-work] TMDb external_ids OK — imdb_id:', enrichedImdbId)
+        } else {
+          console.warn('[create-work] TMDb external_ids FAIL —', externalRes.status === 'rejected' ? externalRes.reason : 'http error')
         }
       }
+    } else {
+      console.log('[create-work] paso 3c: sin enriquecimiento (no es película/serie con tmdb_id)')
     }
+    console.log('[create-work] paso 3c resultado — cast:', enrichedCast, '| runtime:', enrichedRuntime, '| imdb_id:', enrichedImdbId)
 
     const genres_arr: string[] = genres ?? []
     const is_complete = Boolean(poster_url && overview && genres_arr.length > 0)
@@ -127,7 +142,7 @@ export async function POST(request: NextRequest) {
       saga_order: saga_order ?? null,
     }
 
-    console.log('[create-work] paso 4: insertando work...')
+    console.log('[create-work] paso 4: insertando work — cast:', workPayload.cast, '| runtime:', workPayload.runtime, '| imdb_id:', workPayload.imdb_id)
     const { data: work, error: workError } = await (supabase
       .from('works') as any)
       .insert(workPayload)
@@ -191,7 +206,7 @@ export async function POST(request: NextRequest) {
       }
       return NextResponse.json({ error: workError.message, detail: workError }, { status: 400 })
     }
-    console.log('[create-work] paso 4 OK — work.id:', work.id)
+    console.log('[create-work] paso 4 OK — work.id:', work.id, '| cast guardado:', work.cast, '| runtime:', work.runtime, '| imdb_id:', work.imdb_id)
 
     console.log('[create-work] paso 5: insertando card...')
     const { data: card, error: cardError } = await (supabase
