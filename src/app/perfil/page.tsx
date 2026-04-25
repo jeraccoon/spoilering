@@ -4,6 +4,7 @@ import Image from 'next/image'
 import { createClient } from '@/lib/supabase/server'
 import { SignOutButton } from '@/components/sign-out-button'
 import { AccountModals } from '@/components/account-modals'
+import { DeleteCardButton } from '@/components/delete-card-button'
 import type { CardWithWork } from '@/types/database'
 
 const ROLE_LABELS = { admin: 'Administrador', editor: 'Editor', user: 'Usuario' }
@@ -309,6 +310,9 @@ export default async function PerfilPage() {
                           >
                             Editar
                           </Link>
+                        )}
+                        {card.status !== 'published' && (
+                          <DeleteCardButton cardId={card.id} />
                         )}
                       </div>
                     </td>

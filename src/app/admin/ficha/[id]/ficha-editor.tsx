@@ -228,6 +228,12 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
     setStatusLoading(false)
   }
 
+  async function deleteCard() {
+    if (!confirm('¿Eliminar esta ficha? Esta acción no se puede deshacer.')) return
+    const res = await fetch(`/api/admin/cards/${card.id}`, { method: 'DELETE' })
+    if (res.ok) router.push('/admin')
+  }
+
   function onSectionCreated(newSection: Section, parentId: string | null) {
     setCard((prev) => {
       if (!parentId) {
@@ -433,6 +439,18 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
 
       {/* Panel de temporadas — solo para series */}
       <SeasonsPanel workId={card.work.id} workType={card.work.type} />
+
+      {/* Zona de peligro — solo en borrador */}
+      {card.status === 'draft' && (
+        <div className="mt-12 border-t border-ink/10 pt-6">
+          <button
+            onClick={deleteCard}
+            className="text-xs font-semibold text-ink/30 transition hover:text-ember"
+          >
+            Eliminar ficha
+          </button>
+        </div>
+      )}
 
       {/* Modal añadir sección */}
       {modal !== null && (
