@@ -35,7 +35,7 @@ Spoilering es una utilidad personal y colaborativa para gente que consume series
 - [ ] **Botón sugerir corrección en editor** — visible arriba en el editor junto al estado de la ficha, no solo en la ficha pública
 - [ ] **Información de director, actores y enlaces externos en ficha pública** — mostrar metadatos enriquecidos arriba de la ficha: director/creador, actores principales, y enlaces a IMDb, Letterboxd, Goodreads, Netflix según tipo de obra
 - [ ] **Revisar concepto "fichas incompletas"** — actualmente poco claro; evaluar si tiene sentido como métrica o si se sustituye por otro indicador más útil
-- [ ] **Buscador inline en navbar** — al pulsar "Buscar" se abre un cuadro de búsqueda en la propia barra sin navegar a /buscar. Mantener /buscar como página de resultados completos
+- [x] Buscador inline en navbar — píldora "Buscar..." con dropdown de resultados, enlace Buscar en menú para búsqueda avanzada
 - [ ] **Botón de contacto y sugerencias** — enlace o modal accesible desde el footer o navbar para enviar feedback al equipo
 - [ ] **Corrección de fichas completa** — sugerir cambios en metadatos (director, año, póster, géneros)
 - [ ] **Borrar o regenerar ficha** — eliminar ficha o regenerar secciones con IA
