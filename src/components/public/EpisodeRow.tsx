@@ -35,23 +35,40 @@ interface Props {
   isLoggedIn: boolean
   isOpen: boolean
   onToggle: () => void
+  initialWatched?: boolean
 }
 
 function formatAirDate(iso: string) {
   return new Date(iso).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })
 }
 
-export function EpisodeRow({ episode, role, isLoggedIn, isOpen, onToggle }: Props) {
+export function EpisodeRow({ episode, role, isLoggedIn, isOpen, onToggle, initialWatched = false }: Props) {
   const publishedCard = episode.card?.status === 'published' ? episode.card : null
   const isPrivileged = role === 'admin' || role === 'editor'
   const router = useRouter()
   const [creating, setCreating] = useState(false)
   const [createError, setCreateError] = useState<string | null>(null)
   const [activeSection, setActiveSection] = useState<string | null>(null)
+  const [watched, setWatched] = useState(initialWatched)
+  const [savingWatched, setSavingWatched] = useState(false)
 
   const sections = publishedCard?.sections ?? []
   const activeSectionId = activeSection ?? sections[0]?.id ?? null
   const activeSectionData = sections.find((s) => s.id === activeSectionId) ?? null
+
+  async function toggleEpisodeWatched(e: React.MouseEvent) {
+    e.stopPropagation()
+    if (!isLoggedIn) return
+    const next = !watched
+    setWatched(next)
+    setSavingWatched(true)
+    await fetch('/api/user-content', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ episode_id: episode.id, watched: next }),
+    })
+    setSavingWatched(false)
+  }
 
   async function handleCreateCard() {
     setCreating(true)
@@ -74,25 +91,38 @@ export function EpisodeRow({ episode, role, isLoggedIn, isOpen, onToggle }: Prop
   if (publishedCard) {
     return (
       <div>
-        <button
-          onClick={onToggle}
-          className="flex w-full items-start gap-3 px-4 py-3 text-left transition hover:bg-ink/5"
-        >
-          <span className="w-8 shrink-0 pt-0.5 text-right text-xs font-mono text-ink/30">
-            {episode.episode_number}
-          </span>
-          <div className="min-w-0 flex-1">
-            <p className="font-medium leading-snug text-ink">
-              {episode.name ?? `Episodio ${episode.episode_number}`}
-            </p>
-            {episode.air_date && (
-              <p className="mt-0.5 text-xs text-ink/40">{formatAirDate(episode.air_date)}</p>
-            )}
-          </div>
-          <span className="shrink-0 rounded-full bg-moss/10 px-2.5 py-0.5 text-[11px] font-semibold text-moss transition">
-            {isOpen ? 'Cerrar ▲' : 'Ver ficha ▼'}
-          </span>
-        </button>
+        <div className="flex w-full items-start gap-3 px-4 py-3">
+          {/* Watched toggle */}
+          {isLoggedIn && (
+            <button
+              onClick={toggleEpisodeWatched}
+              disabled={savingWatched}
+              title={watched ? 'Marcar como no visto' : 'Marcar como visto'}
+              className={`mt-0.5 shrink-0 text-sm transition ${watched ? 'text-moss' : 'text-ink/20 hover:text-ink/50'}`}
+            >
+              {watched ? '✓' : '○'}
+            </button>
+          )}
+          <button
+            onClick={onToggle}
+            className="flex flex-1 items-start gap-3 text-left"
+          >
+            <span className="w-8 shrink-0 pt-0.5 text-right text-xs font-mono text-ink/30">
+              {episode.episode_number}
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="font-medium leading-snug text-ink">
+                {episode.name ?? `Episodio ${episode.episode_number}`}
+              </p>
+              {episode.air_date && (
+                <p className="mt-0.5 text-xs text-ink/40">{formatAirDate(episode.air_date)}</p>
+              )}
+            </div>
+            <span className="shrink-0 rounded-full bg-moss/10 px-2.5 py-0.5 text-[11px] font-semibold text-moss">
+              {isOpen ? 'Cerrar ▲' : 'Ver ficha ▼'}
+            </span>
+          </button>
+        </div>
 
         {isOpen && (
           <div className="border-t border-ink/5 bg-ink/[0.02] px-4 py-5">
@@ -172,6 +202,16 @@ export function EpisodeRow({ episode, role, isLoggedIn, isOpen, onToggle }: Prop
   // No published card
   return (
     <div className="flex items-start gap-3 px-4 py-3">
+      {isLoggedIn && (
+        <button
+          onClick={toggleEpisodeWatched}
+          disabled={savingWatched}
+          title={watched ? 'Marcar como no visto' : 'Marcar como visto'}
+          className={`mt-0.5 shrink-0 text-sm transition ${watched ? 'text-moss' : 'text-ink/15 hover:text-ink/40'}`}
+        >
+          {watched ? '✓' : '○'}
+        </button>
+      )}
       <span className="w-8 shrink-0 pt-0.5 text-right text-xs font-mono text-ink/25">
         {episode.episode_number}
       </span>

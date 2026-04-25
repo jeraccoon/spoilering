@@ -16,9 +16,11 @@ interface Props {
   seasons: Season[]
   role: string | null
   isLoggedIn: boolean
+  watchedEpisodeIds?: string[]
 }
 
-export function SeasonsAccordion({ seasons, role, isLoggedIn }: Props) {
+export function SeasonsAccordion({ seasons, role, isLoggedIn, watchedEpisodeIds = [] }: Props) {
+  const watchedSet = new Set(watchedEpisodeIds)
   const [openSeasons, setOpenSeasons] = useState<Set<string>>(
     () => new Set(seasons.length > 0 ? [seasons[0].id] : [])
   )
@@ -82,6 +84,7 @@ export function SeasonsAccordion({ seasons, role, isLoggedIn }: Props) {
                           isLoggedIn={isLoggedIn}
                           isOpen={openEpisodeId === ep.id}
                           onToggle={() => toggleEpisode(ep.id)}
+                          initialWatched={watchedSet.has(ep.id)}
                         />
                       ))
                     )}

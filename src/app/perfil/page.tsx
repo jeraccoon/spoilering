@@ -60,7 +60,7 @@ export default async function PerfilPage() {
     .eq('id', user.id)
     .single()
 
-  const [{ data: cards }, { data: suggestions }, { data: notes }] = await Promise.all([
+  const [{ data: cards }, { data: suggestions }, { data: notes }, { data: watchedWorks }] = await Promise.all([
     (supabase.from('cards') as any)
       .select('*, work:works(*)')
       .eq('created_by', user.id)
@@ -74,6 +74,13 @@ export default async function PerfilPage() {
       .select('id, content, updated_at, card:cards(work:works(title, slug))')
       .eq('user_id', user.id)
       .order('updated_at', { ascending: false }),
+    (supabase.from('user_content') as any)
+      .select('id, watched_at, notes, work:works(title, slug, type, year, poster_url)')
+      .eq('user_id', user.id)
+      .eq('watched', true)
+      .not('work_id', 'is', null)
+      .order('watched_at', { ascending: false, nullsFirst: false })
+      .limit(30),
   ])
 
   const role: string = profile?.role ?? 'user'
@@ -84,6 +91,7 @@ export default async function PerfilPage() {
   const cardList: CardWithWork[] = cards ?? []
   const suggestionList: any[] = suggestions ?? []
   const noteList: any[] = notes ?? []
+  const watchedList: any[] = watchedWorks ?? []
   const atLimit = isUser && cardList.length >= USER_CARD_LIMIT
   const joinedAt = new Date(profile?.created_at ?? user.created_at).toLocaleDateString('es-ES', {
     year: 'numeric', month: 'long', day: 'numeric',
@@ -161,6 +169,63 @@ export default async function PerfilPage() {
         </div>
       </section>
 
+
+      {/* Mi actividad — obras vistas */}
+      <section className="mb-10">
+        <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-ink/40">Mi actividad</h2>
+        {watchedList.length === 0 ? (
+          <div className="rounded-lg border border-ink/10 bg-ink/5 px-6 py-10 text-center text-sm text-ink/40">
+            Todavía no has marcado ninguna obra como vista.{' '}
+            <Link href="/buscar" className="font-semibold text-ember hover:underline">
+              Explorar fichas →
+            </Link>
+          </div>
+        ) : (
+          <div className="overflow-hidden rounded-lg border border-ink/10">
+            <table className="w-full text-sm">
+              <thead className="border-b border-ink/10 bg-ink/5 text-xs text-ink/50">
+                <tr>
+                  <th className="px-4 py-3 text-left font-semibold">Obra</th>
+                  <th className="px-4 py-3 text-left font-semibold hidden sm:table-cell">Tipo</th>
+                  <th className="px-4 py-3 text-left font-semibold hidden md:table-cell">Vista el</th>
+                  <th className="px-4 py-3 text-left font-semibold hidden lg:table-cell">Notas</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-ink/10">
+                {watchedList.map((item: any) => {
+                  const work = item.work
+                  const TYPE_LABELS: Record<string, string> = { movie: 'Película', series: 'Serie', book: 'Libro' }
+                  return (
+                    <tr key={item.id} className="transition hover:bg-ink/5">
+                      <td className="px-4 py-3 font-semibold text-ink">
+                        {work ? (
+                          <Link href={`/ficha/${work.slug}`} className="hover:text-ember hover:underline">
+                            {work.title}
+                            {work.year && <span className="ml-1 font-normal text-ink/40">({work.year})</span>}
+                          </Link>
+                        ) : <span className="text-ink/40">—</span>}
+                      </td>
+                      <td className="px-4 py-3 text-ink/50 hidden sm:table-cell">
+                        {TYPE_LABELS[work?.type] ?? '—'}
+                      </td>
+                      <td className="px-4 py-3 text-ink/50 hidden md:table-cell">
+                        {item.watched_at
+                          ? new Date(item.watched_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })
+                          : <span className="text-ink/30">Sin fecha</span>}
+                      </td>
+                      <td className="px-4 py-3 text-ink/40 hidden lg:table-cell">
+                        {item.notes
+                          ? <span className="line-clamp-1 max-w-xs">{item.notes}</span>
+                          : <span className="text-ink/25">—</span>}
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
 
       {/* Mis sugerencias */}
       <section className="mb-10">

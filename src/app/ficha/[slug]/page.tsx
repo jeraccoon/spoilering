@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { CardContent } from '@/components/card-content'
 import { SeasonsAccordion } from '@/components/public/SeasonsAccordion'
+import { UserContentPanel } from '@/components/public/UserContentPanel'
 import type { CardFull } from '@/types/database'
 import type { Season } from '@/components/public/SeasonsAccordion'
 
@@ -84,16 +85,38 @@ async function getSeasons(workId: string): Promise<Season[]> {
   }))
 }
 
-async function getAuthInfo(): Promise<{ role: string | null; isLoggedIn: boolean }> {
+async function getAuthInfo(): Promise<{ role: string | null; isLoggedIn: boolean; userId: string | null }> {
   try {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return { role: null, isLoggedIn: false }
+    if (!user) return { role: null, isLoggedIn: false, userId: null }
     const { data: profile } = await (supabase.from('profiles') as any)
       .select('role').eq('id', user.id).single()
-    return { role: profile?.role ?? 'user', isLoggedIn: true }
+    return { role: profile?.role ?? 'user', isLoggedIn: true, userId: user.id }
   } catch {
-    return { role: null, isLoggedIn: false }
+    return { role: null, isLoggedIn: false, userId: null }
+  }
+}
+
+async function getUserContent(userId: string, workId: string, episodeIds: string[]) {
+  const supabase = process.env.SUPABASE_SERVICE_ROLE_KEY ? createAdminClient() : await createClient()
+  const [{ data: workRecord }, { data: episodeRecords }] = await Promise.all([
+    (supabase.from('user_content') as any)
+      .select('id, watched, watched_at, notes')
+      .eq('user_id', userId)
+      .eq('work_id', workId)
+      .maybeSingle(),
+    episodeIds.length > 0
+      ? (supabase.from('user_content') as any)
+          .select('episode_id')
+          .eq('user_id', userId)
+          .in('episode_id', episodeIds)
+          .eq('watched', true)
+      : Promise.resolve({ data: [] }),
+  ])
+  return {
+    workRecord: workRecord ?? null,
+    watchedEpisodeIds: ((episodeRecords as any[]) ?? []).map((r) => r.episode_id).filter(Boolean) as string[],
   }
 }
 
@@ -136,9 +159,18 @@ function ExternalLink({ href, label }: { href: string; label: string }) {
 export default async function CardPage({ params }: Props) {
   const { slug } = await params
 
-  const [card, { role, isLoggedIn }] = await Promise.all([getCard(slug), getAuthInfo()])
+  const [card, { role, isLoggedIn, userId }] = await Promise.all([getCard(slug), getAuthInfo()])
   if (!card) notFound()
   const seasons = card.work.type === 'series' ? await getSeasons(card.work.id) : []
+
+  let workUserContent: { id: string; watched: boolean; watched_at: string | null; notes: string | null } | null = null
+  let watchedEpisodeIds: string[] = []
+  if (isLoggedIn && userId) {
+    const allEpisodeIds = seasons.flatMap((s) => s.episodes.map((e) => e.id))
+    const uc = await getUserContent(userId, card.work.id, allEpisodeIds)
+    workUserContent = uc.workRecord
+    watchedEpisodeIds = uc.watchedEpisodeIds
+  }
   const isDraft = card.status !== 'published'
   const canEdit = role === 'admin' || role === 'editor'
 
@@ -301,6 +333,10 @@ export default async function CardPage({ params }: Props) {
                 </div>
               )
             })()}
+
+            {isLoggedIn && (
+              <UserContentPanel workId={card.work.id} initialRecord={workUserContent} />
+            )}
           </div>
         </div>
       </section>
@@ -308,7 +344,12 @@ export default async function CardPage({ params }: Props) {
       <CardContent sections={sections} isLoggedIn={isLoggedIn} slug={slug} cardId={card.id} />
 
       {seasons.length > 0 && (
-        <SeasonsAccordion seasons={seasons} role={role} isLoggedIn={isLoggedIn} />
+        <SeasonsAccordion
+          seasons={seasons}
+          role={role}
+          isLoggedIn={isLoggedIn}
+          watchedEpisodeIds={watchedEpisodeIds}
+        />
       )}
     </div>
   )
