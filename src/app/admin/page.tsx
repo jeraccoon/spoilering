@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { PendingCardsSection, type PendingCard } from '@/components/pending-cards-section'
 import { OrphanWorksSection } from '@/components/admin/orphan-works-section'
 import { InactiveDraftsSection } from '@/components/admin/inactive-drafts-section'
-import { DraftCardsSection } from '@/components/admin/draft-cards-section'
+import { AdminCardsFilter } from '@/components/admin/admin-cards-filter'
 
 async function getAdminData() {
   const supabase = await createClient()
@@ -20,10 +20,9 @@ async function getAdminData() {
       (supabase.from('suggestions') as any).select('*', { count: 'exact', head: true }).eq('status', 'pending'),
       (supabase.from('cards') as any).select('*', { count: 'exact', head: true }).eq('is_complete', false),
       (supabase.from('cards') as any)
-        .select('id, created_at, is_complete, work:works(title, type, slug), creator:profiles!created_by(username, role)')
-        .eq('status', 'draft')
+        .select('id, status, created_at, is_complete, work:works(title, type, slug), creator:profiles!created_by(username, role)')
         .order('created_at', { ascending: false })
-        .limit(30),
+        .limit(100),
       (supabase.from('works') as any)
         .select('id, title, type, year, created_at, cards(id)')
         .order('created_at', { ascending: false })
@@ -47,13 +46,10 @@ async function getAdminData() {
     username = (profile as { username: string } | null)?.username ?? 'admin'
   }
 
-  const allDrafts: any[] = allDraftCards.data ?? []
-  const pendingCards: PendingCard[] = allDrafts
-    .filter((c) => c.creator?.role === 'user')
+  const allCards: any[] = allDraftCards.data ?? []
+  const pendingCards: PendingCard[] = allCards
+    .filter((c) => c.status === 'draft' && c.creator?.role === 'user')
     .slice(0, 20)
-  const draftCards = allDrafts
-    .filter((c) => !c.creator || c.creator.role !== 'user')
-    .slice(0, 10)
 
   const inactiveDrafts: any[] = inactiveDraftsResult.data ?? []
 
@@ -73,7 +69,7 @@ async function getAdminData() {
       pendingSuggestions: pendingSuggestions.count ?? 0,
       incomplete: incomplete.count ?? 0,
     },
-    draftCards,
+    allCards,
     pendingCards,
     orphanWorks,
     inactiveDrafts,
