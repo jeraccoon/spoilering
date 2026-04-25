@@ -5,6 +5,7 @@ import { NavSearch } from '@/components/NavSearch'
 
 const navItems = [
   { href: '/', label: 'Inicio' },
+  { href: '/buscar', label: 'Buscar' },
 ]
 
 async function getUser() {

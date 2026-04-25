@@ -120,9 +120,10 @@ export function NavSearch() {
         <button
           onClick={() => setOpen(true)}
           aria-label="Buscar"
-          className="flex items-center justify-center rounded-lg p-2 text-ink/60 transition hover:bg-ink/5 hover:text-ink"
+          className="flex items-center gap-2 rounded-full border border-ink/15 bg-ink/5 px-3 py-1.5 text-sm text-ink/40 transition hover:border-ink/25 hover:bg-ink/10 hover:text-ink/60 sm:w-40"
         >
           <SearchIcon />
+          <span className="hidden sm:block">Buscar...</span>
         </button>
       ) : (
         <div className="flex items-center gap-2">
