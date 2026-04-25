@@ -1,11 +1,12 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { PendingCardsSection, type PendingCard } from '@/components/pending-cards-section'
+import { OrphanWorksSection } from '@/components/admin/orphan-works-section'
 
 async function getAdminData() {
   const supabase = await createClient()
 
-  const [works, published, drafts, users, pendingRevisions, pendingSuggestions, incomplete, allDraftCards, { data: { user } }] =
+  const [works, published, drafts, users, pendingRevisions, pendingSuggestions, incomplete, allDraftCards, orphanWorksResult, { data: { user } }] =
     await Promise.all([
       supabase.from('works').select('*', { count: 'exact', head: true }),
       supabase.from('cards').select('*', { count: 'exact', head: true }).eq('status', 'published'),
@@ -19,6 +20,10 @@ async function getAdminData() {
         .eq('status', 'draft')
         .order('created_at', { ascending: false })
         .limit(30),
+      (supabase.from('works') as any)
+        .select('id, title, type, year, created_at, cards(id)')
+        .order('created_at', { ascending: false })
+        .limit(50),
       supabase.auth.getUser(),
     ])
 
@@ -40,6 +45,12 @@ async function getAdminData() {
     .filter((c) => !c.creator || c.creator.role !== 'user')
     .slice(0, 10)
 
+  const allWorks: any[] = orphanWorksResult.data ?? []
+  const orphanWorks = allWorks
+    .filter((w: any) => !w.cards || w.cards.length === 0)
+    .map(({ cards: _cards, ...w }: any) => w)
+    .slice(0, 20)
+
   return {
     stats: {
       works: works.count ?? 0,
@@ -52,6 +63,7 @@ async function getAdminData() {
     },
     draftCards,
     pendingCards,
+    orphanWorks,
     username,
   }
 }
@@ -71,7 +83,7 @@ function formatDate(iso: string) {
 }
 
 export default async function AdminPage() {
-  const { stats, draftCards, pendingCards, username } = await getAdminData()
+  const { stats, draftCards, pendingCards, orphanWorks, username } = await getAdminData()
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
@@ -181,6 +193,17 @@ export default async function AdminPage() {
           </div>
         )}
       </section>
+
+      {/* Obras sin ficha */}
+      {orphanWorks.length > 0 && (
+        <section className="mb-10">
+          <h2 className="mb-1 text-xs font-semibold uppercase tracking-wider text-ink/40">
+            Obras sin ficha
+          </h2>
+          <p className="mb-4 text-xs text-ink/40">Obras creadas pero sin borrador guardado todavía.</p>
+          <OrphanWorksSection initialWorks={orphanWorks} />
+        </section>
+      )}
 
       {/* Revisiones pendientes */}
       <section className="mb-6">

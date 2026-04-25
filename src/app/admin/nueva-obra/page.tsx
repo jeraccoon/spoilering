@@ -292,7 +292,7 @@ export default function NuevaObraPage() {
     setDuplicateSlug(null)
     setSubmitting(true)
     try {
-      const res = await fetch('/api/admin/create-work', {
+      const res = await fetch('/api/admin/works', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -321,7 +321,7 @@ export default function NuevaObraPage() {
         setSubmitting(false)
         return
       }
-      router.push(data.redirectTo ?? `/admin/ficha/${data.cardId}`)
+      router.push(`/admin/nueva-ficha/${data.workId}`)
     } catch {
       setError('Error inesperado. Inténtalo de nuevo.')
       setSubmitting(false)
@@ -596,7 +596,7 @@ export default function NuevaObraPage() {
           ) : existingCard ? null : (
             <button type="submit" disabled={submitting || !form.title}
               className="rounded-lg bg-ember px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-ember/90 disabled:cursor-not-allowed disabled:opacity-50">
-              {submitting ? 'Creando…' : 'Crear obra y ficha'}
+              {submitting ? 'Creando…' : 'Continuar →'}
             </button>
           )}
           <button type="button" onClick={() => router.back()}
