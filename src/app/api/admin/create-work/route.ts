@@ -137,20 +137,57 @@ export async function POST(request: NextRequest) {
     if (workError) {
       console.error('[create-work] paso 4 ERROR — workError:', JSON.stringify(workError))
       if (workError.code === '23505') {
-        // Duplicate key — find the existing work's slug
-        let existingSlug: string | null = null
+        // Duplicate key — find the existing work
+        let existingWork: { id: string; slug: string } | null = null
         if (tmdb_id) {
-          const { data } = await (supabase.from('works') as any).select('slug').eq('tmdb_id', tmdb_id).maybeSingle()
-          existingSlug = data?.slug ?? null
+          const { data } = await (supabase.from('works') as any).select('id, slug').eq('tmdb_id', tmdb_id).maybeSingle()
+          existingWork = data ?? null
         } else if (google_books_id) {
-          const { data } = await (supabase.from('works') as any).select('slug').eq('google_books_id', google_books_id).maybeSingle()
-          existingSlug = data?.slug ?? null
+          const { data } = await (supabase.from('works') as any).select('id, slug').eq('google_books_id', google_books_id).maybeSingle()
+          existingWork = data ?? null
         }
-        if (!existingSlug) {
-          const { data } = await (supabase.from('works') as any).select('slug').eq('slug', await findUniqueSlug(supabase, title)).maybeSingle()
-          existingSlug = data?.slug ?? null
+
+        if (!existingWork) {
+          return NextResponse.json({ error: 'Ya existe una obra con ese identificador.' }, { status: 409 })
         }
-        return NextResponse.json({ error: 'duplicate', slug: existingSlug }, { status: 409 })
+
+        // Check if the existing work already has a card
+        const { data: existingCard } = await (supabase.from('cards') as any)
+          .select('id')
+          .eq('work_id', existingWork.id)
+          .maybeSingle()
+
+        if (existingCard) {
+          // Card already exists — inform with slug to link
+          return NextResponse.json(
+            { error: 'Ya existe una ficha para esta obra.', slug: existingWork.slug },
+            { status: 409 }
+          )
+        }
+
+        // No card yet — create card + sections for the existing work
+        console.log('[create-work] work existente sin card — creando card para work.id:', existingWork.id)
+        const is_complete = Boolean(poster_url && overview && (genres ?? []).length > 0)
+        const { data: newCard, error: cardErr } = await (supabase.from('cards') as any)
+          .insert({ work_id: existingWork.id, status: 'draft', created_by: user.id, is_complete })
+          .select()
+          .single()
+
+        if (cardErr) {
+          console.error('[create-work] error creando card para work existente:', JSON.stringify(cardErr))
+          return NextResponse.json({ error: cardErr.message }, { status: 500 })
+        }
+
+        const defaultSections = [
+          { card_id: newCard.id, label: 'Inicio', short_label: 'Inicio', order_index: 0, parent_id: null, is_published: false, content: '' },
+          { card_id: newCard.id, label: 'Nudo', short_label: 'Nudo', order_index: 1, parent_id: null, is_published: false, content: '' },
+          { card_id: newCard.id, label: 'Desenlace', short_label: 'Desenlace', order_index: 2, parent_id: null, is_published: false, content: '' },
+          { card_id: newCard.id, label: 'Subtramas y personajes', short_label: 'Subtramas', order_index: 3, parent_id: null, is_published: false, content: '' },
+        ]
+        await (supabase.from('sections') as any).insert(defaultSections)
+
+        const redirectTo = role === 'user' ? '/perfil' : `/admin/ficha/${newCard.id}`
+        return NextResponse.json({ workId: existingWork.id, cardId: newCard.id, redirectTo })
       }
       return NextResponse.json({ error: workError.message, detail: workError }, { status: 400 })
     }
