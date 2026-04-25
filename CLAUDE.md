@@ -63,6 +63,10 @@ El git está en `C:\Proyectos\spoilering\spoilering\`. El `tsconfig.json` excluy
 - `POST /api/admin/episodes/[id]/card` — crea card y secciones para un episodio
 - `DELETE /api/admin/works/[id]` — elimina work completo (requiere rol editor o admin, usa adminClient)
 - `PATCH /api/admin/works/[id]` — actualiza metadatos de la obra (cast, runtime, imdb_id, urls externas). Requiere rol editor o admin
+- `POST /api/invite` — envía invitación por email (supabaseAdmin.auth.admin.inviteUserByEmail), límite 5/mes por usuario
+- `POST /api/user-content` — upsert de visionado y notas (get+update/insert, sin onConflict)
+- `GET /api/user-content` — obtiene registro de visionado del usuario actual por work_id o episode_id
+- `DELETE /api/user-content` — elimina registro de visionado por work_id o episode_id
 
 ## Tablas en Supabase
 - `works` — obras. Unique en tmdb_id y google_books_id. Extra para libros: isbn, publisher, pages, saga, saga_order. Nuevas columnas: `"cast"` text[], runtime integer, imdb_id text, letterboxd_url text, goodreads_url text, netflix_url text
@@ -72,6 +76,8 @@ El git está en `C:\Proyectos\spoilering\spoilering\`. El `tsconfig.json` excluy
 - `suggestions` — correcciones (status: pending/approved/rejected, user_id: uuid)
 - `seasons` — temporadas (work_id, season_number, tmdb_season_id, episode_count, poster_path)
 - `episodes` — episodios (season_id, episode_number, card_id nullable, tmdb_episode_id, still_path)
+- `user_content` — user_id, work_id, episode_id, watched, watched_at, notes. RLS estricto por user_id
+- `invites` — inviter_id, email, created_at. RLS estricto por inviter_id
 
 ## Variables de entorno necesarias (Vercel)
 - `NEXT_PUBLIC_SUPABASE_URL`
@@ -88,7 +94,7 @@ El git está en `C:\Proyectos\spoilering\spoilering\`. El `tsconfig.json` excluy
 - Los usernames NO llevan @ delante — se muestran sin prefijo
 - El login acepta email o username — si no contiene @ busca el email por username
 
-## Estado actual (25 abril 2026)
+## Estado actual (26 abril 2026)
 
 ### Funcionando correctamente
 - Autenticación completa con confirmación por email apuntando a www.spoilering.com
@@ -125,6 +131,9 @@ El git está en `C:\Proyectos\spoilering\spoilering\`. El `tsconfig.json` excluy
 - Al crear obra desde TMDb se obtienen en paralelo: cast (/credits), runtime e imdb_id (/external_ids)
 - Panel "Metadatos y enlaces" en editor de fichas con campos editables por tipo de obra
 - Buscador inline en navbar: píldora "Buscar..." con dropdown de resultados, Enter navega a /buscar
+- Sugerir corrección: botón visible para todos en ficha pública, redirige a /login?redirect=...&mensaje=registro-sugerir si no está logueado, banner informativo en login, vuelve a la ficha tras login
+- Invitar amigos: POST /api/invite con límite 5 invitaciones/mes por usuario, tabla invites con RLS, sección en perfil con contador
+- Visionado y notas: tabla user_content (user_id, work_id, episode_id, watched, watched_at, notes), panel Mi Actividad en ficha pública, sección Mi Actividad en perfil
 
 ### Pendiente de resolver
 - Búsqueda por ISBN o enlace de Goodreads no funciona — pendiente de revisar

@@ -29,9 +29,9 @@ Spoilering es una utilidad personal y colaborativa para gente que consume series
 - [x] Bug: eliminar ficha bloqueada por RLS — corregido usando adminClient en API
 - [x] Obras sin ficha eliminables desde panel admin (borra el work completo con cascade)
 - [ ] **Búsqueda por ISBN o enlace de Goodreads** — implementado pero no funciona
-- [ ] **Sugerir cambios desde ficha pública** — botón visible para todos; si no estás logueado redirige al login con mensaje "Regístrate para sugerir cambios" y al terminar vuelve a la ficha. Solo usuarios registrados pueden enviar sugerencias.
-- [ ] **Invitar usuarios por email desde panel admin** — formulario en /admin/usuarios para enviar invitación por email a una dirección concreta
-- [x] **Fecha de visionado y notas personales** — tabla `user_content` con watched, watched_at, notes. Panel "Mi actividad" en ficha pública y perfil. Marcado por obra y por episodio.
+- [x] **Sugerir cambios desde ficha pública** — botón visible para todos, redirige a /login con mensaje si no está logueado, vuelve a la ficha tras login
+- [x] **Invitar usuarios por email** — sección en perfil, límite 5/mes, tabla invites en Supabase
+- [x] **Fecha de visionado y notas personales** — tabla `user_content`, panel Mi Actividad en ficha pública y perfil, marcado por obra y episodio
 - [ ] **Botón sugerir corrección en editor** — visible arriba en el editor junto al estado de la ficha, no solo en la ficha pública
 - [ ] **Revisar concepto "fichas incompletas"** — actualmente poco claro; evaluar si tiene sentido como métrica o si se sustituye por otro indicador más útil
 - [x] Buscador inline en navbar — píldora expandible con dropdown de resultados
