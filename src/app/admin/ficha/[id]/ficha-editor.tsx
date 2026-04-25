@@ -266,45 +266,50 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
 
       {/* Barra de acciones */}
       <div className="mb-7 border-b border-ink/10 pb-5">
-        <div className="flex flex-wrap items-center justify-end gap-2">
-          {/* Generar con IA */}
-          <button
-            onClick={generateAll}
-            disabled={generatingAll || card.sections.length === 0}
-            className="flex items-center gap-1.5 rounded-lg border border-plum/30 bg-plum/5 px-3 py-1.5 text-xs font-semibold text-plum transition hover:bg-plum/10 disabled:opacity-50"
-          >
-            {generatingAll
-              ? `⏳ Generando… (${card.sections.length - generatingSections.size}/${card.sections.length})`
-              : '✦ Generar todo con IA'}
-          </button>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          {/* Estado (izquierda) */}
+          {card.status === 'published' ? (
+            <span className="flex items-center gap-1.5 text-sm font-semibold text-moss">
+              <span className="h-2 w-2 rounded-full bg-moss" />
+              Publicada
+            </span>
+          ) : (
+            <span className="flex items-center gap-1.5 text-sm font-semibold text-ink/40">
+              <span className="h-2 w-2 rounded-full bg-ink/30" />
+              Borrador
+            </span>
+          )}
 
-          {/* Toggle Borrador */}
-          <button
-            onClick={card.status === 'published' ? toggleStatus : undefined}
-            disabled={statusLoading || card.status === 'draft'}
-            title="Solo visible para ti"
-            className={`rounded-lg border px-3 py-1.5 text-xs font-semibold transition disabled:cursor-default ${
-              card.status === 'draft'
-                ? 'border-amber-300 bg-amber-100 text-amber-700'
-                : 'border-ink/20 bg-transparent text-ink/40 hover:border-ink/40 hover:text-ink/60'
-            }`}
-          >
-            {statusLoading && card.status === 'published' ? '…' : 'Borrador'}
-          </button>
+          {/* Acciones (derecha) */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={generateAll}
+              disabled={generatingAll || card.sections.length === 0}
+              className="flex items-center gap-1.5 rounded-lg border border-plum/30 bg-plum/5 px-3 py-1.5 text-xs font-semibold text-plum transition hover:bg-plum/10 disabled:opacity-50"
+            >
+              {generatingAll
+                ? `⏳ Generando… (${card.sections.length - generatingSections.size}/${card.sections.length})`
+                : '✦ Generar todo con IA'}
+            </button>
 
-          {/* Toggle Publicar */}
-          <button
-            onClick={card.status === 'draft' ? toggleStatus : undefined}
-            disabled={statusLoading || card.status === 'published'}
-            title="Visible para todos"
-            className={`rounded-lg border px-3 py-1.5 text-xs font-semibold transition disabled:cursor-default ${
-              card.status === 'published'
-                ? 'border-moss/30 bg-moss/10 text-moss'
-                : 'border-ink/20 bg-transparent text-ink/40 hover:border-ember/40 hover:text-ember'
-            }`}
-          >
-            {statusLoading && card.status === 'draft' ? '…' : 'Publicar'}
-          </button>
+            {card.status === 'draft' ? (
+              <button
+                onClick={toggleStatus}
+                disabled={statusLoading}
+                className="rounded-lg bg-ember px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-ember/90 disabled:opacity-50"
+              >
+                {statusLoading ? '…' : 'Publicar'}
+              </button>
+            ) : (
+              <button
+                onClick={toggleStatus}
+                disabled={statusLoading}
+                className="rounded-lg border border-ink/20 px-3 py-1.5 text-xs font-semibold text-ink/60 transition hover:border-ink/40 hover:bg-ink/5 disabled:opacity-50"
+              >
+                {statusLoading ? '…' : 'Despublicar'}
+              </button>
+            )}
+          </div>
         </div>
 
         {generateError && (
