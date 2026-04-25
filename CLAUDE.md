@@ -58,6 +58,9 @@ El git está en `C:\Proyectos\spoilering\spoilering\`. El `tsconfig.json` excluy
 - `GET /api/check-username?username=xxx` — comprueba disponibilidad de username
 - `GET /api/get-email-by-username?username=xxx` — obtiene email por username para login
 - `DELETE /api/account` — elimina la propia cuenta
+- `POST /api/admin/works/[id]/fetch-seasons` — importa temporadas y episodios desde TMDb (upsert)
+- `GET /api/admin/works/[id]/seasons` — lista temporadas con episodios anidados
+- `POST /api/admin/episodes/[id]/card` — crea card y secciones para un episodio
 
 ## Tablas en Supabase
 - `works` — obras. Unique en tmdb_id y google_books_id. Extra para libros: isbn, publisher, pages, saga, saga_order
@@ -65,6 +68,8 @@ El git está en `C:\Proyectos\spoilering\spoilering\`. El `tsconfig.json` excluy
 - `sections` — secciones en markdown
 - `profiles` — usuario con rol (admin/editor/user), username único, is_active boolean
 - `suggestions` — correcciones (status: pending/approved/rejected, user_id: uuid)
+- `seasons` — temporadas (work_id, season_number, tmdb_season_id, episode_count, poster_path)
+- `episodes` — episodios (season_id, episode_number, card_id nullable, tmdb_episode_id, still_path)
 
 ## Variables de entorno necesarias (Vercel)
 - `NEXT_PUBLIC_SUPABASE_URL`
@@ -81,7 +86,7 @@ El git está en `C:\Proyectos\spoilering\spoilering\`. El `tsconfig.json` excluy
 - Los usernames NO llevan @ delante — se muestran sin prefijo
 - El login acepta email o username — si no contiene @ busca el email por username
 
-## Estado actual (24 abril 2026)
+## Estado actual (25 abril 2026)
 
 ### Funcionando correctamente
 - Autenticación completa con confirmación por email apuntando a www.spoilering.com
@@ -90,6 +95,7 @@ El git está en `C:\Proyectos\spoilering\spoilering\`. El `tsconfig.json` excluy
 - Recuperar contraseña, cambiar contraseña desde perfil, eliminar cuenta
 - Roles admin/editor/user con permisos diferenciados
 - Navbar con botón "+ Añadir obra" para todos los usuarios logueados
+- Botón añadir obra en hero de home (solo usuarios logueados, client component)
 - Home con grid de fichas publicadas
 - Panel de admin completo: estadísticas, fichas, sugerencias, fichas pendientes de usuarios
 - Gestión de usuarios en /admin/usuarios: cambiar rol, activar/desactivar, eliminar
@@ -99,11 +105,16 @@ El git está en `C:\Proyectos\spoilering\spoilering\`. El `tsconfig.json` excluy
 - Usuarios normales pueden crear hasta 3 fichas pendientes de aprobación
 - Generación de secciones en paralelo con indicador de progreso
 - Prompts con SECTION_GUIDES: 500-900 palabras, subtítulos markdown
+- Autoguardado silencioso por sección (onBlur) con indicador visual
+- Flujo de estado de ficha: etiqueta informativa izquierda (Borrador/Publicada) separada de botones de acción (Generar con IA / Publicar / Despublicar)
 - Página pública de ficha visible sin login con advertencia de spoilers
 - Perfil de usuario estilo admin: stats, fichas, sugerencias, cuenta
 - Sistema de sugerencias end-to-end
 - Textos legales + footer en todas las páginas
 - Deploy en producción en www.spoilering.com
+- Gestión de temporadas y episodios: seasons y episodes en BD, importación automática desde TMDb al crear serie, panel SeasonsPanel en editor admin, botón "Comprobar nuevas temporadas" (upsert, no borra datos)
+- Fichas de episodio: POST /api/admin/episodes/[id]/card crea card+secciones por episodio reutilizando el sistema existente
+- Borradores inactivos (+30 días) visibles en panel admin con opción eliminar
 
 ### Pendiente de resolver
 - Búsqueda por ISBN o enlace de Goodreads no funciona — pendiente de revisar

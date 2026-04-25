@@ -16,10 +16,16 @@ Spoilering es una utilidad personal y colaborativa para gente que consume series
 - [x] Login con email o nombre de usuario
 - [x] Recuperar contraseña, cambiar contraseña, eliminar cuenta
 - [x] Panel de gestión de usuarios (/admin/usuarios)
+- [x] Gestión de temporadas y capítulos — estructura series por temporada y episodio
+- [x] Botón añadir obra visible en hero (solo usuarios logueados)
+- [x] Autoguardado silencioso por sección en editor de fichas
+- [x] Temporadas importadas automáticamente al crear una serie
+- [x] Botón "Comprobar nuevas temporadas" sin borrar datos existentes
+- [x] Borradores inactivos (+30 días) visibles en admin con opción eliminar
+- [x] Estado de ficha separado de las acciones en editor (etiqueta vs botones)
 
 ### Pendiente
 - [ ] **Búsqueda por ISBN o enlace de Goodreads** — implementado pero no funciona
-- [ ] **Gestión de temporadas y capítulos** — estructura series por temporada y episodio
 - [ ] **Corrección de fichas completa** — sugerir cambios en metadatos (director, año, póster, géneros)
 - [ ] **Borrar o regenerar ficha** — eliminar ficha o regenerar secciones con IA
 - [ ] **Enlaces externos en fichas** — IMDb, Letterboxd, Goodreads, Netflix según tipo
