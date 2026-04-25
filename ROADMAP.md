@@ -71,3 +71,4 @@ Spoilering es una utilidad personal y colaborativa para gente que consume series
 - Estadísticas públicas: fichas más vistas, más buscadas
 - Modo "sin spoilers" — solo sinopsis oficial
 - Importar listas desde Letterboxd o Goodreads
+- Mejorar filtros y ordenación en home: más opciones (más vistas, mejor valoradas, por género), mejor diseño de la barra de controles
