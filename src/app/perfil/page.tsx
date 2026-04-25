@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { SignOutButton } from '@/components/sign-out-button'
 import { AccountModals } from '@/components/account-modals'
 import { PerfilCardsSection } from '@/components/perfil-cards-section'
+import { InviteWidget } from '@/components/invite-widget'
 import type { CardWithWork } from '@/types/database'
 
 const ROLE_LABELS = { admin: 'Administrador', editor: 'Editor', user: 'Usuario' }
@@ -60,7 +61,11 @@ export default async function PerfilPage() {
     .eq('id', user.id)
     .single()
 
-  const [{ data: cards }, { data: suggestions }, { data: notes }, { data: watchedWorks }] = await Promise.all([
+  const startOfMonth = new Date()
+  startOfMonth.setDate(1)
+  startOfMonth.setHours(0, 0, 0, 0)
+
+  const [{ data: cards }, { data: suggestions }, { data: notes }, { data: watchedWorks }, { count: inviteCount }] = await Promise.all([
     (supabase.from('cards') as any)
       .select('*, work:works(*)')
       .eq('created_by', user.id)
@@ -81,6 +86,10 @@ export default async function PerfilPage() {
       .not('work_id', 'is', null)
       .order('watched_at', { ascending: false, nullsFirst: false })
       .limit(30),
+    (supabase.from('invites') as any)
+      .select('id', { count: 'exact', head: true })
+      .eq('inviter_id', user.id)
+      .gte('created_at', startOfMonth.toISOString()),
   ])
 
   const role: string = profile?.role ?? 'user'
@@ -317,6 +326,12 @@ export default async function PerfilPage() {
             })}
           </div>
         )}
+      </section>
+
+      {/* Invita a alguien */}
+      <section className="mb-10">
+        <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-ink/40">Invita a alguien</h2>
+        <InviteWidget initialCount={inviteCount ?? 0} />
       </section>
 
       {/* Mi cuenta */}
