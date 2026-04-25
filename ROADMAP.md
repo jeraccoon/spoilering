@@ -31,7 +31,7 @@ Spoilering es una utilidad personal y colaborativa para gente que consume series
 - [ ] **Búsqueda por ISBN o enlace de Goodreads** — implementado pero no funciona
 - [ ] **Sugerir cambios desde ficha pública** — botón visible para todos; si no estás logueado redirige al login con mensaje "Regístrate para sugerir cambios" y al terminar vuelve a la ficha. Solo usuarios registrados pueden enviar sugerencias.
 - [ ] **Invitar usuarios por email desde panel admin** — formulario en /admin/usuarios para enviar invitación por email a una dirección concreta
-- [ ] **Fecha de visionado y notas personales** — cualquier usuario logueado puede marcar cuándo vio/leyó una obra y añadir notas privadas, aunque no haya creado la ficha. Tabla `user_content` con user_id, work_id, watched_at, notes. RLS estricto
+- [x] **Fecha de visionado y notas personales** — tabla `user_content` con watched, watched_at, notes. Panel "Mi actividad" en ficha pública y perfil. Marcado por obra y por episodio.
 - [ ] **Botón sugerir corrección en editor** — visible arriba en el editor junto al estado de la ficha, no solo en la ficha pública
 - [ ] **Revisar concepto "fichas incompletas"** — actualmente poco claro; evaluar si tiene sentido como métrica o si se sustituye por otro indicador más útil
 - [x] Buscador inline en navbar — píldora expandible con dropdown de resultados
@@ -41,7 +41,7 @@ Spoilering es una utilidad personal y colaborativa para gente que consume series
 - [ ] **Borrar o regenerar ficha** — eliminar ficha o regenerar secciones con IA
 - [ ] **Home mejorada** — copy claro, opciones grid/lista, filtros por tipo
 - [ ] **Diseño ficha pública** — markdown más cuidado, texto justificado
-- [ ] **Notas privadas** — tabla `notes` con user_id, card_id, content. RLS estricto
+- [x] **Notas privadas** — cubierto por `user_content.notes` (misma funcionalidad)
 - [ ] **FAQ** — qué es Spoilering, cómo funciona, cómo contribuir
 - [ ] **Sistema de incentivos** — badges de colaborador, sello "editado por humanos" vs "generado por IA"
 
