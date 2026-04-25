@@ -311,9 +311,7 @@ export default async function PerfilPage() {
                             Editar
                           </Link>
                         )}
-                        {card.status !== 'published' && (
-                          <DeleteCardButton cardId={card.id} />
-                        )}
+                        <DeleteCardButton cardId={card.id} />
                       </div>
                     </td>
                   </tr>
