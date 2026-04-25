@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { PendingCardsSection, type PendingCard } from '@/components/pending-cards-section'
 import { OrphanWorksSection } from '@/components/admin/orphan-works-section'
 import { InactiveDraftsSection } from '@/components/admin/inactive-drafts-section'
+import { DraftCardsSection } from '@/components/admin/draft-cards-section'
 
 async function getAdminData() {
   const supabase = await createClient()
@@ -152,58 +153,7 @@ export default async function AdminPage() {
         <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-ink/40">
           Fichas en borrador
         </h2>
-        {draftCards.length === 0 ? (
-          <div className="rounded-lg border border-ink/10 bg-ink/5 px-6 py-10 text-center text-sm text-ink/40">
-            No hay fichas en borrador.
-          </div>
-        ) : (
-          <div className="overflow-hidden rounded-lg border border-ink/10">
-            <table className="w-full text-sm">
-              <thead className="border-b border-ink/10 bg-ink/5 text-xs text-ink/50">
-                <tr>
-                  <th className="px-4 py-3 text-left font-semibold">Obra</th>
-                  <th className="px-4 py-3 text-left font-semibold">Tipo</th>
-                  <th className="px-4 py-3 text-left font-semibold">Creada</th>
-                  <th className="px-4 py-3 text-right font-semibold">Acciones</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-ink/10">
-                {draftCards.map((card: any) => (
-                  <tr key={card.id} className="transition hover:bg-ink/5">
-                    <td className="px-4 py-3 font-semibold text-ink">
-                      <span>{card.work?.title ?? '—'}</span>
-                      {card.is_complete === false && (
-                        <span className="ml-2 rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700">Incompleta</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3 text-ink/50">
-                      {TYPE_LABELS[card.work?.type] ?? '—'}
-                    </td>
-                    <td className="px-4 py-3 text-ink/50">
-                      {card.created_at ? formatDate(card.created_at) : '—'}
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <div className="flex items-center justify-end gap-3">
-                        <Link
-                          href={`/admin/ficha/${card.id}`}
-                          className="text-xs font-semibold text-ink/50 underline underline-offset-2 hover:text-ink"
-                        >
-                          Editar
-                        </Link>
-                        <Link
-                          href={`/admin/fichas/${card.id}/publicar`}
-                          className="rounded-md bg-moss/10 px-2.5 py-1 text-xs font-semibold text-moss transition hover:bg-moss/20"
-                        >
-                          Publicar
-                        </Link>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+        <DraftCardsSection initialCards={draftCards} />
       </section>
 
       {/* Borradores inactivos */}
