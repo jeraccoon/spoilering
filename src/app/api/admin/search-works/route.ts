@@ -70,6 +70,8 @@ export async function GET(request: NextRequest) {
   // TMDb — películas y series
   if (tmdbRes.status === 'fulfilled' && tmdbRes.value) {
     const json = await tmdbRes.value.json()
+    const tvItems: any[] = []
+
     for (const item of json.results ?? []) {
       if (item.media_type === 'person') continue
       if (type === 'movie' && item.media_type !== 'movie') continue
@@ -85,7 +87,7 @@ export async function GET(request: NextRequest) {
       const genres = (item.genre_ids ?? [])
         .map((id: number) => TMDB_GENRES[id])
         .filter(Boolean)
-      results.push({
+      const entry = {
         id: `tmdb-${item.id}`,
         type: isMovie ? 'movie' : 'series',
         title,
@@ -96,12 +98,32 @@ export async function GET(request: NextRequest) {
         genres,
         authors: [],
         directors: [],
-        seasons_count: null,
+        seasons_count: null as number | null,
         tmdb_id: item.id,
         google_books_id: null,
         open_library_id: null,
         isbn: null,
-      })
+      }
+      results.push(entry)
+      if (!isMovie) tvItems.push(entry)
+    }
+
+    // Enriquecer series con number_of_seasons desde el endpoint de detalles
+    if (tvItems.length > 0 && tmdbKey) {
+      const detailResults = await Promise.allSettled(
+        tvItems.map((entry) =>
+          fetch(
+            `https://api.themoviedb.org/3/tv/${entry.tmdb_id}?api_key=${tmdbKey}&language=es-ES`,
+            { next: { revalidate: 3600 } },
+          ).then((r) => (r.ok ? r.json() : null)),
+        ),
+      )
+      for (let i = 0; i < tvItems.length; i++) {
+        const res = detailResults[i]
+        if (res.status === 'fulfilled' && res.value?.number_of_seasons) {
+          tvItems[i].seasons_count = res.value.number_of_seasons
+        }
+      }
     }
   }
 
