@@ -265,9 +265,9 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
       </div>
 
       {/* Barra de acciones */}
-      <div className="mb-7 flex flex-wrap items-end justify-end gap-3 border-b border-ink/10 pb-5">
-        {/* Generar con IA */}
-        <div className="flex flex-col items-center gap-1">
+      <div className="mb-7 border-b border-ink/10 pb-5">
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          {/* Generar con IA */}
           <button
             onClick={generateAll}
             disabled={generatingAll || card.sections.length === 0}
@@ -275,48 +275,41 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
           >
             {generatingAll
               ? `⏳ Generando… (${card.sections.length - generatingSections.size}/${card.sections.length})`
-              : '✨ Generar todo con IA'}
+              : '✦ Generar todo con IA'}
           </button>
-          {generateError && (
-            <span className="text-[10px] text-ember">{generateError}</span>
-          )}
+
+          {/* Toggle Borrador */}
+          <button
+            onClick={card.status === 'published' ? toggleStatus : undefined}
+            disabled={statusLoading || card.status === 'draft'}
+            title="Solo visible para ti"
+            className={`rounded-lg border px-3 py-1.5 text-xs font-semibold transition disabled:cursor-default ${
+              card.status === 'draft'
+                ? 'border-amber-300 bg-amber-100 text-amber-700'
+                : 'border-ink/20 bg-transparent text-ink/40 hover:border-ink/40 hover:text-ink/60'
+            }`}
+          >
+            {statusLoading && card.status === 'published' ? '…' : 'Borrador'}
+          </button>
+
+          {/* Toggle Publicar */}
+          <button
+            onClick={card.status === 'draft' ? toggleStatus : undefined}
+            disabled={statusLoading || card.status === 'published'}
+            title="Visible para todos"
+            className={`rounded-lg border px-3 py-1.5 text-xs font-semibold transition disabled:cursor-default ${
+              card.status === 'published'
+                ? 'border-moss/30 bg-moss/10 text-moss'
+                : 'border-ink/20 bg-transparent text-ink/40 hover:border-ember/40 hover:text-ember'
+            }`}
+          >
+            {statusLoading && card.status === 'draft' ? '…' : 'Publicar'}
+          </button>
         </div>
 
-        {/* Estado / volver a borrador */}
-        <div className="flex flex-col items-center gap-1">
-          {card.status === 'published' ? (
-            <button
-              onClick={toggleStatus}
-              disabled={statusLoading}
-              className="rounded-lg border border-ink/20 px-3 py-1.5 text-xs font-semibold text-ink/60 transition hover:bg-ink/5 disabled:opacity-50"
-            >
-              {statusLoading ? '…' : 'Volver a borrador'}
-            </button>
-          ) : (
-            <span className={`rounded-lg border px-3 py-1.5 text-xs font-semibold ${STATUS_COLORS.draft}`}>
-              Borrador
-            </span>
-          )}
-          <span className="text-[10px] text-ink/40">Solo visible para ti</span>
-        </div>
-
-        {/* Publicar */}
-        <div className="flex flex-col items-center gap-1">
-          {card.status === 'draft' ? (
-            <button
-              onClick={toggleStatus}
-              disabled={statusLoading}
-              className="rounded-lg bg-ember px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-ember/90 disabled:opacity-50"
-            >
-              {statusLoading ? '…' : 'Publicar'}
-            </button>
-          ) : (
-            <span className={`rounded-lg border px-3 py-1.5 text-xs font-semibold ${STATUS_COLORS.published}`}>
-              Publicada
-            </span>
-          )}
-          <span className="text-[10px] text-ink/40">Visible para todos</span>
-        </div>
+        {generateError && (
+          <p className="mt-2 text-right text-[11px] text-ember">{generateError}</p>
+        )}
       </div>
 
       <div className="flex gap-6">
