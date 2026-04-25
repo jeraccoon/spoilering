@@ -4,7 +4,6 @@ import { createClient } from '@/lib/supabase/server'
 import { SignOutButton } from '@/components/sign-out-button'
 import { AccountModals } from '@/components/account-modals'
 import { PerfilCardsSection } from '@/components/perfil-cards-section'
-import { InviteWidget } from '@/components/invite-widget'
 import type { CardWithWork } from '@/types/database'
 
 const ROLE_LABELS = { admin: 'Administrador', editor: 'Editor', user: 'Usuario' }
@@ -140,6 +139,7 @@ export default async function PerfilPage() {
         isPrivileged={isPrivileged}
         addHref={addHref}
         suggestionCount={suggestionList.length}
+        inviteCount={inviteCount ?? 0}
       />
 
       {/* Accesos rápidos */}
@@ -326,12 +326,6 @@ export default async function PerfilPage() {
             })}
           </div>
         )}
-      </section>
-
-      {/* Invita a alguien */}
-      <section className="mb-10">
-        <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-ink/40">Invita a alguien</h2>
-        <InviteWidget initialCount={inviteCount ?? 0} />
       </section>
 
       {/* Mi cuenta */}

@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { InviteWidget } from '@/components/invite-widget'
 
 const TYPE_LABELS = { movie: 'Película', series: 'Serie', book: 'Libro' }
 const TYPE_COLORS = {
@@ -63,6 +64,7 @@ export function PerfilCardsSection({
   isPrivileged,
   addHref,
   suggestionCount,
+  inviteCount = 0,
 }: {
   initialCards: Card[]
   role: string
@@ -70,6 +72,7 @@ export function PerfilCardsSection({
   isPrivileged: boolean
   addHref: string
   suggestionCount: number
+  inviteCount?: number
 }) {
   const [cards, setCards] = useState<Card[]>(initialCards)
   const [activeFilter, setActiveFilter] = useState<FilterKey>('all')
@@ -144,6 +147,12 @@ export function PerfilCardsSection({
             Has alcanzado el límite de {USER_CARD_LIMIT} fichas. Contacta con nosotros para ampliar tu acceso.
           </p>
         )}
+      </section>
+
+      {/* Invita a alguien */}
+      <section className="mb-10">
+        <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-ink/40">Invita a alguien</h2>
+        <InviteWidget initialCount={inviteCount} />
       </section>
 
       {/* Card table */}
