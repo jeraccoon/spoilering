@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import type { CardWithWork } from '@/types/database'
@@ -14,6 +14,7 @@ const TYPE_COLORS = {
 
 type ViewMode = 'grid' | 'list'
 type TypeFilter = 'all' | 'movie' | 'series' | 'book'
+type SortKey = 'recent' | 'oldest' | 'az'
 
 const FILTER_LABELS: Record<TypeFilter, string> = {
   all: 'Todos',
@@ -21,6 +22,12 @@ const FILTER_LABELS: Record<TypeFilter, string> = {
   series: 'Series',
   book: 'Libros',
 }
+
+const SORT_OPTIONS: { value: SortKey; label: string }[] = [
+  { value: 'recent', label: 'Más recientes' },
+  { value: 'oldest', label: 'Más antiguos' },
+  { value: 'az', label: 'A–Z' },
+]
 
 function GridIcon() {
   return (
@@ -45,7 +52,7 @@ function ListIcon() {
 
 function GridView({ cards }: { cards: CardWithWork[] }) {
   return (
-    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
       {cards.map((card) => (
         <Link
           key={card.id}
@@ -88,7 +95,7 @@ function ListView({ cards }: { cards: CardWithWork[] }) {
         <Link
           key={card.id}
           href={`/ficha/${card.work.slug}`}
-          className="flex items-center gap-4 bg-paper px-4 py-3 transition hover:bg-ink/5"
+          className="flex items-center gap-3 bg-paper px-3 py-3 transition hover:bg-ink/5 sm:gap-4 sm:px-4"
         >
           <div className="relative h-[60px] w-10 flex-shrink-0 overflow-hidden rounded">
             {card.work.poster_url ? (
@@ -124,6 +131,7 @@ function ListView({ cards }: { cards: CardWithWork[] }) {
 export function HomeCards({ cards, totalCount }: { cards: CardWithWork[]; totalCount: number }) {
   const [view, setView] = useState<ViewMode>('grid')
   const [filter, setFilter] = useState<TypeFilter>('all')
+  const [sort, setSort] = useState<SortKey>('recent')
 
   useEffect(() => {
     const saved = localStorage.getItem('home-view') as ViewMode | null
@@ -135,41 +143,22 @@ export function HomeCards({ cards, totalCount }: { cards: CardWithWork[]; totalC
     localStorage.setItem('home-view', mode)
   }
 
-  const filtered = filter === 'all' ? cards : cards.filter((c) => c.work.type === filter)
+  const filtered = useMemo(() => {
+    const base = filter === 'all' ? cards : cards.filter((c) => c.work.type === filter)
+    if (sort === 'az') return [...base].sort((a, b) => a.work.title.localeCompare(b.work.title, 'es'))
+    if (sort === 'oldest') return [...base].sort((a, b) => a.updated_at.localeCompare(b.updated_at))
+    return base // 'recent' — already ordered desc from server
+  }, [cards, filter, sort])
 
   return (
     <div>
-      {/* Barra de controles */}
-      <div className="mb-4 flex items-center justify-between gap-4">
-        <span className="text-sm text-ink/50">
-          <span className="font-semibold text-ink">{totalCount}</span>{' '}
-          {totalCount === 1 ? 'ficha publicada' : 'fichas publicadas'}
-        </span>
-        <div className="flex items-center gap-0.5">
-          <button
-            onClick={() => setViewMode('grid')}
-            title="Vista cuadrícula"
-            className={`rounded p-1.5 transition ${view === 'grid' ? 'text-ember' : 'text-ink/25 hover:text-ink/60'}`}
-          >
-            <GridIcon />
-          </button>
-          <button
-            onClick={() => setViewMode('list')}
-            title="Vista lista"
-            className={`rounded p-1.5 transition ${view === 'list' ? 'text-ember' : 'text-ink/25 hover:text-ink/60'}`}
-          >
-            <ListIcon />
-          </button>
-        </div>
-      </div>
-
-      {/* Filtros */}
-      <div className="mb-6 flex flex-wrap gap-2">
+      {/* Fila 1: filtros de tipo (scroll horizontal en móvil) */}
+      <div className="mb-3 -mx-4 flex items-center gap-2 overflow-x-auto px-4 scrollbar-none sm:mx-0 sm:flex-wrap sm:px-0">
         {(Object.keys(FILTER_LABELS) as TypeFilter[]).map((f) => (
           <button
             key={f}
             onClick={() => setFilter(f)}
-            className={`rounded-full px-3.5 py-1 text-sm font-semibold transition ${
+            className={`shrink-0 rounded-full px-3.5 py-1 text-sm font-semibold transition ${
               filter === f
                 ? 'bg-ember text-white'
                 : 'bg-ink/5 text-ink/60 hover:bg-ink/10 hover:text-ink'
@@ -178,6 +167,48 @@ export function HomeCards({ cards, totalCount }: { cards: CardWithWork[]; totalC
             {FILTER_LABELS[f]}
           </button>
         ))}
+      </div>
+
+      {/* Fila 2: contador + selector orden + toggle vista */}
+      <div className="mb-5 flex items-center justify-between gap-3">
+        <span className="text-sm text-ink/50">
+          <span className="font-semibold text-ink">{filtered.length}</span>{' '}
+          {filtered.length === 1 ? 'ficha' : 'fichas'}
+          {filter !== 'all' && (
+            <span className="hidden sm:inline"> de {totalCount} publicadas</span>
+          )}
+        </span>
+
+        <div className="flex items-center gap-2">
+          {/* Selector de ordenación */}
+          <select
+            value={sort}
+            onChange={(e) => setSort(e.target.value as SortKey)}
+            className="rounded-md border border-ink/15 bg-paper py-1 pl-2 pr-6 text-xs font-medium text-ink/60 outline-none transition focus:border-ink/30 hover:border-ink/25"
+          >
+            {SORT_OPTIONS.map((o) => (
+              <option key={o.value} value={o.value}>{o.label}</option>
+            ))}
+          </select>
+
+          {/* Toggle vista grid/lista */}
+          <div className="flex items-center gap-0.5">
+            <button
+              onClick={() => setViewMode('grid')}
+              title="Vista cuadrícula"
+              className={`rounded p-1.5 transition ${view === 'grid' ? 'text-ember' : 'text-ink/25 hover:text-ink/60'}`}
+            >
+              <GridIcon />
+            </button>
+            <button
+              onClick={() => setViewMode('list')}
+              title="Vista lista"
+              className={`rounded p-1.5 transition ${view === 'list' ? 'text-ember' : 'text-ink/25 hover:text-ink/60'}`}
+            >
+              <ListIcon />
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Resultados */}

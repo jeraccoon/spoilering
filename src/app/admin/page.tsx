@@ -10,7 +10,7 @@ async function getAdminData() {
 
   const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
 
-  const [works, published, drafts, users, pendingRevisions, pendingSuggestions, incomplete, allDraftCards, orphanWorksResult, inactiveDraftsResult, { data: { user } }] =
+  const [works, published, drafts, users, pendingRevisions, pendingSuggestions, incomplete, allDraftCards, orphanWorksResult, inactiveDraftsResult, { data: { user } }, contactResult] =
     await Promise.all([
       supabase.from('works').select('*', { count: 'exact', head: true }),
       supabase.from('cards').select('*', { count: 'exact', head: true }).eq('status', 'published'),
@@ -34,6 +34,10 @@ async function getAdminData() {
         .order('updated_at', { ascending: true })
         .limit(30),
       supabase.auth.getUser(),
+      (supabase.from('contact_messages') as any)
+        .select('id, name, email, type, message, created_at')
+        .order('created_at', { ascending: false })
+        .limit(30),
     ])
 
   let username = 'admin'
@@ -59,6 +63,8 @@ async function getAdminData() {
     .map(({ cards: _cards, ...w }: any) => w)
     .slice(0, 20)
 
+  const contactMessages: any[] = contactResult.data ?? []
+
   return {
     stats: {
       works: works.count ?? 0,
@@ -73,13 +79,25 @@ async function getAdminData() {
     pendingCards,
     orphanWorks,
     inactiveDrafts,
+    contactMessages,
     username,
   }
 }
 
 
+const TYPE_LABELS: Record<string, string> = {
+  suggestion: 'Sugerencia',
+  bug: 'Error o bug',
+  other: 'Otro',
+}
+const TYPE_COLORS: Record<string, string> = {
+  suggestion: 'bg-moss/10 text-moss',
+  bug: 'bg-ember/10 text-ember',
+  other: 'bg-ink/10 text-ink/60',
+}
+
 export default async function AdminPage() {
-  const { stats, allCards, pendingCards, orphanWorks, inactiveDrafts, username } = await getAdminData()
+  const { stats, allCards, pendingCards, orphanWorks, inactiveDrafts, contactMessages, username } = await getAdminData()
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
@@ -166,6 +184,56 @@ export default async function AdminPage() {
             </Link>
           )}
         </div>
+      </section>
+
+      {/* Mensajes de contacto */}
+      <section className="mb-10">
+        <h2 className="mb-1 text-xs font-semibold uppercase tracking-wider text-ink/40">
+          Mensajes de contacto
+        </h2>
+        <p className="mb-4 text-xs text-ink/40">Enviados desde el footer por cualquier visitante.</p>
+        {contactMessages.length === 0 ? (
+          <div className="rounded-lg border border-ink/10 bg-ink/[0.02] px-6 py-8 text-center text-sm text-ink/30">
+            No hay mensajes todavía.
+          </div>
+        ) : (
+          <div className="overflow-hidden rounded-lg border border-ink/10">
+            <table className="w-full text-sm">
+              <thead className="border-b border-ink/10 bg-ink/5 text-xs text-ink/50">
+                <tr>
+                  <th className="px-4 py-3 text-left font-semibold">Fecha</th>
+                  <th className="px-4 py-3 text-left font-semibold">Tipo</th>
+                  <th className="px-4 py-3 text-left font-semibold hidden sm:table-cell">De</th>
+                  <th className="px-4 py-3 text-left font-semibold">Mensaje</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-ink/10">
+                {contactMessages.map((m: any) => (
+                  <tr key={m.id} className="align-top transition hover:bg-ink/5">
+                    <td className="px-4 py-3 text-xs text-ink/40 whitespace-nowrap">
+                      {new Date(m.created_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={`rounded px-2 py-0.5 text-[11px] font-semibold ${TYPE_COLORS[m.type] ?? TYPE_COLORS.other}`}>
+                        {TYPE_LABELS[m.type] ?? m.type}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-xs text-ink/50 hidden sm:table-cell">
+                      <div className="flex flex-col gap-0.5">
+                        {m.name && <span className="font-medium text-ink">{m.name}</span>}
+                        {m.email && <span className="text-ink/40">{m.email}</span>}
+                        {!m.name && !m.email && <span className="text-ink/25">Anónimo</span>}
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-ink/70 max-w-xs">
+                      <p className="line-clamp-3 text-sm leading-relaxed">{m.message}</p>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </section>
 
       {/* Sugerencias pendientes */}

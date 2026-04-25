@@ -74,12 +74,12 @@ export function CardContent({ sections, isLoggedIn, slug, cardId }: Props) {
                     remarkPlugins={[remarkGfm]}
                     components={{
                       p: ({ children }) => (
-                        <p
-                          className="mb-4 leading-7 text-ink/80"
-                          style={{ textAlign: 'justify', hyphens: 'auto', WebkitHyphens: 'auto' }}
-                        >
+                        <p className="mb-4 text-[17px] leading-8 text-ink/80 sm:text-justify" style={{ hyphens: 'auto', WebkitHyphens: 'auto' }}>
                           {children}
                         </p>
+                      ),
+                      h1: ({ children }) => (
+                        <h1 className="mb-3 mt-8 text-xl font-bold text-ink">{children}</h1>
                       ),
                       h2: ({ children }) => (
                         <h2 className="mb-3 mt-7 text-lg font-semibold text-ink">{children}</h2>
@@ -94,10 +94,42 @@ export function CardContent({ sections, isLoggedIn, slug, cardId }: Props) {
                         <ol className="mb-4 space-y-1.5 pl-5 text-ink/80 [list-style:decimal]">{children}</ol>
                       ),
                       li: ({ children }) => (
-                        <li className="leading-7">{children}</li>
+                        <li className="text-[17px] leading-8">{children}</li>
                       ),
                       strong: ({ children }) => (
                         <strong className="font-semibold text-ink">{children}</strong>
+                      ),
+                      em: ({ children }) => (
+                        <em className="italic text-ink/70">{children}</em>
+                      ),
+                      a: ({ href, children }) => (
+                        <a
+                          href={href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-ember underline-offset-2 hover:underline"
+                        >
+                          {children}
+                        </a>
+                      ),
+                      blockquote: ({ children }) => (
+                        <blockquote className="my-4 border-l-2 border-ember pl-4 italic text-ink/60">
+                          {children}
+                        </blockquote>
+                      ),
+                      code: ({ children, className }) => {
+                        const isBlock = className?.includes('language-')
+                        if (isBlock) return <code className={className}>{children}</code>
+                        return (
+                          <code className="rounded bg-ink/5 px-1.5 py-0.5 font-mono text-[0.85em] text-ink/80">
+                            {children}
+                          </code>
+                        )
+                      },
+                      pre: ({ children }) => (
+                        <pre className="my-4 overflow-x-auto rounded-lg bg-ink/5 p-4 font-mono text-sm text-ink/80">
+                          {children}
+                        </pre>
                       ),
                       hr: () => <hr className="my-6 border-ink/10" />,
                     }}
