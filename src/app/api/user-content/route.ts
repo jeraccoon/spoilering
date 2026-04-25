@@ -43,14 +43,30 @@ export async function POST(req: NextRequest) {
   if (work_id) payload.work_id = work_id
   else payload.episode_id = episode_id
 
-  const onConflict = work_id ? 'user_id,work_id' : 'user_id,episode_id'
+  let findQ = (supabase.from('user_content') as any)
+    .select('id')
+    .eq('user_id', user.id)
+  if (work_id) findQ = findQ.eq('work_id', work_id)
+  else findQ = findQ.eq('episode_id', episode_id)
+  const { data: existing } = await findQ.maybeSingle()
 
-  const { data, error } = await (supabase.from('user_content') as any)
-    .upsert(payload, { onConflict })
-    .select('id, watched, watched_at, notes, work_id, episode_id')
-    .single()
+  const fields = { watched: watched ?? false, watched_at: watched_at || null, notes: notes || null }
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  let data: unknown, error: unknown
+  if (existing) {
+    ;({ data, error } = await (supabase.from('user_content') as any)
+      .update(fields)
+      .eq('id', existing.id)
+      .select('id, watched, watched_at, notes, work_id, episode_id')
+      .single())
+  } else {
+    ;({ data, error } = await (supabase.from('user_content') as any)
+      .insert({ ...payload, ...fields })
+      .select('id, watched, watched_at, notes, work_id, episode_id')
+      .single())
+  }
+
+  if (error) return NextResponse.json({ error: (error as any).message }, { status: 500 })
   return NextResponse.json({ record: data })
 }
 
