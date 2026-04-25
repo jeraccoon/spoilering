@@ -65,8 +65,9 @@ export function SeasonsPanel({ workId, workType }: Props) {
       const res = await fetch(`/api/admin/works/${workId}/fetch-seasons`, { method: 'POST' })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error ?? 'Error al importar')
-      setImportMsg(`${data.seasons} temporadas y ${data.episodes} episodios importados`)
+      setImportMsg(`${data.seasons} temporadas, ${data.episodes} episodios actualizados`)
       await loadSeasons()
+      setTimeout(() => setImportMsg(null), 3000)
     } catch (e: any) {
       setError(e.message)
     } finally {
@@ -110,7 +111,7 @@ export function SeasonsPanel({ workId, workType }: Props) {
             disabled={importing}
             className="rounded-lg border border-ink/20 px-3 py-1.5 text-xs font-semibold text-ink/60 transition hover:border-ink/40 hover:text-ink disabled:opacity-40"
           >
-            {importing ? 'Importando…' : '↻ Reimportar desde TMDb'}
+            {importing ? 'Comprobando…' : '↻ Comprobar nuevas temporadas'}
           </button>
         )}
       </div>

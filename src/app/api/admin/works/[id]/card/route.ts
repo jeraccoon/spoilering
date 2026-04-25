@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { fetchAndStoreSeasonsForWork } from '@/lib/tmdb/fetchSeasons'
 
 export async function POST(
   _request: NextRequest,
@@ -28,7 +29,7 @@ export async function POST(
   }
 
   const { data: work } = await (supabase.from('works') as any)
-    .select('id, title, poster_url, overview, genres').eq('id', workId).maybeSingle()
+    .select('id, title, type, tmdb_id, poster_url, overview, genres').eq('id', workId).maybeSingle()
   if (!work) return NextResponse.json({ error: 'Obra no encontrada' }, { status: 404 })
 
   const { data: existingCard } = await (supabase.from('cards') as any)
@@ -56,6 +57,14 @@ export async function POST(
   const { error: sectionsError } = await (supabase.from('sections') as any).insert(defaultSections)
   if (sectionsError) {
     return NextResponse.json({ cardId: card.id, warning: `Secciones no creadas: ${sectionsError.message}` })
+  }
+
+  if (work.type === 'series' && work.tmdb_id) {
+    try {
+      await fetchAndStoreSeasonsForWork(workId, work.tmdb_id)
+    } catch {
+      // Non-fatal: seasons can be imported later from the editor
+    }
   }
 
   const redirectTo = role === 'user' ? '/perfil' : `/admin/ficha/${card.id}`

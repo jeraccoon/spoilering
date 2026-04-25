@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { fetchAndStoreSeasonsForWork } from '@/lib/tmdb/fetchSeasons'
 
 function toSlug(title: string): string {
   return title
@@ -151,6 +152,14 @@ export async function POST(request: NextRequest) {
       })
     }
     console.log('[create-work] paso 6 OK — secciones insertadas')
+
+    if (type === 'series' && tmdb_id) {
+      try {
+        await fetchAndStoreSeasonsForWork(work.id, tmdb_id)
+      } catch {
+        // Non-fatal: seasons can be imported later from the editor
+      }
+    }
 
     const redirectTo = role === 'user' ? '/perfil' : `/admin/ficha/${card.id}`
     return NextResponse.json({ workId: work.id, cardId: card.id, redirectTo })
