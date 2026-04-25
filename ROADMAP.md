@@ -25,7 +25,9 @@ Spoilering es una utilidad personal y colaborativa para gente que consume series
 - [x] Estado de ficha separado de las acciones en editor (etiqueta vs botones)
 
 ### Pendiente
-- [ ] **Bug: eliminar ficha no desaparece del panel** — tras eliminar, la ficha sigue visible hasta recargar; corregir actualización del estado en cliente
+- [x] Bug: eliminar ficha actualiza estado local sin recargar página
+- [x] Bug: eliminar ficha bloqueada por RLS — corregido usando adminClient en API
+- [x] Obras sin ficha eliminables desde panel admin (borra el work completo con cascade)
 - [ ] **Búsqueda por ISBN o enlace de Goodreads** — implementado pero no funciona
 - [ ] **Sugerir cambios desde ficha pública** — botón visible para todos; si no estás logueado redirige al login con mensaje "Regístrate para sugerir cambios" y al terminar vuelve a la ficha. Solo usuarios registrados pueden enviar sugerencias.
 - [ ] **Invitar usuarios por email desde panel admin** — formulario en /admin/usuarios para enviar invitación por email a una dirección concreta

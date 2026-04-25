@@ -61,6 +61,7 @@ El git está en `C:\Proyectos\spoilering\spoilering\`. El `tsconfig.json` excluy
 - `POST /api/admin/works/[id]/fetch-seasons` — importa temporadas y episodios desde TMDb (upsert)
 - `GET /api/admin/works/[id]/seasons` — lista temporadas con episodios anidados
 - `POST /api/admin/episodes/[id]/card` — crea card y secciones para un episodio
+- `DELETE /api/admin/works/[id]` — elimina work completo (requiere rol editor o admin, usa adminClient)
 
 ## Tablas en Supabase
 - `works` — obras. Unique en tmdb_id y google_books_id. Extra para libros: isbn, publisher, pages, saga, saga_order
@@ -86,7 +87,7 @@ El git está en `C:\Proyectos\spoilering\spoilering\`. El `tsconfig.json` excluy
 - Los usernames NO llevan @ delante — se muestran sin prefijo
 - El login acepta email o username — si no contiene @ busca el email por username
 
-## Estado actual (25 abril 2026)
+## Estado actual (25 abril 2026 — actualizado)
 
 ### Funcionando correctamente
 - Autenticación completa con confirmación por email apuntando a www.spoilering.com
@@ -115,6 +116,9 @@ El git está en `C:\Proyectos\spoilering\spoilering\`. El `tsconfig.json` excluy
 - Gestión de temporadas y episodios: seasons y episodes en BD, importación automática desde TMDb al crear serie, panel SeasonsPanel en editor admin, botón "Comprobar nuevas temporadas" (upsert, no borra datos)
 - Fichas de episodio: POST /api/admin/episodes/[id]/card crea card+secciones por episodio reutilizando el sistema existente
 - Borradores inactivos (+30 días) visibles en panel admin con opción eliminar
+- Eliminar ficha: usa adminClient (service role) para saltarse RLS, comprobación de permisos (creador o admin) en la propia API antes del borrado
+- Eliminar work completo: DELETE /api/admin/works/[id] borra work + cascade elimina seasons y episodes
+- Obras sin ficha: works sin card asociada visibles en panel admin con opción de eliminar
 
 ### Pendiente de resolver
 - Búsqueda por ISBN o enlace de Goodreads no funciona — pendiente de revisar
