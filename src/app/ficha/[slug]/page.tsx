@@ -7,6 +7,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { CardContent } from '@/components/card-content'
 import { SeasonsAccordion } from '@/components/public/SeasonsAccordion'
 import { UserContentPanel } from '@/components/public/UserContentPanel'
+import { SuggestBar } from '@/components/public/SuggestBar'
 import type { CardFull } from '@/types/database'
 import type { Season } from '@/components/public/SeasonsAccordion'
 
@@ -340,6 +341,12 @@ export default async function CardPage({ params }: Props) {
           </div>
         </div>
       </section>
+
+      <SuggestBar
+        isLoggedIn={isLoggedIn}
+        slug={slug}
+        firstSection={sections[0] ? { id: sections[0].id, label: sections[0].label, content: sections[0].content ?? '' } : null}
+      />
 
       <CardContent sections={sections} isLoggedIn={isLoggedIn} slug={slug} cardId={card.id} />
 
