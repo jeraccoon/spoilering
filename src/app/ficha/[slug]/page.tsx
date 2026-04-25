@@ -5,7 +5,9 @@ import type { Metadata } from 'next'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { CardContent } from '@/components/card-content'
+import { SeasonsAccordion } from '@/components/public/SeasonsAccordion'
 import type { CardFull } from '@/types/database'
+import type { Season } from '@/components/public/SeasonsAccordion'
 
 interface Props {
   params: Promise<{ slug: string }>
@@ -34,6 +36,52 @@ async function getCard(slug: string): Promise<CardFull | null> {
         .sort((a: any, b: any) => a.order_index - b.order_index),
     }))
   return { ...card, sections: roots } as CardFull
+}
+
+async function getSeasons(workId: string): Promise<Season[]> {
+  const supabase = process.env.SUPABASE_SERVICE_ROLE_KEY ? createAdminClient() : await createClient()
+
+  const { data: seasons } = await (supabase.from('seasons') as any)
+    .select('id, season_number, name, episode_count, episodes(id, episode_number, name, air_date, runtime, still_path, card_id)')
+    .eq('work_id', workId)
+    .order('season_number', { ascending: true })
+
+  if (!seasons?.length) return []
+
+  // Collect card_ids from episodes that have one
+  const allEps: any[] = seasons.flatMap((s: any) => s.episodes ?? [])
+  const cardIds = [...new Set(allEps.filter((e) => e.card_id).map((e) => e.card_id))]
+
+  const publishedCards: Record<string, any> = {}
+  if (cardIds.length > 0) {
+    const { data: cards } = await (supabase.from('cards') as any)
+      .select('id, status, sections(id, label, short_label, content, order_index)')
+      .in('id', cardIds)
+      .eq('status', 'published')
+    for (const card of cards ?? []) {
+      publishedCards[card.id] = {
+        ...card,
+        sections: (card.sections ?? []).sort((a: any, b: any) => a.order_index - b.order_index),
+      }
+    }
+  }
+
+  return (seasons as any[]).map((s) => ({
+    id: s.id,
+    season_number: s.season_number,
+    name: s.name,
+    episode_count: s.episode_count,
+    episodes: (s.episodes ?? [])
+      .sort((a: any, b: any) => a.episode_number - b.episode_number)
+      .map((ep: any) => ({
+        id: ep.id,
+        episode_number: ep.episode_number,
+        name: ep.name,
+        air_date: ep.air_date,
+        runtime: ep.runtime,
+        card: ep.card_id ? (publishedCards[ep.card_id] ?? null) : null,
+      })),
+  }))
 }
 
 async function getAuthInfo(): Promise<{ role: string | null; isLoggedIn: boolean }> {
@@ -90,7 +138,7 @@ export default async function CardPage({ params }: Props) {
 
   const [card, { role, isLoggedIn }] = await Promise.all([getCard(slug), getAuthInfo()])
   if (!card) notFound()
-
+  const seasons = card.work.type === 'series' ? await getSeasons(card.work.id) : []
   const isDraft = card.status !== 'published'
   const canEdit = role === 'admin' || role === 'editor'
 
@@ -258,6 +306,10 @@ export default async function CardPage({ params }: Props) {
       </section>
 
       <CardContent sections={sections} isLoggedIn={isLoggedIn} slug={slug} cardId={card.id} />
+
+      {seasons.length > 0 && (
+        <SeasonsAccordion seasons={seasons} role={role} isLoggedIn={isLoggedIn} />
+      )}
     </div>
   )
 }
