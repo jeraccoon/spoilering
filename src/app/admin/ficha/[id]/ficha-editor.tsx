@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
+import { SeasonsPanel } from '@/components/admin/SeasonsPanel'
 
 interface Section {
   id: string
@@ -389,6 +390,9 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
           )}
         </div>
       </div>
+
+      {/* Panel de temporadas — solo para series */}
+      <SeasonsPanel workId={card.work.id} workType={card.work.type} />
 
       {/* Modal añadir sección */}
       {modal !== null && (
