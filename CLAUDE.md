@@ -62,9 +62,10 @@ El git está en `C:\Proyectos\spoilering\spoilering\`. El `tsconfig.json` excluy
 - `GET /api/admin/works/[id]/seasons` — lista temporadas con episodios anidados
 - `POST /api/admin/episodes/[id]/card` — crea card y secciones para un episodio
 - `DELETE /api/admin/works/[id]` — elimina work completo (requiere rol editor o admin, usa adminClient)
+- `PATCH /api/admin/works/[id]` — actualiza metadatos de la obra (cast, runtime, imdb_id, urls externas). Requiere rol editor o admin
 
 ## Tablas en Supabase
-- `works` — obras. Unique en tmdb_id y google_books_id. Extra para libros: isbn, publisher, pages, saga, saga_order
+- `works` — obras. Unique en tmdb_id y google_books_id. Extra para libros: isbn, publisher, pages, saga, saga_order. Nuevas columnas: `"cast"` text[], runtime integer, imdb_id text, letterboxd_url text, goodreads_url text, netflix_url text
 - `cards` — fichas (status: draft/published, is_complete: boolean, created_by: uuid)
 - `sections` — secciones en markdown
 - `profiles` — usuario con rol (admin/editor/user), username único, is_active boolean
@@ -87,7 +88,7 @@ El git está en `C:\Proyectos\spoilering\spoilering\`. El `tsconfig.json` excluy
 - Los usernames NO llevan @ delante — se muestran sin prefijo
 - El login acepta email o username — si no contiene @ busca el email por username
 
-## Estado actual (25 abril 2026 — actualizado)
+## Estado actual (25 abril 2026)
 
 ### Funcionando correctamente
 - Autenticación completa con confirmación por email apuntando a www.spoilering.com
@@ -119,9 +120,15 @@ El git está en `C:\Proyectos\spoilering\spoilering\`. El `tsconfig.json` excluy
 - Eliminar ficha: usa adminClient (service role) para saltarse RLS, comprobación de permisos (creador o admin) en la propia API antes del borrado
 - Eliminar work completo: DELETE /api/admin/works/[id] borra work + cascade elimina seasons y episodes
 - Obras sin ficha: works sin card asociada visibles en panel admin con opción de eliminar
+- Metadatos enriquecidos en ficha pública: directores, actores (cast, primeros 5), duración (runtime), géneros, y para libros: autores, editorial, páginas, saga
+- Enlaces externos en ficha pública: IMDb, Letterboxd, Goodreads, Netflix — solo los que tengan URL rellena
+- Al crear obra desde TMDb se obtienen en paralelo: cast (/credits), runtime e imdb_id (/external_ids)
+- Panel "Metadatos y enlaces" en editor de fichas con campos editables por tipo de obra
+- Buscador inline en navbar: píldora "Buscar..." con dropdown de resultados, Enter navega a /buscar
 
 ### Pendiente de resolver
 - Búsqueda por ISBN o enlace de Goodreads no funciona — pendiente de revisar
+- Columna `cast` en PostgreSQL es palabra reservada — usar siempre entre comillas dobles en queries SQL directas (`"cast"`)
 - Ejecutar en Supabase las policies RLS para fichas de usuarios si no se han ejecutado:
   ```sql
   create policy "Usuarios autenticados pueden crear works"
