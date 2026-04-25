@@ -5,7 +5,6 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { SpoilerGate } from '@/components/spoiler-gate'
 import { SuggestionModal } from '@/components/suggestion-modal'
-import { NoteWidget } from '@/components/note-widget'
 import type { SectionWithChildren } from '@/types/database'
 
 interface Props {
@@ -124,7 +123,6 @@ export function CardContent({ sections, isLoggedIn, slug, cardId }: Props) {
             <p className="text-ink/30">Esta ficha todavía no tiene contenido.</p>
           )}
 
-          {isLoggedIn && <NoteWidget cardId={cardId} />}
         </div>
       </div>
     </SpoilerGate>

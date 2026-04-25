@@ -76,8 +76,11 @@ export function UserContentPanel({ workId, initialRecord }: Props) {
       <div className="mb-3 flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <span className="text-xs font-semibold uppercase tracking-wider text-ink/40">Mi actividad</span>
-          <span className="rounded-full border border-ink/15 px-2 py-0.5 text-[10px] text-ink/35">
-            🔒 Solo tú
+          <span className="flex items-center gap-1 rounded-full border border-ink/15 px-2 py-0.5 text-[10px] text-ink/40">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="h-3 w-3 text-moss/70">
+              <path fillRule="evenodd" d="M8 1a3.5 3.5 0 0 0-3.5 3.5V6H4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-.5V4.5A3.5 3.5 0 0 0 8 1Zm2 5V4.5a2 2 0 1 0-4 0V6h4Z" clipRule="evenodd" />
+            </svg>
+            Solo tú
           </span>
         </div>
         <div className="flex items-center gap-2 text-xs">
@@ -115,13 +118,13 @@ export function UserContentPanel({ workId, initialRecord }: Props) {
       </div>
 
       {/* Notes */}
-      <div className="mt-3">
+      <div className="mt-3 rounded-lg border border-dashed border-ink/15 bg-paper p-2">
         <textarea
           value={notes}
           onChange={(e) => handleNotesChange(e.target.value)}
           placeholder="Notas personales... ¿con quién lo viste? ¿qué te pareció?"
           rows={2}
-          className="w-full resize-none rounded-lg border border-ink/15 bg-paper px-3 py-2 text-sm leading-relaxed text-ink/75 placeholder:text-ink/25 outline-none transition focus:border-moss/40 focus:ring-1 focus:ring-moss/20"
+          className="w-full resize-none bg-transparent px-1 py-1 text-sm leading-relaxed text-ink/75 placeholder:text-ink/25 outline-none"
         />
       </div>
     </div>
