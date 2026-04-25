@@ -11,7 +11,7 @@ async function getCard(id: string) {
 
   const { data: card } = await (supabase
     .from('cards')
-    .select('*, work:works(id, title, type, year, slug, poster_url, overview, genres, authors, directors, "cast", runtime, seasons_count, imdb_id, letterboxd_url, goodreads_url, netflix_url, tmdb_id, google_books_id, isbn, publisher, pages, saga, saga_order), sections(*)')
+    .select('*, work:works(id, title, type, year, slug, poster_url, overview, genres, authors, directors, "cast", runtime, seasons_count, imdb_id, letterboxd_url, goodreads_url, filmaffinity_url, tmdb_id, google_books_id, isbn, publisher, pages, saga, saga_order), sections(*)')
     .eq('id', id)
     .single() as any)
 

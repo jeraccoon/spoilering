@@ -324,7 +324,7 @@ export default async function CardPage({ params }: Props) {
                 if (work.google_books_id) links.push({ href: `https://books.google.com/books?id=${work.google_books_id}`, label: 'Google Books' })
                 links.push({ href: `https://openlibrary.org/search?q=${encodeURIComponent(work.title)}`, label: 'Open Library' })
               }
-              if (w.netflix_url) links.push({ href: w.netflix_url, label: 'Netflix' })
+              if (w.filmaffinity_url) links.push({ href: w.filmaffinity_url, label: 'Filmaffinity' })
               if (links.length === 0) return null
               return (
                 <div className="flex flex-wrap gap-2">

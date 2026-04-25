@@ -28,7 +28,7 @@ interface Work {
   imdb_id: string | null
   letterboxd_url: string | null
   goodreads_url: string | null
-  netflix_url: string | null
+  filmaffinity_url: string | null
 }
 
 interface Card {
@@ -156,7 +156,7 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
     imdb_id: initialCard.work.imdb_id ?? '',
     letterboxd_url: initialCard.work.letterboxd_url ?? '',
     goodreads_url: initialCard.work.goodreads_url ?? '',
-    netflix_url: initialCard.work.netflix_url ?? '',
+    filmaffinity_url: initialCard.work.filmaffinity_url ?? '',
   })
   const [savingMeta, setSavingMeta] = useState(false)
   const [savedMeta, setSavedMeta] = useState(false)
@@ -261,7 +261,7 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
           imdb_id: meta.imdb_id.trim() || null,
           letterboxd_url: meta.letterboxd_url.trim() || null,
           goodreads_url: meta.goodreads_url.trim() || null,
-          netflix_url: meta.netflix_url.trim() || null,
+          filmaffinity_url: meta.filmaffinity_url.trim() || null,
         }),
       })
       if (!res.ok) {
@@ -567,12 +567,12 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
             </div>
           )}
           <div>
-            <label className="mb-1.5 block text-xs font-semibold text-ink/60">URL de Netflix</label>
+            <label className="mb-1.5 block text-xs font-semibold text-ink/60">URL de Filmaffinity</label>
             <input
               type="url"
-              value={meta.netflix_url}
-              onChange={(e) => setMeta((p) => ({ ...p, netflix_url: e.target.value }))}
-              placeholder="https://www.netflix.com/title/..."
+              value={meta.filmaffinity_url}
+              onChange={(e) => setMeta((p) => ({ ...p, filmaffinity_url: e.target.value }))}
+              placeholder="https://www.filmaffinity.com/es/film..."
               className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder-ink/30 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
             />
           </div>

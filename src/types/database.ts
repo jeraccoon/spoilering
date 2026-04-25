@@ -38,7 +38,7 @@ export interface Work {
   imdb_id: string | null
   letterboxd_url: string | null
   goodreads_url: string | null
-  netflix_url: string | null
+  filmaffinity_url: string | null
   slug: string
   created_at: string
   updated_at: string
