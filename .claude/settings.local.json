@@ -12,7 +12,8 @@
       "Bash(git commit --allow-empty -m ' *)",
       "Bash(node -e \"console.log\\(require\\('./node_modules/remark-gfm/package.json'\\).version\\)\")",
       "Bash(node -e \"require\\('remark-gfm'\\)\")",
-      "Bash(git commit *)"
+      "Bash(git commit *)",
+      "Bash(npx next *)"
     ]
   }
 }

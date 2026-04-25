@@ -83,7 +83,9 @@ export function AdminCardsFilter({
     setError(null)
     try {
       const res = await fetch(`/api/admin/cards/${cardId}`, { method: 'DELETE' })
-      if (!res.ok) { const d = await res.json(); setError(d.error ?? 'Error al eliminar'); return }
+      const data = await res.json()
+      console.log('[DELETE card]', cardId, res.status, data)
+      if (!res.ok) { setError(data.error ?? 'Error al eliminar'); return }
       setCards((prev) => prev.filter((c) => c.id !== cardId))
     } catch {
       setError('Error inesperado al eliminar')

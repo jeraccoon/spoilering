@@ -94,6 +94,8 @@ export function PerfilCardsSection({
     setDeleting(cardId)
     try {
       const res = await fetch(`/api/admin/cards/${cardId}`, { method: 'DELETE' })
+      const data = await res.json()
+      console.log('[DELETE card]', cardId, res.status, data)
       if (res.ok) setCards((prev) => prev.filter((c) => c.id !== cardId))
     } finally {
       setDeleting(null)
