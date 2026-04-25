@@ -136,6 +136,7 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
     return map
   })
   const [saving, setSaving] = useState<string | null>(null)
+  const [savedId, setSavedId] = useState<string | null>(null)
   const [generatingAll, setGeneratingAll] = useState(false)
   const [generateError, setGenerateError] = useState<string | null>(null)
   const [generatingSections, setGeneratingSections] = useState<Set<string>>(new Set())
@@ -160,6 +161,8 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
       body: JSON.stringify({ content: editContent[sectionId] ?? '' }),
     })
     setSaving(null)
+    setSavedId(sectionId)
+    setTimeout(() => setSavedId((prev) => (prev === sectionId ? null : prev)), 2000)
   }
 
   async function generateAll() {
@@ -238,53 +241,82 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
     <div className="mx-auto max-w-6xl px-4 py-8">
 
       {/* Cabecera */}
-      <div className="mb-8 flex flex-wrap items-start gap-5">
+      <div className="mb-6 flex flex-wrap items-start gap-5">
         {card.work.poster_url && (
           <div className="relative hidden h-28 w-20 shrink-0 overflow-hidden rounded-lg border border-ink/10 sm:block">
             <Image src={card.work.poster_url} alt={card.work.title} fill className="object-cover" unoptimized />
           </div>
         )}
-        <div className="flex flex-1 flex-col justify-center gap-1.5">
-          <div className="flex items-center gap-2 text-sm text-ink/50">
-            <span>{TYPE_LABELS[card.work.type] ?? card.work.type}</span>
-            {card.work.year && <><span>·</span><span>{card.work.year}</span></>}
+        <div className="flex min-w-0 flex-1 flex-col justify-center gap-1">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-sm text-ink/50">
+              {TYPE_LABELS[card.work.type] ?? card.work.type}
+              {card.work.year && ` · ${card.work.year}`}
+            </span>
+            <button
+              onClick={() => router.push('/admin')}
+              className="shrink-0 text-sm font-semibold text-ink/40 hover:text-ink"
+            >
+              ← Admin
+            </button>
           </div>
           <h1 className="text-2xl font-black tracking-tight text-ink">{card.work.title}</h1>
-          <div className="flex flex-wrap items-center gap-2">
-            <span className={`rounded-full border px-2.5 py-0.5 text-xs font-semibold ${STATUS_COLORS[card.status]}`}>
-              {STATUS_LABELS[card.status] ?? card.status}
-            </span>
+        </div>
+      </div>
+
+      {/* Barra de acciones */}
+      <div className="mb-7 flex flex-wrap items-end justify-end gap-3 border-b border-ink/10 pb-5">
+        {/* Generar con IA */}
+        <div className="flex flex-col items-center gap-1">
+          <button
+            onClick={generateAll}
+            disabled={generatingAll || card.sections.length === 0}
+            className="flex items-center gap-1.5 rounded-lg border border-plum/30 bg-plum/5 px-3 py-1.5 text-xs font-semibold text-plum transition hover:bg-plum/10 disabled:opacity-50"
+          >
+            {generatingAll
+              ? `⏳ Generando… (${card.sections.length - generatingSections.size}/${card.sections.length})`
+              : '✨ Generar todo con IA'}
+          </button>
+          {generateError && (
+            <span className="text-[10px] text-ember">{generateError}</span>
+          )}
+        </div>
+
+        {/* Estado / volver a borrador */}
+        <div className="flex flex-col items-center gap-1">
+          {card.status === 'published' ? (
             <button
               onClick={toggleStatus}
               disabled={statusLoading}
-              className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition disabled:opacity-50 ${
-                card.status === 'published'
-                  ? 'border border-ink/20 text-ink/60 hover:bg-ink/5'
-                  : 'bg-ember text-white hover:bg-ember/90'
-              }`}
+              className="rounded-lg border border-ink/20 px-3 py-1.5 text-xs font-semibold text-ink/60 transition hover:bg-ink/5 disabled:opacity-50"
             >
-              {statusLoading ? '…' : card.status === 'published' ? 'Volver a borrador' : 'Publicar'}
+              {statusLoading ? '…' : 'Volver a borrador'}
             </button>
-            <button
-              onClick={generateAll}
-              disabled={generatingAll || card.sections.length === 0}
-              className="flex items-center gap-1.5 rounded-lg border border-plum/30 bg-plum/5 px-3 py-1.5 text-xs font-semibold text-plum transition hover:bg-plum/10 disabled:opacity-50"
-            >
-              {generatingAll
-              ? `⏳ Generando… (${card.sections.length - generatingSections.size}/${card.sections.length})`
-              : '✨ Generar todo con IA'}
-            </button>
-          </div>
-          {generateError && (
-            <p className="mt-1 text-xs text-ember">{generateError}</p>
+          ) : (
+            <span className={`rounded-lg border px-3 py-1.5 text-xs font-semibold ${STATUS_COLORS.draft}`}>
+              Borrador
+            </span>
           )}
+          <span className="text-[10px] text-ink/40">Solo visible para ti</span>
         </div>
-        <button
-          onClick={() => router.push('/admin')}
-          className="text-sm font-semibold text-ink/40 hover:text-ink"
-        >
-          ← Admin
-        </button>
+
+        {/* Publicar */}
+        <div className="flex flex-col items-center gap-1">
+          {card.status === 'draft' ? (
+            <button
+              onClick={toggleStatus}
+              disabled={statusLoading}
+              className="rounded-lg bg-ember px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-ember/90 disabled:opacity-50"
+            >
+              {statusLoading ? '…' : 'Publicar'}
+            </button>
+          ) : (
+            <span className={`rounded-lg border px-3 py-1.5 text-xs font-semibold ${STATUS_COLORS.published}`}>
+              Publicada
+            </span>
+          )}
+          <span className="text-[10px] text-ink/40">Visible para todos</span>
+        </div>
       </div>
 
       <div className="flex gap-6">
@@ -356,30 +388,29 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
             </div>
           ) : (
             <div>
-              <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+              <div className="mb-3 flex items-center gap-3">
                 <div>
                   {parentOfSelected && (
                     <p className="text-xs text-ink/40">{parentOfSelected.label} /</p>
                   )}
                   <h2 className="text-lg font-black text-ink">{selectedSection.label}</h2>
                 </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => saveContent(selectedSection.id)}
-                    disabled={saving === selectedSection.id}
-                    className="rounded-lg bg-ember px-4 py-2 text-xs font-semibold text-white transition hover:bg-ember/90 disabled:opacity-50"
-                  >
-                    {saving === selectedSection.id ? 'Guardando…' : 'Guardar'}
-                  </button>
-                </div>
+                {saving === selectedSection.id && (
+                  <span className="text-xs text-ink/40">Guardando…</span>
+                )}
+                {savedId === selectedSection.id && saving !== selectedSection.id && (
+                  <span className="text-xs text-moss">✓ Guardado</span>
+                )}
               </div>
 
               <textarea
                 value={editContent[selectedSection.id] ?? ''}
                 onChange={(e) => setEditContent((prev) => ({ ...prev, [selectedSection.id]: e.target.value }))}
-                rows={22}
+                onBlur={() => saveContent(selectedSection.id)}
+                rows={11}
+                style={{ minHeight: '240px' }}
                 placeholder="Escribe el contenido de esta sección o usa el botón ✨ para generarlo con IA…"
-                className="w-full rounded-xl border border-ink/10 bg-paper px-4 py-3 text-sm leading-relaxed text-ink placeholder-ink/25 outline-none transition focus:border-ember focus:ring-2 focus:ring-ember/20"
+                className="w-full resize-y rounded-xl border border-ink/10 bg-paper px-4 py-3 text-sm leading-relaxed text-ink placeholder-ink/25 outline-none transition focus:border-ember focus:ring-2 focus:ring-ember/20"
               />
 
               <div className="mt-2 flex items-center justify-between text-xs text-ink/30">
