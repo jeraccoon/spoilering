@@ -311,40 +311,26 @@ export default function NuevaObraPage() {
     setDuplicateSlug(null)
     setSubmitting(true)
     try {
-      const payload = buildPayload()
-      const res = await fetch('/api/admin/works', {
+      const res = await fetch('/api/admin/create-work', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(buildPayload()),
       })
       const data = await res.json()
       if (!res.ok) {
-        if (data.error === 'duplicate') {
-          if (!data.hasCard) {
-            // Work exists without a card — create one transparently
-            const r2 = await fetch('/api/admin/create-work', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(payload),
-            })
-            const d2 = await r2.json()
-            if (d2.redirectTo) { router.push(d2.redirectTo); return }
-            if (d2.cardId) { router.push(`/admin/ficha/${d2.cardId}`); return }
-            setError(d2.error ?? 'Error al crear la ficha')
-          } else {
-            // Work already has an active card — show the link
-            setDuplicateSlug(data.slug ?? null)
-          }
+        if (data.slug) {
+          // Ya existe una ficha activa para esta obra
+          setDuplicateSlug(data.slug)
         } else {
-          setError(data.error)
+          setError(data.error ?? 'Error al crear la obra')
         }
         setSubmitting(false)
         return
       }
       if (data.redirectTo) {
         router.push(data.redirectTo)
-      } else {
-        router.push(`/admin/nueva-ficha/${data.workId}`)
+      } else if (data.cardId) {
+        router.push(`/admin/ficha/${data.cardId}`)
       }
     } catch {
       setError('Error inesperado. Inténtalo de nuevo.')
