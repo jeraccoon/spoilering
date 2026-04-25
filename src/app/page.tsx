@@ -49,6 +49,14 @@ export default async function HomePage() {
               Crear una cuenta gratis
             </Link>
           )}
+          {isLoggedIn && (
+            <Link
+              href="/nueva-obra"
+              className="rounded-lg border border-ember/40 px-5 py-2.5 text-sm font-semibold text-ember transition hover:border-ember hover:bg-ember/5"
+            >
+              + Añadir obra
+            </Link>
+          )}
         </div>
       </section>
 
