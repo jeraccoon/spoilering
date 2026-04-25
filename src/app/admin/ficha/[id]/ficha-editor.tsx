@@ -137,6 +137,7 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
   })
   const [saving, setSaving] = useState<string | null>(null)
   const [savedId, setSavedId] = useState<string | null>(null)
+  const [saveError, setSaveError] = useState<string | null>(null)
   const [generatingAll, setGeneratingAll] = useState(false)
   const [generateError, setGenerateError] = useState<string | null>(null)
   const [generatingSections, setGeneratingSections] = useState<Set<string>>(new Set())
@@ -155,14 +156,21 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
 
   async function saveContent(sectionId: string) {
     setSaving(sectionId)
-    await fetch(`/api/admin/sections/${sectionId}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ content: editContent[sectionId] ?? '' }),
-    })
-    setSaving(null)
-    setSavedId(sectionId)
-    setTimeout(() => setSavedId((prev) => (prev === sectionId ? null : prev)), 2000)
+    setSaveError(null)
+    try {
+      const res = await fetch(`/api/admin/sections/${sectionId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: editContent[sectionId] ?? '' }),
+      })
+      if (!res.ok) throw new Error()
+      setSavedId(sectionId)
+      setTimeout(() => setSavedId((prev) => (prev === sectionId ? null : prev)), 2000)
+    } catch {
+      setSaveError(sectionId)
+    } finally {
+      setSaving(null)
+    }
   }
 
   async function generateAll() {
@@ -397,7 +405,10 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
                   <span className="text-xs text-ink/40">Guardando…</span>
                 )}
                 {savedId === selectedSection.id && saving !== selectedSection.id && (
-                  <span className="text-xs text-moss">✓ Guardado</span>
+                  <span className="text-xs text-moss">Guardado ✓</span>
+                )}
+                {saveError === selectedSection.id && saving !== selectedSection.id && (
+                  <span className="text-xs text-ember">Error al guardar</span>
                 )}
               </div>
 
