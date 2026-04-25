@@ -75,27 +75,15 @@ export default function NuevaObraPage() {
   const [form, setForm] = useState<FormState>(EMPTY_FORM)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [role, setRole] = useState<string>('user')
   const [duplicateSlug, setDuplicateSlug] = useState<string | null>(null)
-  const [duplicateHasCard, setDuplicateHasCard] = useState<boolean | null>(null)
-  const [duplicateWorkId, setDuplicateWorkId] = useState<string | null>(null)
   const [existingCard, setExistingCard] = useState<{ cardId: string } | null>(null)
   const [checkingDuplicate, setCheckingDuplicate] = useState(false)
-  const [creatingCard, setCreatingCard] = useState(false)
   const [posterMode, setPosterMode] = useState<'url' | 'file'>('url')
   const [uploading, setUploading] = useState(false)
   const [isbnQuery, setIsbnQuery] = useState('')
   const [isbnSearching, setIsbnSearching] = useState(false)
   const [isbnError, setIsbnError] = useState<string | null>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-
-  useEffect(() => {
-    supabase.auth.getUser().then(async ({ data: { user } }) => {
-      if (!user) return
-      const { data: profile } = await (supabase.from('profiles') as any).select('role').eq('id', user.id).single()
-      if (profile?.role) setRole(profile.role)
-    })
-  }, [])
 
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current)
@@ -117,8 +105,6 @@ export default function NuevaObraPage() {
     setQuery('')
     setExistingCard(null)
     setDuplicateSlug(null)
-    setDuplicateHasCard(null)
-    setDuplicateWorkId(null)
     setForm({
       type: result.type,
       title: result.title,
@@ -300,6 +286,24 @@ export default function NuevaObraPage() {
     }
   }
 
+  function buildPayload() {
+    return {
+      ...form,
+      year: form.year ? parseInt(form.year) : null,
+      seasons_count: form.seasons_count ? parseInt(form.seasons_count) : null,
+      tmdb_id: form.tmdb_id ? parseInt(form.tmdb_id) : null,
+      google_books_id: form.google_books_id || null,
+      genres: form.genres.split(',').map((s) => s.trim()).filter(Boolean),
+      authors: form.authors.split(',').map((s) => s.trim()).filter(Boolean),
+      directors: form.directors.split(',').map((s) => s.trim()).filter(Boolean),
+      isbn: form.isbn || null,
+      publisher: form.publisher || null,
+      pages: form.pages ? parseInt(form.pages) : null,
+      saga: form.saga || null,
+      saga_order: form.saga_order ? parseInt(form.saga_order) : null,
+    }
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!form.title || !form.type) return
@@ -307,31 +311,30 @@ export default function NuevaObraPage() {
     setDuplicateSlug(null)
     setSubmitting(true)
     try {
+      const payload = buildPayload()
       const res = await fetch('/api/admin/works', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...form,
-          year: form.year ? parseInt(form.year) : null,
-          seasons_count: form.seasons_count ? parseInt(form.seasons_count) : null,
-          tmdb_id: form.tmdb_id ? parseInt(form.tmdb_id) : null,
-          google_books_id: form.google_books_id || null,
-          genres: form.genres.split(',').map((s) => s.trim()).filter(Boolean),
-          authors: form.authors.split(',').map((s) => s.trim()).filter(Boolean),
-          directors: form.directors.split(',').map((s) => s.trim()).filter(Boolean),
-          isbn: form.isbn || null,
-          publisher: form.publisher || null,
-          pages: form.pages ? parseInt(form.pages) : null,
-          saga: form.saga || null,
-          saga_order: form.saga_order ? parseInt(form.saga_order) : null,
-        }),
+        body: JSON.stringify(payload),
       })
       const data = await res.json()
       if (!res.ok) {
         if (data.error === 'duplicate') {
-          setDuplicateSlug(data.slug ?? null)
-          setDuplicateHasCard(data.hasCard ?? null)
-          setDuplicateWorkId(data.workId ?? null)
+          if (!data.hasCard) {
+            // Work exists without a card — create one transparently
+            const r2 = await fetch('/api/admin/create-work', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload),
+            })
+            const d2 = await r2.json()
+            if (d2.redirectTo) { router.push(d2.redirectTo); return }
+            if (d2.cardId) { router.push(`/admin/ficha/${d2.cardId}`); return }
+            setError(d2.error ?? 'Error al crear la ficha')
+          } else {
+            // Work already has an active card — show the link
+            setDuplicateSlug(data.slug ?? null)
+          }
         } else {
           setError(data.error)
         }
@@ -348,46 +351,6 @@ export default function NuevaObraPage() {
       setSubmitting(false)
     }
   }
-
-  async function handleCreateCardForExistingWork() {
-    setCreatingCard(true)
-    setError(null)
-    try {
-      const res = await fetch('/api/admin/create-work', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...form,
-          year: form.year ? parseInt(form.year) : null,
-          seasons_count: form.seasons_count ? parseInt(form.seasons_count) : null,
-          tmdb_id: form.tmdb_id ? parseInt(form.tmdb_id) : null,
-          google_books_id: form.google_books_id || null,
-          genres: form.genres.split(',').map((s) => s.trim()).filter(Boolean),
-          authors: form.authors.split(',').map((s) => s.trim()).filter(Boolean),
-          directors: form.directors.split(',').map((s) => s.trim()).filter(Boolean),
-          isbn: form.isbn || null,
-          publisher: form.publisher || null,
-          pages: form.pages ? parseInt(form.pages) : null,
-          saga: form.saga || null,
-          saga_order: form.saga_order ? parseInt(form.saga_order) : null,
-        }),
-      })
-      const data = await res.json()
-      if (data.redirectTo) {
-        router.push(data.redirectTo)
-      } else if (data.cardId) {
-        router.push(`/admin/ficha/${data.cardId}`)
-      } else {
-        setError(data.error ?? 'Error al crear la ficha')
-      }
-    } catch {
-      setError('Error inesperado. Inténtalo de nuevo.')
-    } finally {
-      setCreatingCard(false)
-    }
-  }
-
-  const isPrivileged = role === 'admin' || role === 'editor'
 
   const searchLabel = searchType === 'book'
     ? 'Buscar en Google Books y Open Library'
@@ -623,43 +586,17 @@ export default function NuevaObraPage() {
 
         {duplicateSlug !== null && (
           <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-4 text-sm text-amber-900">
-            {duplicateHasCard ? (
-              <>
-                <p className="font-semibold">Esta obra ya está en Spoilering.</p>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <a href={`/ficha/${duplicateSlug}`} target="_blank" rel="noopener noreferrer"
-                    className="rounded-lg bg-ink px-4 py-2 text-xs font-semibold text-paper transition hover:bg-ember">
-                    Ver la ficha →
-                  </a>
-                  <a href={`/ficha/${duplicateSlug}`} target="_blank" rel="noopener noreferrer"
-                    className="rounded-lg border border-ink/20 px-4 py-2 text-xs font-semibold text-ink transition hover:border-ink/40 hover:bg-ink/5">
-                    Sugerir una corrección
-                  </a>
-                </div>
-              </>
-            ) : isPrivileged ? (
-              <>
-                <p className="font-semibold">Esta obra existe pero su ficha fue eliminada.</p>
-                <p className="mt-1 text-amber-800/70">Puedes crear una nueva ficha para esta obra sin duplicarla.</p>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    onClick={handleCreateCardForExistingWork}
-                    disabled={creatingCard}
-                    className="rounded-lg bg-ink px-4 py-2 text-xs font-semibold text-paper transition hover:bg-ember disabled:opacity-50"
-                  >
-                    {creatingCard ? 'Creando…' : 'Crear ficha para esta obra →'}
-                  </button>
-                </div>
-              </>
-            ) : (
-              <>
-                <p className="font-semibold">Esta obra está en Spoilering pero su ficha fue eliminada.</p>
-                <p className="mt-1 text-amber-800/70">
-                  Puedes sugerir que se vuelva a crear contactando con nosotros.
-                </p>
-              </>
-            )}
+            <p className="font-semibold">Esta obra ya está en Spoilering.</p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <a href={`/ficha/${duplicateSlug}`} target="_blank" rel="noopener noreferrer"
+                className="rounded-lg bg-ink px-4 py-2 text-xs font-semibold text-paper transition hover:bg-ember">
+                Ver la ficha →
+              </a>
+              <a href={`/ficha/${duplicateSlug}`} target="_blank" rel="noopener noreferrer"
+                className="rounded-lg border border-ink/20 px-4 py-2 text-xs font-semibold text-ink transition hover:border-ink/40 hover:bg-ink/5">
+                Sugerir una corrección
+              </a>
+            </div>
           </div>
         )}
 
