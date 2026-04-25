@@ -72,17 +72,25 @@ export async function POST(request: NextRequest) {
 
   if (workError) {
     if (workError.code === '23505') {
-      let existingSlug: string | null = null
+      let existingWork: { id: string; slug: string } | null = null
       if (tmdb_id) {
         const { data } = await (supabase.from('works') as any)
-          .select('slug').eq('tmdb_id', tmdb_id).maybeSingle()
-        existingSlug = data?.slug ?? null
+          .select('id, slug').eq('tmdb_id', tmdb_id).maybeSingle()
+        existingWork = data ?? null
       } else if (google_books_id) {
         const { data } = await (supabase.from('works') as any)
-          .select('slug').eq('google_books_id', google_books_id).maybeSingle()
-        existingSlug = data?.slug ?? null
+          .select('id, slug').eq('google_books_id', google_books_id).maybeSingle()
+        existingWork = data ?? null
       }
-      return NextResponse.json({ error: 'duplicate', slug: existingSlug }, { status: 409 })
+      if (!existingWork) {
+        return NextResponse.json({ error: 'duplicate', slug: null, hasCard: false }, { status: 409 })
+      }
+      const { data: existingCard } = await (supabase.from('cards') as any)
+        .select('id').eq('work_id', existingWork.id).maybeSingle()
+      return NextResponse.json(
+        { error: 'duplicate', slug: existingWork.slug, workId: existingWork.id, hasCard: !!existingCard },
+        { status: 409 }
+      )
     }
     return NextResponse.json({ error: workError.message }, { status: 500 })
   }
