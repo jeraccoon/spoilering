@@ -146,6 +146,7 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
   const [savedId, setSavedId] = useState<string | null>(null)
   const [saveError, setSaveError] = useState<string | null>(null)
   const [generatingAll, setGeneratingAll] = useState(false)
+  const [showAiWarning, setShowAiWarning] = useState(false)
   const [generateError, setGenerateError] = useState<string | null>(null)
   const [generatingSections, setGeneratingSections] = useState<Set<string>>(new Set())
   const [statusLoading, setStatusLoading] = useState(false)
@@ -236,6 +237,7 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
     )
 
     setGeneratingAll(false)
+    setShowAiWarning(true)
   }
 
   async function toggleStatus() {
@@ -405,6 +407,22 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
           <p className="mt-2 text-right text-[11px] text-ember">{generateError}</p>
         )}
       </div>
+
+      {showAiWarning && (
+        <div className="mb-5 flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
+          <span className="mt-0.5 text-amber-500">⚠️</span>
+          <div className="flex-1 text-sm text-amber-800">
+            <span className="font-semibold">Revisa el contenido antes de publicar.</span>
+            {' '}La IA puede cometer errores, inventar datos o saltarse detalles importantes.
+          </div>
+          <button
+            onClick={() => setShowAiWarning(false)}
+            className="text-lg leading-none text-amber-400 hover:text-amber-600"
+          >
+            ×
+          </button>
+        </div>
+      )}
 
       <div className="flex gap-6">
         {/* Panel izquierdo — secciones */}
