@@ -161,6 +161,7 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
   const [savingMeta, setSavingMeta] = useState(false)
   const [savedMeta, setSavedMeta] = useState(false)
   const [metaError, setMetaError] = useState<string | null>(null)
+  const [markAsWatched, setMarkAsWatched] = useState(false)
 
   const allSections: Section[] = []
   function flatten(sections: Section[]) {
@@ -242,7 +243,16 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status: next }),
     })
-    if (res.ok) setCard((c) => ({ ...c, status: next }))
+    if (res.ok) {
+      setCard((c) => ({ ...c, status: next }))
+      if (next === 'published' && markAsWatched) {
+        await fetch('/api/user-content', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ work_id: card.work.id, watched: true }),
+        })
+      }
+    }
     setStatusLoading(false)
   }
 
@@ -357,16 +367,27 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
             </button>
 
             {card.status === 'draft' ? (
-              <button
-                onClick={toggleStatus}
-                disabled={statusLoading}
-                className="rounded-lg bg-ember px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-ember/90 disabled:opacity-50"
-              >
-                {statusLoading ? '…' : 'Publicar'}
-              </button>
+              <>
+                <label className="flex cursor-pointer items-center gap-1.5 text-xs font-semibold text-ink/50 transition hover:text-ink/80">
+                  <input
+                    type="checkbox"
+                    checked={markAsWatched}
+                    onChange={(e) => setMarkAsWatched(e.target.checked)}
+                    className="accent-moss"
+                  />
+                  Marcar como vista
+                </label>
+                <button
+                  onClick={() => void toggleStatus()}
+                  disabled={statusLoading}
+                  className="rounded-lg bg-ember px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-ember/90 disabled:opacity-50"
+                >
+                  {statusLoading ? '…' : 'Publicar'}
+                </button>
+              </>
             ) : (
               <button
-                onClick={toggleStatus}
+                onClick={() => void toggleStatus()}
                 disabled={statusLoading}
                 className="rounded-lg border border-ink/20 px-3 py-1.5 text-xs font-semibold text-ink/60 transition hover:border-ink/40 hover:bg-ink/5 disabled:opacity-50"
               >
@@ -495,15 +516,9 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
         <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-xs font-semibold uppercase tracking-wider text-ink/40">Metadatos y enlaces</h2>
           <div className="flex items-center gap-3">
-            {savedMeta && <span className="text-xs text-moss">Guardado ✓</span>}
+            {savingMeta && <span className="text-xs text-ink/40">Guardando…</span>}
+            {savedMeta && !savingMeta && <span className="text-xs text-moss">Guardado ✓</span>}
             {metaError && <span className="text-xs text-ember">{metaError}</span>}
-            <button
-              onClick={saveMeta}
-              disabled={savingMeta}
-              className="rounded-lg bg-ink px-3 py-1.5 text-xs font-semibold text-paper transition hover:bg-ember disabled:opacity-50"
-            >
-              {savingMeta ? 'Guardando…' : 'Guardar metadatos'}
-            </button>
           </div>
         </div>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -513,6 +528,7 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
               type="text"
               value={meta.cast}
               onChange={(e) => setMeta((p) => ({ ...p, cast: e.target.value }))}
+              onBlur={() => void saveMeta()}
               placeholder="Actor 1, Actor 2, Actor 3…"
               className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder-ink/30 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
             />
@@ -525,6 +541,7 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
                 min="0"
                 value={meta.runtime}
                 onChange={(e) => setMeta((p) => ({ ...p, runtime: e.target.value }))}
+                onBlur={() => void saveMeta()}
                 placeholder="Ej: 120"
                 className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder-ink/30 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
               />
@@ -537,18 +554,20 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
                 type="text"
                 value={meta.imdb_id}
                 onChange={(e) => setMeta((p) => ({ ...p, imdb_id: e.target.value }))}
+                onBlur={() => void saveMeta()}
                 placeholder="tt1234567"
                 className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder-ink/30 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
               />
             </div>
           )}
-          {card.work.type === 'movie' && (
+          {card.work.type !== 'book' && (
             <div>
               <label className="mb-1.5 block text-xs font-semibold text-ink/60">URL de Letterboxd</label>
               <input
                 type="url"
                 value={meta.letterboxd_url}
                 onChange={(e) => setMeta((p) => ({ ...p, letterboxd_url: e.target.value }))}
+                onBlur={() => void saveMeta()}
                 placeholder="https://letterboxd.com/film/..."
                 className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder-ink/30 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
               />
@@ -561,6 +580,7 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
                 type="url"
                 value={meta.goodreads_url}
                 onChange={(e) => setMeta((p) => ({ ...p, goodreads_url: e.target.value }))}
+                onBlur={() => void saveMeta()}
                 placeholder="https://www.goodreads.com/book/show/..."
                 className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder-ink/30 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
               />
@@ -572,6 +592,7 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
               type="url"
               value={meta.filmaffinity_url}
               onChange={(e) => setMeta((p) => ({ ...p, filmaffinity_url: e.target.value }))}
+              onBlur={() => void saveMeta()}
               placeholder="https://www.filmaffinity.com/es/film..."
               className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder-ink/30 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
             />
