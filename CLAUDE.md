@@ -152,7 +152,6 @@ El git está en `C:\Proyectos\spoilering\spoilering\`. El `tsconfig.json` excluy
 
 ### Pendiente de resolver (próxima sesión)
 - **Letterboxd y Trakt URL — solo manual** — no se pueden auto-rellenar desde Vercel (Letterboxd bloquea peticiones del servidor, Trakt falla también). El flujo actual es: clic en "Buscar en Letterboxd ↗" → copiar URL → pegar. Aceptado así por ahora.
-- **Borrador existente al crear obra** — si el usuario crea una obra, abandona el borrador y vuelve a crearla, recibe error "ya existe". Debería redirigir al borrador en lugar de dar error. Prompt preparado pero pendiente de aplicar con Claude Code.
 - **Marcar como vista al crear ficha** — en /admin/nueva-obra añadir opción con fecha de visionado opcional (como en el perfil).
 - **Perfiles de usuario con redes sociales** — añadir campos letterboxd_profile, tracktv_profile, goodreads_profile, filmaffinity_profile en tabla profiles. Mostrar en perfil público.
 - **Créditos de colaboración en ficha pública** — mostrar el usuario que creó la ficha y los que han aportado sugerencias aprobadas.
