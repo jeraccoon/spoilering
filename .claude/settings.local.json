@@ -1,19 +1,16 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git diff *)",
+      "Bash(npx tsc *)",
       "Bash(git add *)",
       "Bash(git commit -m ' *)",
       "Bash(git push *)",
-      "Bash(node -e \"const k = process.env.SUPABASE_SERVICE_ROLE_KEY; console.log\\('key present:', !!k\\)\")",
-      "Bash(npx tsc *)",
-      "Bash(node -e \"console.log\\(require\\('./node_modules/server-only/package.json'\\).version\\)\")",
-      "Bash(npm install *)",
-      "Bash(git commit --allow-empty -m ' *)",
-      "Bash(node -e \"console.log\\(require\\('./node_modules/remark-gfm/package.json'\\).version\\)\")",
-      "Bash(node -e \"require\\('remark-gfm'\\)\")",
-      "Bash(git commit *)",
-      "Bash(npx next *)"
+      "Bash(git pull *)",
+      "Bash(git stash *)",
+      "Bash(git fetch *)",
+      "Bash(git rebase *)",
+      "Bash(git reset *)",
+      "Bash(git commit *)"
     ]
   }
 }

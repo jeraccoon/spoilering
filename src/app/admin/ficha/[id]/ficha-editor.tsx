@@ -130,15 +130,6 @@ function AddSectionModal({ cardId, parentId, parentLabel, onClose, onCreated }: 
   )
 }
 
-function titleToSlug(title: string): string {
-  return title
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '')
-}
-
 export function FichaEditor({ card: initialCard }: { card: Card }) {
   const router = useRouter()
   const [card, setCard] = useState(initialCard)
@@ -583,17 +574,14 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
             <div>
               <div className="mb-1.5 flex items-center justify-between">
                 <label className="text-xs font-semibold text-ink/60">URL de Letterboxd</label>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const slug = titleToSlug(card.work.title)
-                    const url = `https://letterboxd.com/film/${slug}/`
-                    setMeta((p) => ({ ...p, letterboxd_url: url }))
-                  }}
+                <a
+                  href={`https://letterboxd.com/search/${encodeURIComponent(card.work.title)}/`}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="text-[11px] font-semibold text-ember/70 hover:text-ember"
                 >
-                  Generar URL
-                </button>
+                  Buscar en Letterboxd ↗
+                </a>
               </div>
               <input
                 type="url"
@@ -641,7 +629,17 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
           </div>
           {card.work.type !== 'book' && (
             <div>
-              <label className="mb-1.5 block text-xs font-semibold text-ink/60">URL de Trakt.tv</label>
+              <div className="mb-1.5 flex items-center justify-between">
+                <label className="text-xs font-semibold text-ink/60">URL de Trakt.tv</label>
+                <a
+                  href={`https://trakt.tv/search?query=${encodeURIComponent(card.work.title)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[11px] font-semibold text-ember/70 hover:text-ember"
+                >
+                  Buscar en Trakt ↗
+                </a>
+              </div>
               <input
                 type="url"
                 value={meta.tracktv_url}

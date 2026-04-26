@@ -123,6 +123,7 @@ export async function POST(request: NextRequest) {
           )
           if (traktRes.ok) {
             const traktData = await traktRes.json() as { type: string; movie?: { ids: { slug: string } }; show?: { ids: { slug: string } } }[]
+            console.log('[create-work] Trakt raw response — url:', `https://api.trakt.tv/search/tmdb/${tmdb_id}?type=${traktType}`, '| status:', traktRes.status, '| data:', JSON.stringify(traktData))
             const hit = traktData.find((r) => r.type === traktType)
             const slug = traktType === 'show' ? hit?.show?.ids.slug : hit?.movie?.ids.slug
             if (slug) {
