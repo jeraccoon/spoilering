@@ -104,7 +104,7 @@ El git está en `C:\Proyectos\spoilering\spoilering\`. El `tsconfig.json` excluy
 - Actualizar **CLAUDE.md** y **docs/roadmap.md** al final de cada sesión de trabajo.
 - Al iniciar una nueva sesión, revisar siempre CLAUDE.md y docs/roadmap.md para recuperar contexto.
 
-## Estado actual (26 abril 2026)
+## Estado actual (26 abril 2026 — tarde)
 
 ### Funcionando correctamente
 - Autenticación completa con confirmación por email apuntando a www.spoilering.com
@@ -139,20 +139,24 @@ El git está en `C:\Proyectos\spoilering\spoilering\`. El `tsconfig.json` excluy
 - Metadatos enriquecidos en ficha pública: directores, actores (cast, primeros 5), duración (runtime), géneros, y para libros: autores, editorial, páginas, saga
 - Enlaces externos en ficha pública: IMDb, Letterboxd (películas y series), Goodreads, Filmaffinity — solo los que tengan URL rellena. Letterboxd editable en editor para movie y series (no solo movie)
 - Al crear obra desde TMDb se obtienen en paralelo para movies Y series: cast (/credits), runtime (movies: runtime, series: episode_run_time[0]), imdb_id (/external_ids)
-- Al crear obra movie desde TMDb: intenta auto-fetch de letterboxd_url via redirect `https://letterboxd.com/imdb/{imdb_id}/` (captura el header Location)
+- Al crear obra movie desde TMDb: intenta auto-fetch de letterboxd_url via redirect `https://letterboxd.com/imdb/{imdb_id}/` (captura el header Location) — puede fallar si Vercel está bloqueado por Cloudflare de Letterboxd
 - Panel "Metadatos y enlaces" en editor de fichas con campos editables por tipo de obra
+- Editor de fichas: "Ver en IMDb ↗" aparece junto al campo imdb_id cuando tiene valor
+- Editor de fichas: links "Buscar en Letterboxd ↗" (via imdb_id si existe), "Buscar en Filmaffinity ↗" y "Buscar en Trakt ↗" — todos abren búsqueda en nueva pestaña, la URL se copia y pega manualmente
+- Editor de fichas: metadatos guardan automáticamente onBlur, sin botón manual
+- Build de Vercel: corregido error de TypeScript — docs/ excluido de compilación en tsconfig.json, tipo WorkWithCard añadido a database.ts
 - Buscador inline en navbar: píldora "Buscar..." con dropdown de resultados, Enter navega a /buscar
 - Sugerir corrección: botón visible para todos en ficha pública, redirige a /login?redirect=...&mensaje=registro-sugerir si no está logueado, banner informativo en login, vuelve a la ficha tras login
 - Invitar amigos: POST /api/invite con límite 5 invitaciones/mes por usuario, tabla invites con RLS, sección en perfil con contador
 - Visionado y notas: tabla user_content (user_id, work_id, episode_id, watched, watched_at, notes), panel Mi Actividad en ficha pública, sección Mi Actividad en perfil
 
-### Pendiente de resolver (próxima sesión — tarde 26 abril)
-- **Botón "Generar URL" en editor** — existe en UI pero no funciona. Crear `POST /api/admin/works/[id]/fetch-links` que use imdb_id para Letterboxd (redirect trick) y tmdb_id para Trakt API. Solo sobreescribir si el campo está vacío en BD.
-- **Metadatos: autoguardado** — eliminar botón "Guardar borrador" de metadatos y guardar automáticamente onBlur en cada campo, igual que las secciones de contenido.
-- **Marcar como vista al crear ficha** — en /admin/nueva-obra, añadir opción de marcar como vista con fecha de visionado opcional (igual que en el perfil), no solo el checkbox simple actual.
+### Pendiente de resolver (próxima sesión)
+- **Letterboxd y Trakt URL — solo manual** — no se pueden auto-rellenar desde Vercel (Letterboxd bloquea peticiones del servidor, Trakt falla también). El flujo actual es: clic en "Buscar en Letterboxd ↗" → copiar URL → pegar. Aceptado así por ahora.
+- **Borrador existente al crear obra** — si el usuario crea una obra, abandona el borrador y vuelve a crearla, recibe error "ya existe". Debería redirigir al borrador en lugar de dar error. Prompt preparado pero pendiente de aplicar con Claude Code.
+- **Marcar como vista al crear ficha** — en /admin/nueva-obra añadir opción con fecha de visionado opcional (como en el perfil).
 - **Perfiles de usuario con redes sociales** — añadir campos letterboxd_profile, tracktv_profile, goodreads_profile, filmaffinity_profile en tabla profiles. Mostrar en perfil público.
 - **Créditos de colaboración en ficha pública** — mostrar el usuario que creó la ficha y los que han aportado sugerencias aprobadas.
-- **Aviso revisión de IA** — banner o texto en editor al generar contenido indicando que hay que revisarlo antes de publicar.
+- **Aviso revisión de IA** — banner en editor al generar contenido indicando que hay que revisarlo antes de publicar.
 - **Búsqueda por ISBN o enlace de Goodreads no funciona** — pendiente de revisar.
 
 ### Conocido pero no urgente
