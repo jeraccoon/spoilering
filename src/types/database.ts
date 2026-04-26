@@ -100,6 +100,10 @@ export interface CardWithWork extends Card {
   work: Work
 }
 
+export interface WorkWithCard extends Work {
+  card: Pick<Card, 'id' | 'status'> | null
+}
+
 export interface CardFull extends Card {
   work: Work
   sections: SectionWithChildren[]
