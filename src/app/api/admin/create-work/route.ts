@@ -223,16 +223,21 @@ export async function POST(request: NextRequest) {
 
         // Check if the existing work already has a card
         const { data: existingCard } = await (supabase.from('cards') as any)
-          .select('id')
+          .select('id, status')
           .eq('work_id', existingWork.id)
           .maybeSingle()
 
         if (existingCard) {
-          // Card already exists — inform with slug to link
-          return NextResponse.json(
-            { error: 'Ya existe una ficha para esta obra.', slug: existingWork.slug },
-            { status: 409 }
-          )
+          if (existingCard.status === 'published') {
+            return NextResponse.json(
+              { error: 'Ya existe una ficha publicada para esta obra.', slug: existingWork.slug },
+              { status: 409 }
+            )
+          } else {
+            // Draft exists — redirect to edit it silently
+            const redirectTo = role === 'user' ? '/perfil' : `/admin/ficha/${existingCard.id}`
+            return NextResponse.json({ workId: existingWork.id, cardId: existingCard.id, redirectTo })
+          }
         }
 
         // No card yet — create card + sections for the existing work
