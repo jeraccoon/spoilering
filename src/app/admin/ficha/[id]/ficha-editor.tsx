@@ -29,6 +29,7 @@ interface Work {
   letterboxd_url: string | null
   goodreads_url: string | null
   filmaffinity_url: string | null
+  tracktv_url: string | null
 }
 
 interface Card {
@@ -129,6 +130,15 @@ function AddSectionModal({ cardId, parentId, parentLabel, onClose, onCreated }: 
   )
 }
 
+function titleToSlug(title: string): string {
+  return title
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+}
+
 export function FichaEditor({ card: initialCard }: { card: Card }) {
   const router = useRouter()
   const [card, setCard] = useState(initialCard)
@@ -157,6 +167,7 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
     letterboxd_url: initialCard.work.letterboxd_url ?? '',
     goodreads_url: initialCard.work.goodreads_url ?? '',
     filmaffinity_url: initialCard.work.filmaffinity_url ?? '',
+    tracktv_url: initialCard.work.tracktv_url ?? '',
   })
   const [savingMeta, setSavingMeta] = useState(false)
   const [savedMeta, setSavedMeta] = useState(false)
@@ -272,6 +283,7 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
           letterboxd_url: meta.letterboxd_url.trim() || null,
           goodreads_url: meta.goodreads_url.trim() || null,
           filmaffinity_url: meta.filmaffinity_url.trim() || null,
+          tracktv_url: meta.tracktv_url.trim() || null,
         }),
       })
       if (!res.ok) {
@@ -368,6 +380,13 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
 
             {card.status === 'draft' ? (
               <>
+                <button
+                  onClick={() => void saveMeta()}
+                  disabled={savingMeta}
+                  className="rounded-lg border border-ink/20 px-3 py-1.5 text-xs font-semibold text-ink/60 transition hover:border-ink/40 hover:bg-ink/5 disabled:opacity-50"
+                >
+                  {savingMeta ? '…' : 'Guardar borrador'}
+                </button>
                 <label className="flex cursor-pointer items-center gap-1.5 text-xs font-semibold text-ink/50 transition hover:text-ink/80">
                   <input
                     type="checkbox"
@@ -562,7 +581,20 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
           )}
           {card.work.type !== 'book' && (
             <div>
-              <label className="mb-1.5 block text-xs font-semibold text-ink/60">URL de Letterboxd</label>
+              <div className="mb-1.5 flex items-center justify-between">
+                <label className="text-xs font-semibold text-ink/60">URL de Letterboxd</label>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const slug = titleToSlug(card.work.title)
+                    const url = `https://letterboxd.com/film/${slug}/`
+                    setMeta((p) => ({ ...p, letterboxd_url: url }))
+                  }}
+                  className="text-[11px] font-semibold text-ember/70 hover:text-ember"
+                >
+                  Generar URL
+                </button>
+              </div>
               <input
                 type="url"
                 value={meta.letterboxd_url}
@@ -587,7 +619,17 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
             </div>
           )}
           <div>
-            <label className="mb-1.5 block text-xs font-semibold text-ink/60">URL de Filmaffinity</label>
+            <div className="mb-1.5 flex items-center justify-between">
+              <label className="text-xs font-semibold text-ink/60">URL de Filmaffinity</label>
+              <a
+                href={`https://www.filmaffinity.com/es/search.php?stext=${encodeURIComponent(card.work.title)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[11px] font-semibold text-ember/70 hover:text-ember"
+              >
+                Buscar en Filmaffinity ↗
+              </a>
+            </div>
             <input
               type="url"
               value={meta.filmaffinity_url}
@@ -597,6 +639,19 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
               className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder-ink/30 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
             />
           </div>
+          {card.work.type !== 'book' && (
+            <div>
+              <label className="mb-1.5 block text-xs font-semibold text-ink/60">URL de Trakt.tv</label>
+              <input
+                type="url"
+                value={meta.tracktv_url}
+                onChange={(e) => setMeta((p) => ({ ...p, tracktv_url: e.target.value }))}
+                onBlur={() => void saveMeta()}
+                placeholder={card.work.type === 'series' ? 'https://trakt.tv/shows/...' : 'https://trakt.tv/movies/...'}
+                className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder-ink/30 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
+              />
+            </div>
+          )}
         </div>
       </section>
 

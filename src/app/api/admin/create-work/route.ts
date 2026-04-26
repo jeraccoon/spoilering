@@ -67,10 +67,11 @@ export async function POST(request: NextRequest) {
     const slug = await findUniqueSlug(supabase, title)
     console.log('[create-work] paso 3b OK — slug:', slug)
 
-    // Enriquecimiento TMDb: cast, runtime, imdb_id
+    // Enriquecimiento TMDb: cast, runtime, imdb_id + Trakt: tracktv_url
     let enrichedCast: string[] = []
     let enrichedRuntime: number | null = null
     let enrichedImdbId: string | null = null
+    let enrichedTracktvUrl: string | null = null
 
     console.log('[create-work] paso 3c: enriquecimiento TMDb — tmdb_id:', tmdb_id, 'type:', type)
     if (tmdb_id && (type === 'movie' || type === 'series')) {
@@ -110,10 +111,39 @@ export async function POST(request: NextRequest) {
           console.warn('[create-work] TMDb external_ids FAIL —', externalRes.status === 'rejected' ? externalRes.reason : 'http error')
         }
       }
+
+      // Trakt.tv: buscar slug por tmdb_id
+      const traktKey = process.env.TRAKT_API_KEY
+      if (traktKey) {
+        const traktType = type === 'series' ? 'show' : 'movie'
+        try {
+          const traktRes = await fetch(
+            `https://api.trakt.tv/search/tmdb/${tmdb_id}?type=${traktType}`,
+            { headers: { 'trakt-api-key': traktKey, 'trakt-api-version': '2', 'Content-Type': 'application/json' } }
+          )
+          if (traktRes.ok) {
+            const traktData = await traktRes.json() as { type: string; movie?: { ids: { slug: string } }; show?: { ids: { slug: string } } }[]
+            const hit = traktData.find((r) => r.type === traktType)
+            const slug = traktType === 'show' ? hit?.show?.ids.slug : hit?.movie?.ids.slug
+            if (slug) {
+              enrichedTracktvUrl = traktType === 'show'
+                ? `https://trakt.tv/shows/${slug}`
+                : `https://trakt.tv/movies/${slug}`
+              console.log('[create-work] Trakt OK — tracktv_url:', enrichedTracktvUrl)
+            }
+          } else {
+            console.warn('[create-work] Trakt FAIL — status:', traktRes.status)
+          }
+        } catch (e) {
+          console.warn('[create-work] Trakt error:', e)
+        }
+      } else {
+        console.warn('[create-work] TRAKT_API_KEY no definida — saltando Trakt')
+      }
     } else {
       console.log('[create-work] paso 3c: sin enriquecimiento (no es película/serie con tmdb_id)')
     }
-    console.log('[create-work] paso 3c resultado — cast:', enrichedCast, '| runtime:', enrichedRuntime, '| imdb_id:', enrichedImdbId)
+    console.log('[create-work] paso 3c resultado — cast:', enrichedCast, '| runtime:', enrichedRuntime, '| imdb_id:', enrichedImdbId, '| tracktv_url:', enrichedTracktvUrl)
 
     const genres_arr: string[] = genres ?? []
     const is_complete = Boolean(poster_url && overview && genres_arr.length > 0)
@@ -135,6 +165,7 @@ export async function POST(request: NextRequest) {
       tmdb_id: tmdb_id ?? null,
       google_books_id: google_books_id ?? null,
       imdb_id: enrichedImdbId,
+      tracktv_url: enrichedTracktvUrl,
       isbn: isbn ?? null,
       publisher: publisher ?? null,
       pages: pages ?? null,

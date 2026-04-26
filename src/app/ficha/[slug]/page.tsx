@@ -325,6 +325,7 @@ export default async function CardPage({ params }: Props) {
                 links.push({ href: `https://openlibrary.org/search?q=${encodeURIComponent(work.title)}`, label: 'Open Library' })
               }
               if (w.filmaffinity_url) links.push({ href: w.filmaffinity_url, label: 'Filmaffinity' })
+              if ((work.type === 'movie' || work.type === 'series') && w.tracktv_url) links.push({ href: w.tracktv_url, label: 'Trakt' })
               if (links.length === 0) return null
               return (
                 <div className="flex flex-wrap gap-2">

@@ -69,7 +69,7 @@ El git está en `C:\Proyectos\spoilering\spoilering\`. El `tsconfig.json` excluy
 - `DELETE /api/user-content` — elimina registro de visionado por work_id o episode_id
 
 ## Tablas en Supabase
-- `works` — obras. Unique en tmdb_id y google_books_id. Extra para libros: isbn, publisher, pages, saga, saga_order. Nuevas columnas: `"cast"` text[], runtime integer, imdb_id text, letterboxd_url text, goodreads_url text, filmaffinity_url text. Si la columna filmaffinity_url no existe en Supabase: `ALTER TABLE works ADD COLUMN filmaffinity_url text;`
+- `works` — obras. Unique en tmdb_id y google_books_id. Extra para libros: isbn, publisher, pages, saga, saga_order. Nuevas columnas: `"cast"` text[], runtime integer, imdb_id text, letterboxd_url text, goodreads_url text, filmaffinity_url text, tracktv_url text. Ejecutar en Supabase si faltan: `ALTER TABLE works ADD COLUMN IF NOT EXISTS filmaffinity_url text; ALTER TABLE works ADD COLUMN IF NOT EXISTS tracktv_url text;`
 - `cards` — fichas (status: draft/published, is_complete: boolean, created_by: uuid)
 - `sections` — secciones en markdown
 - `profiles` — usuario con rol (admin/editor/user), username único, is_active boolean
@@ -86,6 +86,7 @@ El git está en `C:\Proyectos\spoilering\spoilering\`. El `tsconfig.json` excluy
 - `ANTHROPIC_API_KEY`
 - `TMDB_API_KEY`
 - `GOOGLE_BOOKS_API_KEY`
+- `TRAKT_API_KEY` — para auto-fetch de slug Trakt al crear obra desde TMDb
 
 ## Patrones importantes
 - `rm -rf .next` ante errores de compilación extraños
