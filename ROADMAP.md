@@ -35,12 +35,12 @@ Spoilering es una utilidad personal y colaborativa para gente que consume series
 - [ ] **Botón sugerir corrección en editor** — visible arriba en el editor junto al estado de la ficha, no solo en la ficha pública
 - [ ] **Revisar concepto "fichas incompletas"** — actualmente poco claro; evaluar si tiene sentido como métrica o si se sustituye por otro indicador más útil
 - [x] Buscador inline en navbar — píldora expandible con dropdown de resultados
-- [x] Información de director, actores y enlaces externos en ficha pública — bloque de metadatos con cast, runtime, géneros, enlaces a IMDb, Letterboxd, Goodreads, Netflix
-- [ ] **Botón de contacto y sugerencias** — enlace o modal accesible desde el footer o navbar para enviar feedback al equipo
+- [x] Información de director, actores y enlaces externos en ficha pública — bloque de metadatos con cast, runtime, géneros, enlaces a IMDb, Letterboxd, Filmaffinity, Goodreads
+- [x] **Botón de contacto y sugerencias** — modal en footer, tabla contact_messages en Supabase, sección en panel admin
 - [ ] **Corrección de fichas completa** — sugerir cambios en metadatos (director, año, póster, géneros)
 - [ ] **Borrar o regenerar ficha** — eliminar ficha o regenerar secciones con IA
-- [ ] **Home mejorada** — copy claro, opciones grid/lista, filtros por tipo
-- [ ] **Diseño ficha pública** — markdown más cuidado, texto justificado
+- [x] **Home mejorada** — ordenación (más recientes, más antiguos, A-Z), filtros por tipo, toggle grid/lista adaptado a móvil
+- [x] **Diseño ficha pública** — markdown mejorado con todos los elementos (blockquote, code, em, a, h1), texto justificado solo en sm+
 - [x] **Notas privadas** — cubierto por `user_content.notes` (misma funcionalidad)
 - [ ] **FAQ** — qué es Spoilering, cómo funciona, cómo contribuir
 - [ ] **Sistema de incentivos** — badges de colaborador, sello "editado por humanos" vs "generado por IA"

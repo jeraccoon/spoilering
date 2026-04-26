@@ -72,6 +72,7 @@ export async function POST(request: NextRequest) {
     let enrichedRuntime: number | null = null
     let enrichedImdbId: string | null = null
     let enrichedTracktvUrl: string | null = null
+    let enrichedLetterboxdUrl: string | null = null
 
     console.log('[create-work] paso 3c: enriquecimiento TMDb — tmdb_id:', tmdb_id, 'type:', type)
     if (tmdb_id && (type === 'movie' || type === 'series')) {
@@ -81,17 +82,16 @@ export async function POST(request: NextRequest) {
       } else {
         const endpoint = type === 'movie' ? 'movie' : 'tv'
         const [detailsRes, creditsRes, externalRes] = await Promise.allSettled([
-          type === 'movie'
-            ? fetch(`https://api.themoviedb.org/3/movie/${tmdb_id}?api_key=${tmdbKey}&language=es-ES`)
-            : Promise.resolve(null),
+          fetch(`https://api.themoviedb.org/3/${endpoint}/${tmdb_id}?api_key=${tmdbKey}&language=es-ES`),
           fetch(`https://api.themoviedb.org/3/${endpoint}/${tmdb_id}/credits?api_key=${tmdbKey}&language=es-ES`),
-          type === 'movie'
-            ? fetch(`https://api.themoviedb.org/3/movie/${tmdb_id}/external_ids?api_key=${tmdbKey}`)
-            : Promise.resolve(null),
+          fetch(`https://api.themoviedb.org/3/${endpoint}/${tmdb_id}/external_ids?api_key=${tmdbKey}`),
         ])
         if (detailsRes.status === 'fulfilled' && detailsRes.value?.ok) {
           const d = await detailsRes.value.json()
-          enrichedRuntime = d.runtime ?? null
+          // movies use 'runtime' (minutes), TV shows use 'episode_run_time' (array)
+          enrichedRuntime = type === 'movie'
+            ? (d.runtime ?? null)
+            : ((d.episode_run_time as number[] | undefined)?.[0] ?? null)
           console.log('[create-work] TMDb details OK — runtime:', enrichedRuntime)
         } else {
           console.warn('[create-work] TMDb details FAIL —', detailsRes.status === 'rejected' ? detailsRes.reason : 'http error')
@@ -109,6 +109,28 @@ export async function POST(request: NextRequest) {
           console.log('[create-work] TMDb external_ids OK — imdb_id:', enrichedImdbId)
         } else {
           console.warn('[create-work] TMDb external_ids FAIL —', externalRes.status === 'rejected' ? externalRes.reason : 'http error')
+        }
+
+        // Letterboxd: usar redirect de IMDb para obtener la URL exacta del film
+        // Solo para películas — el redirect /imdb/{id}/ de Letterboxd es fiable en movies
+        if (enrichedImdbId && type === 'movie') {
+          try {
+            const lbRes = await fetch(
+              `https://letterboxd.com/imdb/${enrichedImdbId}/`,
+              { redirect: 'manual' }
+            )
+            const location = lbRes.headers.get('location')
+            if (location && location.includes('/film/')) {
+              enrichedLetterboxdUrl = location.startsWith('http')
+                ? location
+                : `https://letterboxd.com${location}`
+              console.log('[create-work] Letterboxd OK — letterboxd_url:', enrichedLetterboxdUrl)
+            } else {
+              console.warn('[create-work] Letterboxd sin redirect — status:', lbRes.status, '| location:', location)
+            }
+          } catch (e) {
+            console.warn('[create-work] Letterboxd error:', e)
+          }
         }
       }
 
@@ -144,7 +166,7 @@ export async function POST(request: NextRequest) {
     } else {
       console.log('[create-work] paso 3c: sin enriquecimiento (no es película/serie con tmdb_id)')
     }
-    console.log('[create-work] paso 3c resultado — cast:', enrichedCast, '| runtime:', enrichedRuntime, '| imdb_id:', enrichedImdbId, '| tracktv_url:', enrichedTracktvUrl)
+    console.log('[create-work] paso 3c resultado — cast:', enrichedCast, '| runtime:', enrichedRuntime, '| imdb_id:', enrichedImdbId, '| tracktv_url:', enrichedTracktvUrl, '| letterboxd_url:', enrichedLetterboxdUrl)
 
     const genres_arr: string[] = genres ?? []
     const is_complete = Boolean(poster_url && overview && genres_arr.length > 0)
@@ -166,6 +188,7 @@ export async function POST(request: NextRequest) {
       tmdb_id: tmdb_id ?? null,
       google_books_id: google_books_id ?? null,
       imdb_id: enrichedImdbId,
+      letterboxd_url: enrichedLetterboxdUrl,
       tracktv_url: enrichedTracktvUrl,
       isbn: isbn ?? null,
       publisher: publisher ?? null,

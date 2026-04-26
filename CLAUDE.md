@@ -64,12 +64,14 @@ El git está en `C:\Proyectos\spoilering\spoilering\`. El `tsconfig.json` excluy
 - `DELETE /api/admin/works/[id]` — elimina work completo (requiere rol editor o admin, usa adminClient)
 - `PATCH /api/admin/works/[id]` — actualiza metadatos de la obra (cast, runtime, imdb_id, urls externas). Requiere rol editor o admin
 - `POST /api/invite` — envía invitación por email (supabaseAdmin.auth.admin.inviteUserByEmail), límite 5/mes por usuario
+- `POST /api/contact` — guarda mensaje de contacto en contact_messages (adminClient, acepta usuarios no logueados)
 - `POST /api/user-content` — upsert de visionado y notas (get+update/insert, sin onConflict)
 - `GET /api/user-content` — obtiene registro de visionado del usuario actual por work_id o episode_id
 - `DELETE /api/user-content` — elimina registro de visionado por work_id o episode_id
 
 ## Tablas en Supabase
 - `works` — obras. Unique en tmdb_id y google_books_id. Extra para libros: isbn, publisher, pages, saga, saga_order. Nuevas columnas: `"cast"` text[], runtime integer, imdb_id text, letterboxd_url text, goodreads_url text, filmaffinity_url text, tracktv_url text. Ejecutar en Supabase si faltan: `ALTER TABLE works ADD COLUMN IF NOT EXISTS filmaffinity_url text; ALTER TABLE works ADD COLUMN IF NOT EXISTS tracktv_url text;`
+- `contact_messages` — nombre, email, tipo (Sugerencia/Error/Otro), mensaje, user_id nullable, created_at. RLS: insert público, select solo admin
 - `cards` — fichas (status: draft/published, is_complete: boolean, created_by: uuid)
 - `sections` — secciones en markdown
 - `profiles` — usuario con rol (admin/editor/user), username único, is_active boolean
@@ -94,6 +96,13 @@ El git está en `C:\Proyectos\spoilering\spoilering\`. El `tsconfig.json` excluy
 - El modelo de IA correcto es `claude-sonnet-4-6` — no cambiar nunca
 - Los usernames NO llevan @ delante — se muestran sin prefijo
 - El login acepta email o username — si no contiene @ busca el email por username
+
+## Flujo de trabajo
+- Las implementaciones de código se hacen con **Claude Code** (CLI). Cuando se pida código, dar el prompt completo para Claude Code.
+- Commits a GitHub solo con los archivos modificados en esa tarea (nunca `git add -A`). Ejemplo: `git add src/app/api/admin/works/[id]/fetch-links/route.ts && git commit -m "feat: ..." && git push`
+- Hacer commit solo al terminar grupos de cambios importantes, no en cada pequeño fix.
+- Actualizar **CLAUDE.md** y **docs/roadmap.md** al final de cada sesión de trabajo.
+- Al iniciar una nueva sesión, revisar siempre CLAUDE.md y docs/roadmap.md para recuperar contexto.
 
 ## Estado actual (26 abril 2026)
 
@@ -129,15 +138,24 @@ El git está en `C:\Proyectos\spoilering\spoilering\`. El `tsconfig.json` excluy
 - Obras sin ficha: works sin card asociada visibles en panel admin con opción de eliminar
 - Metadatos enriquecidos en ficha pública: directores, actores (cast, primeros 5), duración (runtime), géneros, y para libros: autores, editorial, páginas, saga
 - Enlaces externos en ficha pública: IMDb, Letterboxd (películas y series), Goodreads, Filmaffinity — solo los que tengan URL rellena. Letterboxd editable en editor para movie y series (no solo movie)
-- Al crear obra desde TMDb se obtienen en paralelo: cast (/credits), runtime e imdb_id (/external_ids)
+- Al crear obra desde TMDb se obtienen en paralelo para movies Y series: cast (/credits), runtime (movies: runtime, series: episode_run_time[0]), imdb_id (/external_ids)
+- Al crear obra movie desde TMDb: intenta auto-fetch de letterboxd_url via redirect `https://letterboxd.com/imdb/{imdb_id}/` (captura el header Location)
 - Panel "Metadatos y enlaces" en editor de fichas con campos editables por tipo de obra
 - Buscador inline en navbar: píldora "Buscar..." con dropdown de resultados, Enter navega a /buscar
 - Sugerir corrección: botón visible para todos en ficha pública, redirige a /login?redirect=...&mensaje=registro-sugerir si no está logueado, banner informativo en login, vuelve a la ficha tras login
 - Invitar amigos: POST /api/invite con límite 5 invitaciones/mes por usuario, tabla invites con RLS, sección en perfil con contador
 - Visionado y notas: tabla user_content (user_id, work_id, episode_id, watched, watched_at, notes), panel Mi Actividad en ficha pública, sección Mi Actividad en perfil
 
-### Pendiente de resolver
-- Búsqueda por ISBN o enlace de Goodreads no funciona — pendiente de revisar
+### Pendiente de resolver (próxima sesión — tarde 26 abril)
+- **Botón "Generar URL" en editor** — existe en UI pero no funciona. Crear `POST /api/admin/works/[id]/fetch-links` que use imdb_id para Letterboxd (redirect trick) y tmdb_id para Trakt API. Solo sobreescribir si el campo está vacío en BD.
+- **Metadatos: autoguardado** — eliminar botón "Guardar borrador" de metadatos y guardar automáticamente onBlur en cada campo, igual que las secciones de contenido.
+- **Marcar como vista al crear ficha** — en /admin/nueva-obra, añadir opción de marcar como vista con fecha de visionado opcional (igual que en el perfil), no solo el checkbox simple actual.
+- **Perfiles de usuario con redes sociales** — añadir campos letterboxd_profile, tracktv_profile, goodreads_profile, filmaffinity_profile en tabla profiles. Mostrar en perfil público.
+- **Créditos de colaboración en ficha pública** — mostrar el usuario que creó la ficha y los que han aportado sugerencias aprobadas.
+- **Aviso revisión de IA** — banner o texto en editor al generar contenido indicando que hay que revisarlo antes de publicar.
+- **Búsqueda por ISBN o enlace de Goodreads no funciona** — pendiente de revisar.
+
+### Conocido pero no urgente
 - Columna `cast` en PostgreSQL es palabra reservada — usar siempre entre comillas dobles en queries SQL directas (`"cast"`)
 - Ejecutar en Supabase las policies RLS para fichas de usuarios si no se han ejecutado:
   ```sql
