@@ -20,7 +20,7 @@ async function getAdminData() {
       (supabase.from('suggestions') as any).select('*', { count: 'exact', head: true }).eq('status', 'pending'),
       (supabase.from('cards') as any).select('*', { count: 'exact', head: true }).eq('is_complete', false),
       (supabase.from('cards') as any)
-        .select('id, status, created_at, is_complete, work:works(title, type, slug), creator:profiles!created_by(username, role)')
+        .select('id, status, is_committed, created_at, is_complete, work:works(title, type, slug), creator:profiles!created_by(username, role)')
         .order('created_at', { ascending: false })
         .limit(100),
       (supabase.from('works') as any)
@@ -52,8 +52,9 @@ async function getAdminData() {
 
   const allCards: any[] = allDraftCards.data ?? []
   const pendingCards: PendingCard[] = allCards
-    .filter((c) => c.status === 'draft' && c.creator?.role === 'user')
+    .filter((c) => c.status === 'draft' && c.creator?.role === 'user' && c.is_committed !== false)
     .slice(0, 20)
+  const uncommittedCount = allCards.filter((c) => c.is_committed === false && c.creator?.role === 'user').length
 
   const inactiveDrafts: any[] = inactiveDraftsResult.data ?? []
 
@@ -74,6 +75,7 @@ async function getAdminData() {
       pendingRevisions: pendingRevisions.count ?? 0,
       pendingSuggestions: pendingSuggestions.count ?? 0,
       incomplete: incomplete.count ?? 0,
+      uncommitted: uncommittedCount,
     },
     allCards,
     pendingCards,
@@ -128,6 +130,23 @@ export default async function AdminPage() {
 
       {/* Estadísticas + fichas filtrables */}
       <AdminCardsFilter allCards={allCards} stats={stats} />
+
+      {/* Fichas sin confirmar */}
+      {stats.uncommitted > 0 && (
+        <section className="mb-6">
+          <div className="flex items-center gap-4 rounded-lg border border-orange-200 bg-orange-50 px-6 py-4">
+            <span className={`text-3xl font-black tabular-nums text-orange-600`}>
+              {stats.uncommitted}
+            </span>
+            <div>
+              <p className="font-semibold text-orange-800">
+                {stats.uncommitted === 1 ? 'ficha sin confirmar' : 'fichas sin confirmar'}
+              </p>
+              <p className="text-sm text-orange-700/70">Borradores creados que el usuario no ha guardado todavía</p>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Fichas pendientes de revisión (enviadas por usuarios) */}
       <section className="mb-10">

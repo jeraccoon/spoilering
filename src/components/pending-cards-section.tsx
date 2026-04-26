@@ -7,6 +7,7 @@ export interface PendingCard {
   id: string
   created_at: string
   is_complete: boolean
+  is_committed?: boolean
   work: { title: string; type: string; slug: string } | null
   creator: { username: string; role: string } | null
 }

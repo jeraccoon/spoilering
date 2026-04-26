@@ -22,6 +22,7 @@ function formatDate(iso: string) {
 interface Card {
   id: string
   status: string
+  is_committed: boolean
   updated_at: string
   is_complete: boolean
   work: {
@@ -80,6 +81,7 @@ export function PerfilCardsSection({
 
   const publishedCount = cards.filter((c) => c.status === 'published').length
   const pendingCount = cards.filter((c) => c.status !== 'published').length
+  const uncommittedCount = cards.filter((c) => !c.is_committed).length
   const atLimit = isUser && cards.length >= USER_CARD_LIMIT
 
   function toggle(filter: FilterKey) {
@@ -128,9 +130,9 @@ export function PerfilCardsSection({
             onClick={() => toggle('published')}
           />
           <StatCard
-            value={pendingCount}
+            value={pendingCount + uncommittedCount}
             label={pendingLabel}
-            accent={pendingCount > 0 ? 'text-amber-600' : 'text-ink'}
+            accent={pendingCount + uncommittedCount > 0 ? 'text-amber-600' : 'text-ink'}
             active={activeFilter === 'pending'}
             onClick={() => toggle('pending')}
           />
@@ -203,7 +205,9 @@ export function PerfilCardsSection({
                     </td>
                     <td className="px-4 py-3 text-ink/50 hidden md:table-cell">{formatDate(card.updated_at)}</td>
                     <td className="px-4 py-3">
-                      {card.status === 'published' ? (
+                      {!card.is_committed ? (
+                        <span className="rounded px-2 py-0.5 text-[11px] font-semibold bg-orange-100 text-orange-700">Sin confirmar</span>
+                      ) : card.status === 'published' ? (
                         <span className="rounded px-2 py-0.5 text-[11px] font-semibold bg-moss/10 text-moss">Publicada</span>
                       ) : isUser ? (
                         <span className="rounded px-2 py-0.5 text-[11px] font-semibold bg-amber-100 text-amber-700">Pendiente de revisión</span>
@@ -213,7 +217,15 @@ export function PerfilCardsSection({
                     </td>
                     <td className="px-4 py-3 text-right">
                       <div className="flex items-center justify-end gap-3">
-                        {card.status === 'published' && (
+                        {!card.is_committed && (
+                          <Link
+                            href={`/admin/ficha/${card.id}`}
+                            className="text-xs font-semibold text-orange-600 underline underline-offset-2 hover:text-orange-800"
+                          >
+                            Continuar →
+                          </Link>
+                        )}
+                        {card.is_committed && card.status === 'published' && (
                           <Link
                             href={`/ficha/${card.work.slug}`}
                             className="text-xs font-semibold text-ink/50 underline underline-offset-2 hover:text-ink"
@@ -221,7 +233,7 @@ export function PerfilCardsSection({
                             Ver
                           </Link>
                         )}
-                        {isPrivileged && (
+                        {card.is_committed && isPrivileged && (
                           <Link
                             href={`/admin/ficha/${card.id}`}
                             className="text-xs font-semibold text-ink/50 underline underline-offset-2 hover:text-ink"
