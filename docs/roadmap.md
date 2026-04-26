@@ -55,6 +55,17 @@ En producción en www.spoilering.com. Base completa funcionando. Fase actual: me
 - Misma UX que en perfil (no solo checkbox)
 - También mejorar el checkbox del editor al publicar (añadir campo de fecha)
 - Claude Code lo implementó pero el resultado no es correcto — revisar y ajustar
+- Bug: actualmente aparece en el paso de búsqueda de obra — debe aparecer solo en el paso de creación (formulario de confirmación), no al buscar
+- El calendario queda feo visualmente — mejorar diseño
+
+### 3. Bug — no deja guardar como borrador tras generar con IA
+- Después de generar contenido con IA, el botón "Guardar borrador" desaparece o no funciona
+- Solo aparece la opción de publicar — hay que poder guardar sin publicar
+
+### 4. Añadir metadatos de título original y país
+- Mostrar título original y país de origen en la ficha pública
+- El campo original_title ya existe en la tabla works, solo falta mostrarlo
+- País de origen: añadir campo country a la tabla works y rellenarlo desde TMDb al crear
 
 ### 2. Aviso de revisión de IA ✅
 - Banner en editor cuando se genera contenido con IA — hecho
