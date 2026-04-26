@@ -553,7 +553,19 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
           )}
           {card.work.type !== 'book' && (
             <div>
-              <label className="mb-1.5 block text-xs font-semibold text-ink/60">ID de IMDb (ej: tt1234567)</label>
+              <div className="mb-1.5 flex items-center justify-between">
+                <label className="text-xs font-semibold text-ink/60">ID de IMDb (ej: tt1234567)</label>
+                {meta.imdb_id && (
+                  <a
+                    href={`https://www.imdb.com/title/${meta.imdb_id}/`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[11px] font-semibold text-ember/70 hover:text-ember"
+                  >
+                    Ver en IMDb ↗
+                  </a>
+                )}
+              </div>
               <input
                 type="text"
                 value={meta.imdb_id}
@@ -569,7 +581,9 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
               <div className="mb-1.5 flex items-center justify-between">
                 <label className="text-xs font-semibold text-ink/60">URL de Letterboxd</label>
                 <a
-                  href={`https://letterboxd.com/search/films/${encodeURIComponent(card.work.title)}/`}
+                  href={meta.imdb_id
+                    ? `https://letterboxd.com/imdb/${meta.imdb_id}/`
+                    : `https://letterboxd.com/search/films/${encodeURIComponent(card.work.title)}/`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-[11px] font-semibold text-ember/70 hover:text-ember"
