@@ -163,6 +163,8 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
   const [savingMeta, setSavingMeta] = useState(false)
   const [savedMeta, setSavedMeta] = useState(false)
   const [metaError, setMetaError] = useState<string | null>(null)
+  const [fetchingLinks, setFetchingLinks] = useState(false)
+  const [linkErrors, setLinkErrors] = useState<{ letterboxd?: string; trakt?: string; noResults?: boolean } | null>(null)
   const [markAsWatched, setMarkAsWatched] = useState(false)
 
   const allSections: Section[] = []
@@ -291,6 +293,25 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
     }
   }
 
+  async function fetchLinks() {
+    setFetchingLinks(true)
+    setLinkErrors(null)
+    try {
+      const res = await fetch(`/api/admin/works/${card.work.id}/fetch-links`, { method: 'POST' })
+      const data = await res.json()
+      if (res.ok) {
+        if (data.letterboxd_url) setMeta((p) => ({ ...p, letterboxd_url: data.letterboxd_url }))
+        if (data.tracktv_url) setMeta((p) => ({ ...p, tracktv_url: data.tracktv_url }))
+        const errors: { letterboxd?: string; trakt?: string; noResults?: boolean } = {}
+        if (data.error_trakt) errors.trakt = data.error_trakt
+        if (!data.letterboxd_url && !data.tracktv_url && !data.error_trakt) errors.noResults = true
+        if (Object.keys(errors).length > 0) setLinkErrors(errors)
+      }
+    } finally {
+      setFetchingLinks(false)
+    }
+  }
+
   async function deleteCard() {
     if (!confirm('¿Eliminar esta ficha? Esta acción no se puede deshacer.')) return
     const res = await fetch(`/api/admin/cards/${card.id}`, { method: 'DELETE' })
@@ -371,13 +392,6 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
 
             {card.status === 'draft' ? (
               <>
-                <button
-                  onClick={() => void saveMeta()}
-                  disabled={savingMeta}
-                  className="rounded-lg border border-ink/20 px-3 py-1.5 text-xs font-semibold text-ink/60 transition hover:border-ink/40 hover:bg-ink/5 disabled:opacity-50"
-                >
-                  {savingMeta ? '…' : 'Guardar borrador'}
-                </button>
                 <label className="flex cursor-pointer items-center gap-1.5 text-xs font-semibold text-ink/50 transition hover:text-ink/80">
                   <input
                     type="checkbox"
@@ -574,14 +588,25 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
             <div>
               <div className="mb-1.5 flex items-center justify-between">
                 <label className="text-xs font-semibold text-ink/60">URL de Letterboxd</label>
-                <a
-                  href={`https://letterboxd.com/search/${encodeURIComponent(card.work.title)}/`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-[11px] font-semibold text-ember/70 hover:text-ember"
-                >
-                  Buscar en Letterboxd ↗
-                </a>
+                {!meta.letterboxd_url && card.work.type === 'movie' ? (
+                  <button
+                    type="button"
+                    onClick={() => void fetchLinks()}
+                    disabled={fetchingLinks}
+                    className="text-[11px] font-semibold text-ember/70 hover:text-ember disabled:opacity-40"
+                  >
+                    {fetchingLinks ? 'Buscando…' : 'Generar URL'}
+                  </button>
+                ) : (
+                  <a
+                    href={`https://letterboxd.com/search/${encodeURIComponent(card.work.title)}/`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[11px] font-semibold text-ember/70 hover:text-ember"
+                  >
+                    Buscar en Letterboxd ↗
+                  </a>
+                )}
               </div>
               <input
                 type="url"
@@ -631,14 +656,25 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
             <div>
               <div className="mb-1.5 flex items-center justify-between">
                 <label className="text-xs font-semibold text-ink/60">URL de Trakt.tv</label>
-                <a
-                  href={`https://trakt.tv/search?query=${encodeURIComponent(card.work.title)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-[11px] font-semibold text-ember/70 hover:text-ember"
-                >
-                  Buscar en Trakt ↗
-                </a>
+                {!meta.tracktv_url ? (
+                  <button
+                    type="button"
+                    onClick={() => void fetchLinks()}
+                    disabled={fetchingLinks}
+                    className="text-[11px] font-semibold text-ember/70 hover:text-ember disabled:opacity-40"
+                  >
+                    {fetchingLinks ? 'Buscando…' : 'Generar URL'}
+                  </button>
+                ) : (
+                  <a
+                    href={`https://trakt.tv/search?query=${encodeURIComponent(card.work.title)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[11px] font-semibold text-ember/70 hover:text-ember"
+                  >
+                    Buscar en Trakt ↗
+                  </a>
+                )}
               </div>
               <input
                 type="url"
@@ -648,6 +684,12 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
                 placeholder={card.work.type === 'series' ? 'https://trakt.tv/shows/...' : 'https://trakt.tv/movies/...'}
                 className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder-ink/30 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
               />
+              {linkErrors?.trakt && (
+                <p className="mt-1 text-xs text-amber-600">{linkErrors.trakt}</p>
+              )}
+              {linkErrors?.noResults && !linkErrors.trakt && (
+                <p className="mt-1 text-xs text-ink/40">No se encontró automáticamente</p>
+              )}
             </div>
           )}
         </div>
