@@ -78,6 +78,8 @@ export default function NuevaObraPage() {
   const [duplicateSlug, setDuplicateSlug] = useState<string | null>(null)
   const [existingCard, setExistingCard] = useState<{ cardId: string } | null>(null)
   const [checkingDuplicate, setCheckingDuplicate] = useState(false)
+  const [markAsWatched, setMarkAsWatched] = useState(false)
+  const [watchedAt, setWatchedAt] = useState('')
   const [posterMode, setPosterMode] = useState<'url' | 'file'>('url')
   const [uploading, setUploading] = useState(false)
   const [isbnQuery, setIsbnQuery] = useState('')
@@ -332,6 +334,17 @@ export default function NuevaObraPage() {
         }
         setSubmitting(false)
         return
+      }
+      if (markAsWatched && data.workId) {
+        await fetch('/api/user-content', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            work_id: data.workId,
+            watched: true,
+            watched_at: watchedAt || null,
+          }),
+        })
       }
       if (data.redirectTo) {
         router.push(data.redirectTo)
@@ -603,6 +616,34 @@ export default function NuevaObraPage() {
               className="mt-1 inline-block underline underline-offset-2 hover:text-amber-900">
               Ir a editar la ficha existente →
             </a>
+          </div>
+        )}
+
+        {!existingCard && duplicateSlug === null && (
+          <div className="rounded-lg border border-ink/10 bg-ink/5 px-4 py-3">
+            <label className="flex cursor-pointer items-center gap-2 text-sm text-ink/70">
+              <input
+                type="checkbox"
+                checked={markAsWatched}
+                onChange={(e) => setMarkAsWatched(e.target.checked)}
+                className="accent-moss"
+              />
+              Marcar como vista
+            </label>
+            {markAsWatched && (
+              <div className="mt-3">
+                <label className="mb-1 block text-xs font-semibold text-ink/50">
+                  Fecha de visionado <span className="font-normal">(opcional)</span>
+                </label>
+                <input
+                  type="date"
+                  value={watchedAt}
+                  onChange={(e) => setWatchedAt(e.target.value)}
+                  max={new Date().toISOString().split('T')[0]}
+                  className="rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
+                />
+              </div>
+            )}
           </div>
         )}
 
