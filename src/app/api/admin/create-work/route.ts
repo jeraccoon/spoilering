@@ -244,7 +244,7 @@ export async function POST(request: NextRequest) {
         console.log('[create-work] work existente sin card — creando card para work.id:', existingWork.id)
         const is_complete = Boolean(poster_url && overview && (genres ?? []).length > 0)
         const { data: newCard, error: cardErr } = await (supabase.from('cards') as any)
-          .insert({ work_id: existingWork.id, status: 'draft', created_by: user.id, is_complete })
+          .insert({ work_id: existingWork.id, status: 'draft', created_by: user.id, is_complete, is_committed: false })
           .select()
           .single()
 
@@ -271,7 +271,7 @@ export async function POST(request: NextRequest) {
     console.log('[create-work] paso 5: insertando card...')
     const { data: card, error: cardError } = await (supabase
       .from('cards') as any)
-      .insert({ work_id: work.id, status: 'draft', created_by: user.id, is_complete })
+      .insert({ work_id: work.id, status: 'draft', created_by: user.id, is_complete, is_committed: false })
       .select()
       .single()
 

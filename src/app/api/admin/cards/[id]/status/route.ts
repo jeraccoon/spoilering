@@ -13,7 +13,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   }
 
   const { error } = await (supabase.from('cards') as any)
-    .update({ status })
+    .update({ status, is_committed: true })
     .eq('id', id)
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })

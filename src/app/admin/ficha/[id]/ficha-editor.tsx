@@ -35,6 +35,7 @@ interface Work {
 interface Card {
   id: string
   status: string
+  is_committed: boolean
   work: Work
   sections: Section[]
 }
@@ -165,6 +166,7 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
   const [savedMeta, setSavedMeta] = useState(false)
   const [metaError, setMetaError] = useState<string | null>(null)
 
+  const [committed, setCommitted] = useState(initialCard.is_committed)
   const [markAsWatched, setMarkAsWatched] = useState(false)
   const [watchedAt, setWatchedAt] = useState('')
 
@@ -251,6 +253,7 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
     })
     if (res.ok) {
       setCard((c) => ({ ...c, status: next }))
+      setCommitted(true)
       if (next === 'published' && markAsWatched) {
         await fetch('/api/user-content', {
           method: 'POST',
@@ -293,6 +296,21 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
     } finally {
       setSavingMeta(false)
     }
+  }
+
+  async function saveAsDraft() {
+    setSavingMeta(true)
+    const res = await fetch(`/api/admin/cards/${card.id}/status`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'draft' }),
+    })
+    if (res.ok) {
+      setCommitted(true)
+      setSavedMeta(true)
+      setTimeout(() => setSavedMeta(false), 2500)
+    }
+    setSavingMeta(false)
   }
 
   async function deleteCard() {
@@ -345,6 +363,13 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
         </div>
       </div>
 
+      {!committed && (
+        <div className="mb-4 flex items-center gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          <span>⚠️</span>
+          <span>Esta ficha aún no está guardada. Pulsa <strong>Guardar borrador</strong> o <strong>Publicar</strong> para confirmarla.</span>
+        </div>
+      )}
+
       {/* Barra de acciones */}
       <div className="mb-7 border-b border-ink/10 pb-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -375,6 +400,13 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
 
             {card.status === 'draft' ? (
               <>
+                <button
+                  onClick={() => void saveAsDraft()}
+                  disabled={savingMeta}
+                  className="rounded-lg border border-ink/20 px-3 py-1.5 text-xs font-semibold text-ink/60 transition hover:border-ink/40 hover:bg-ink/5 disabled:opacity-50"
+                >
+                  {savingMeta ? '…' : 'Guardar borrador'}
+                </button>
                 <div className="flex flex-col items-end gap-1.5">
                   <label className="flex cursor-pointer items-center gap-1.5 text-xs font-semibold text-ink/50 transition hover:text-ink/80">
                     <input

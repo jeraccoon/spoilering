@@ -143,7 +143,10 @@ export default function NuevaObraPage() {
     if (!tmdbId && !booksId) return
     setCheckingDuplicate(true)
     try {
-      let q = (supabase.from('works') as any).select('id, cards(id, status)').limit(1)
+      let q = (supabase.from('works') as any)
+        .select('id, cards!inner(id, status)')
+        .eq('cards.is_committed', true)
+        .limit(1)
       if (tmdbId) q = q.eq('tmdb_id', tmdbId)
       else if (booksId) q = q.eq('google_books_id', booksId)
       const { data } = await q.maybeSingle()
@@ -152,7 +155,7 @@ export default function NuevaObraPage() {
         if (card.status === 'published') {
           setExistingCard({ cardId: card.id })
         }
-        // Draft — no warning; create-work will redirect to edit it
+        // Committed draft — no warning; create-work will redirect to edit it
       }
     } finally { setCheckingDuplicate(false) }
   }
