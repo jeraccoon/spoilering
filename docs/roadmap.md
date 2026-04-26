@@ -50,14 +50,14 @@ En producción en www.spoilering.com. Base completa funcionando. Fase actual: me
 
 ## 🔧 Pendiente — próxima sesión (por prioridad)
 
-### 1. Aviso de revisión de IA _(en curso)_
-- Banner en editor cuando se genera contenido con IA
-- "Revisa el contenido antes de publicar, la IA puede cometer errores"
-
-### 2. Marcar como vista con fecha al crear ficha
+### 1. Marcar como vista con fecha al crear ficha _(implementado pero pendiente de revisar)_
 - En `/admin/nueva-obra`: opción de marcar como vista con fecha opcional
 - Misma UX que en perfil (no solo checkbox)
 - También mejorar el checkbox del editor al publicar (añadir campo de fecha)
+- Claude Code lo implementó pero el resultado no es correcto — revisar y ajustar
+
+### 2. Aviso de revisión de IA ✅
+- Banner en editor cuando se genera contenido con IA — hecho
 
 ### 3. Bug — al eliminar ficha sigue apareciendo en el panel
 - Después de eliminar una ficha, el panel admin no la quita sin recargar
