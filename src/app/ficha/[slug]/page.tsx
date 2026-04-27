@@ -233,6 +233,9 @@ export default async function CardPage({ params }: Props) {
             <div className="flex flex-wrap items-center gap-2 text-sm text-ink/50">
               <span>{TYPE_LABELS[work.type as keyof typeof TYPE_LABELS]}</span>
               {work.year && <><span>·</span><span>{work.year}</span></>}
+              {(work as any).country && (
+                <><span>·</span><span>{(work as any).country}</span></>
+              )}
               {work.runtime && (
                 <><span>·</span><span>{formatRuntime(work.runtime)}</span></>
               )}
@@ -245,6 +248,10 @@ export default async function CardPage({ params }: Props) {
             </div>
 
             <h1 className="text-3xl font-black tracking-tight text-ink sm:text-4xl">{work.title}</h1>
+
+            {work.original_title && work.original_title !== work.title && (
+              <p className="text-sm text-ink/40 italic">{work.original_title}</p>
+            )}
 
             {/* Géneros */}
             {work.genres && work.genres.length > 0 && (

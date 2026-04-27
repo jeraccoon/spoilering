@@ -40,6 +40,7 @@ export interface Work {
   goodreads_url: string | null
   filmaffinity_url: string | null
   tracktv_url: string | null
+  country: string | null
   slug: string
   created_at: string
   updated_at: string

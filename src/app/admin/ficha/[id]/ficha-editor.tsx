@@ -30,6 +30,7 @@ interface Work {
   goodreads_url: string | null
   filmaffinity_url: string | null
   tracktv_url: string | null
+  country: string | null
 }
 
 interface Card {
@@ -161,6 +162,7 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
     goodreads_url: initialCard.work.goodreads_url ?? '',
     filmaffinity_url: initialCard.work.filmaffinity_url ?? '',
     tracktv_url: initialCard.work.tracktv_url ?? '',
+    country: initialCard.work.country ?? '',
   })
   const [savingMeta, setSavingMeta] = useState(false)
   const [savedMeta, setSavedMeta] = useState(false)
@@ -282,6 +284,7 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
           goodreads_url: meta.goodreads_url.trim() || null,
           filmaffinity_url: meta.filmaffinity_url.trim() || null,
           tracktv_url: meta.tracktv_url.trim() || null,
+          country: meta.country.trim() || null,
         }),
       })
       if (!res.ok) {
@@ -596,6 +599,17 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
               onChange={(e) => setMeta((p) => ({ ...p, cast: e.target.value }))}
               onBlur={() => void saveMeta()}
               placeholder="Actor 1, Actor 2, Actor 3…"
+              className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder-ink/30 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
+            />
+          </div>
+          <div>
+            <label className="mb-1.5 block text-xs font-semibold text-ink/60">País de origen</label>
+            <input
+              type="text"
+              value={meta.country}
+              onChange={(e) => setMeta((p) => ({ ...p, country: e.target.value }))}
+              onBlur={() => void saveMeta()}
+              placeholder="Ej: Estados Unidos"
               className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder-ink/30 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
             />
           </div>

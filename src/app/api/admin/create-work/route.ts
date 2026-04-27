@@ -2,6 +2,21 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { fetchAndStoreSeasonsForWork } from '@/lib/tmdb/fetchSeasons'
 
+function isoToCountry(iso: string): string {
+  const map: Record<string, string> = {
+    US: 'Estados Unidos', GB: 'Reino Unido', ES: 'España', FR: 'Francia',
+    DE: 'Alemania', IT: 'Italia', JP: 'Japón', KR: 'Corea del Sur',
+    CA: 'Canadá', AU: 'Australia', MX: 'México', BR: 'Brasil',
+    AR: 'Argentina', IN: 'India', CN: 'China', SE: 'Suecia',
+    DK: 'Dinamarca', NO: 'Noruega', FI: 'Finlandia', NL: 'Países Bajos',
+    BE: 'Bélgica', CH: 'Suiza', AT: 'Austria', PL: 'Polonia',
+    PT: 'Portugal', RU: 'Rusia', TR: 'Turquía', IL: 'Israel',
+    ZA: 'Sudáfrica', NG: 'Nigeria', EG: 'Egipto', TH: 'Tailandia',
+    HK: 'Hong Kong', TW: 'Taiwán', NZ: 'Nueva Zelanda', IE: 'Irlanda',
+  }
+  return map[iso] ?? iso
+}
+
 function toSlug(title: string): string {
   return title
     .toLowerCase()
@@ -73,6 +88,7 @@ export async function POST(request: NextRequest) {
     let enrichedImdbId: string | null = null
     let enrichedTracktvUrl: string | null = null
     let enrichedLetterboxdUrl: string | null = null
+    let enrichedCountry: string | null = null
 
     console.log('[create-work] paso 3c: enriquecimiento TMDb — tmdb_id:', tmdb_id, 'type:', type)
     if (tmdb_id && (type === 'movie' || type === 'series')) {
@@ -92,7 +108,13 @@ export async function POST(request: NextRequest) {
           enrichedRuntime = type === 'movie'
             ? (d.runtime ?? null)
             : ((d.episode_run_time as number[] | undefined)?.[0] ?? null)
-          console.log('[create-work] TMDb details OK — runtime:', enrichedRuntime)
+          if (type === 'movie') {
+            enrichedCountry = (d.production_countries as { iso_3166_1: string; name: string }[] | undefined)?.[0]?.name ?? null
+          } else {
+            const isoCode = (d.origin_country as string[] | undefined)?.[0] ?? null
+            enrichedCountry = isoCode ? isoToCountry(isoCode) : null
+          }
+          console.log('[create-work] TMDb details OK — runtime:', enrichedRuntime, '| country:', enrichedCountry)
         } else {
           console.warn('[create-work] TMDb details FAIL —', detailsRes.status === 'rejected' ? detailsRes.reason : 'http error')
         }
@@ -190,6 +212,7 @@ export async function POST(request: NextRequest) {
       imdb_id: enrichedImdbId,
       letterboxd_url: enrichedLetterboxdUrl,
       tracktv_url: enrichedTracktvUrl,
+      country: enrichedCountry,
       isbn: isbn ?? null,
       publisher: publisher ?? null,
       pages: pages ?? null,

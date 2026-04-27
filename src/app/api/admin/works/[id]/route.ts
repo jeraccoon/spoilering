@@ -20,7 +20,7 @@ export async function PATCH(
   }
 
   const body = await request.json()
-  const allowed = ['cast', 'runtime', 'imdb_id', 'letterboxd_url', 'goodreads_url', 'filmaffinity_url', 'tracktv_url']
+  const allowed = ['cast', 'runtime', 'imdb_id', 'letterboxd_url', 'goodreads_url', 'filmaffinity_url', 'tracktv_url', 'country']
   const update: Record<string, unknown> = {}
   for (const key of allowed) {
     if (key in body) update[key] = body[key]
