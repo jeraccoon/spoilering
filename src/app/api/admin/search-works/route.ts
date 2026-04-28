@@ -160,6 +160,8 @@ export async function GET(request: NextRequest) {
       google_books_id: item.id,
       open_library_id: null,
       isbn,
+      publisher: info.publisher ?? null,
+      pages: info.pageCount ? parseInt(info.pageCount) : null,
     })
   }
 

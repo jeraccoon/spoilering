@@ -23,6 +23,8 @@ interface SearchResult {
   google_books_id: string | null
   open_library_id: string | null
   isbn: string | null
+  publisher: string | null
+  pages: number | null
 }
 
 interface FormState {
@@ -119,8 +121,8 @@ export default function NuevaObraPage() {
       tmdb_id: result.tmdb_id ? String(result.tmdb_id) : '',
       google_books_id: result.google_books_id ?? '',
       isbn: result.isbn ?? '',
-      publisher: '',
-      pages: '',
+      publisher: result.publisher ?? '',
+      pages: result.pages ? String(result.pages) : '',
       saga: '',
       saga_order: '',
     })
