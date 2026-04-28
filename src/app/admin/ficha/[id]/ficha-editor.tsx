@@ -169,8 +169,6 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
   const [metaError, setMetaError] = useState<string | null>(null)
 
   const [committed, setCommitted] = useState(initialCard.is_committed)
-  const [markAsWatched, setMarkAsWatched] = useState(false)
-  const [watchedAt, setWatchedAt] = useState('')
 
   const allSections: Section[] = []
   function flatten(sections: Section[]) {
@@ -256,13 +254,6 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
     if (res.ok) {
       setCard((c) => ({ ...c, status: next }))
       setCommitted(true)
-      if (next === 'published' && markAsWatched) {
-        await fetch('/api/user-content', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ work_id: card.work.id, watched: true, watched_at: watchedAt || null }),
-        })
-      }
     }
     setStatusLoading(false)
   }
@@ -410,26 +401,6 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
                 >
                   {savingMeta ? '…' : 'Guardar borrador'}
                 </button>
-                <div className="flex flex-col items-end gap-1.5">
-                  <label className="flex cursor-pointer items-center gap-1.5 text-xs font-semibold text-ink/50 transition hover:text-ink/80">
-                    <input
-                      type="checkbox"
-                      checked={markAsWatched}
-                      onChange={(e) => setMarkAsWatched(e.target.checked)}
-                      className="accent-moss"
-                    />
-                    Marcar como vista
-                  </label>
-                  {markAsWatched && (
-                    <input
-                      type="date"
-                      value={watchedAt}
-                      onChange={(e) => setWatchedAt(e.target.value)}
-                      max={new Date().toISOString().split('T')[0]}
-                      className="rounded border border-ink/20 bg-paper px-2 py-1 text-xs text-ink outline-none focus:border-ember focus:ring-1 focus:ring-ember/20"
-                    />
-                  )}
-                </div>
                 <button
                   onClick={() => void toggleStatus()}
                   disabled={statusLoading}

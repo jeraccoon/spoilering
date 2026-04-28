@@ -109,7 +109,8 @@ export async function POST(request: NextRequest) {
             ? (d.runtime ?? null)
             : ((d.episode_run_time as number[] | undefined)?.[0] ?? null)
           if (type === 'movie') {
-            enrichedCountry = (d.production_countries as { iso_3166_1: string; name: string }[] | undefined)?.[0]?.name ?? null
+            const isoCode = (d.production_countries as { iso_3166_1: string }[] | undefined)?.[0]?.iso_3166_1 ?? null
+            enrichedCountry = isoCode ? isoToCountry(isoCode) : null
           } else {
             const isoCode = (d.origin_country as string[] | undefined)?.[0] ?? null
             enrichedCountry = isoCode ? isoToCountry(isoCode) : null
