@@ -42,12 +42,6 @@ interface Card {
 }
 
 const TYPE_LABELS: Record<string, string> = { movie: 'Película', series: 'Serie', book: 'Libro' }
-const STATUS_LABELS: Record<string, string> = { draft: 'Borrador', published: 'Publicada', locked: 'Bloqueada' }
-const STATUS_COLORS: Record<string, string> = {
-  draft: 'bg-amber-100 text-amber-700 border-amber-200',
-  published: 'bg-moss/10 text-moss border-moss/20',
-  locked: 'bg-ink/10 text-ink/60 border-ink/20',
-}
 
 interface AddSectionModalProps {
   cardId: string
@@ -135,13 +129,15 @@ function AddSectionModal({ cardId, parentId, parentLabel, onClose, onCreated }: 
 export function FichaEditor({ card: initialCard }: { card: Card }) {
   const router = useRouter()
   const [card, setCard] = useState(initialCard)
-  const [selectedId, setSelectedId] = useState<string | null>(card.sections[0]?.id ?? null)
+  const [openIds, setOpenIds] = useState<Set<string>>(
+    () => new Set(initialCard.sections[0] ? [initialCard.sections[0].id] : [])
+  )
   const [editContent, setEditContent] = useState<Record<string, string>>(() => {
     const map: Record<string, string> = {}
     function collect(sections: Section[]) {
       for (const s of sections) { map[s.id] = s.content; collect(s.children) }
     }
-    collect(card.sections)
+    collect(initialCard.sections)
     return map
   })
   const [saving, setSaving] = useState<string | null>(null)
@@ -170,15 +166,13 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
 
   const [committed, setCommitted] = useState(initialCard.is_committed)
 
-  const allSections: Section[] = []
-  function flatten(sections: Section[]) {
-    for (const s of sections) { allSections.push(s); flatten(s.children) }
+  function toggleOpen(id: string) {
+    setOpenIds((prev) => {
+      const next = new Set(prev)
+      next.has(id) ? next.delete(id) : next.add(id)
+      return next
+    })
   }
-  flatten(card.sections)
-  const selectedSection = allSections.find((s) => s.id === selectedId) ?? null
-  const parentOfSelected = selectedSection?.parent_id
-    ? allSections.find((s) => s.id === selectedSection.parent_id) ?? null
-    : null
 
   async function saveContent(sectionId: string) {
     setSaving(sectionId)
@@ -196,6 +190,41 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
       setSaveError(sectionId)
     } finally {
       setSaving(null)
+    }
+  }
+
+  async function generateSection(section: Section) {
+    setGeneratingSections((prev) => new Set([...prev, section.id]))
+    setGenerateError(null)
+    try {
+      const res = await fetch(`/api/admin/sections/${section.id}/generate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          workTitle: card.work.title,
+          workType: card.work.type,
+          workYear: card.work.year,
+          sectionLabel: section.label,
+          parentLabel: null,
+          existingContent: null,
+        }),
+      })
+      const data = await res.json()
+      if (res.ok && data.content) {
+        setEditContent((prev) => ({ ...prev, [section.id]: data.content }))
+        setOpenIds((prev) => new Set([...prev, section.id]))
+        setShowAiWarning(true)
+      } else if (!res.ok) {
+        setGenerateError(data.error ?? 'Error al generar')
+      }
+    } catch {
+      setGenerateError('Error de red al generar')
+    } finally {
+      setGeneratingSections((prev) => {
+        const next = new Set(prev)
+        next.delete(section.id)
+        return next
+      })
     }
   }
 
@@ -326,12 +355,93 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
       return { ...prev, sections: insertChild(prev.sections) }
     })
     setEditContent((prev) => ({ ...prev, [newSection.id]: '' }))
-    setSelectedId(newSection.id)
+    setOpenIds((prev) => new Set([...prev, newSection.id]))
     setModal(null)
   }
 
+  function renderSection(section: Section, depth: number = 0) {
+    const isOpen = openIds.has(section.id)
+    const content = editContent[section.id] ?? ''
+    const wordCount = content.split(/\s+/).filter(Boolean).length
+    const isGenerating = generatingSections.has(section.id)
+
+    return (
+      <div key={section.id} className={depth > 0 ? 'ml-6' : ''}>
+        <div className="overflow-hidden rounded-xl border border-ink/10">
+          {/* Cabecera */}
+          <div className="flex items-center">
+            <button
+              onClick={() => toggleOpen(section.id)}
+              className="flex flex-1 items-center gap-3 px-4 py-3 text-left transition hover:bg-ink/5"
+            >
+              <span
+                className="shrink-0 text-[10px] text-ink/40 transition-transform duration-150"
+                style={{ display: 'inline-block', transform: isOpen ? 'rotate(90deg)' : 'none' }}
+              >
+                ▶
+              </span>
+              <span className="flex-1 text-sm font-semibold text-ink">{section.label}</span>
+              {isGenerating ? (
+                <span className="mr-1 h-2 w-2 animate-pulse rounded-full bg-plum/60" />
+              ) : wordCount > 0 ? (
+                <span className="mr-1 text-xs text-ink/40">{wordCount} palabras</span>
+              ) : null}
+            </button>
+            <div className="flex items-center gap-0.5 pr-3">
+              <button
+                onClick={() => void generateSection(section)}
+                disabled={isGenerating}
+                title="Generar con IA"
+                className="rounded px-1.5 py-1 text-xs font-semibold text-plum/50 transition hover:bg-plum/5 hover:text-plum disabled:opacity-40"
+              >
+                ✦
+              </button>
+              <button
+                onClick={() => setModal({ parentId: section.id, parentLabel: section.label })}
+                title="Añadir subsección"
+                className="rounded px-1.5 py-1 text-sm font-semibold text-ink/30 transition hover:bg-ink/5 hover:text-ink/60"
+              >
+                +
+              </button>
+            </div>
+          </div>
+
+          {/* Cuerpo */}
+          {isOpen && (
+            <div className="border-t border-ink/10 px-4 pb-4 pt-3">
+              <textarea
+                value={content}
+                onChange={(e) => setEditContent((prev) => ({ ...prev, [section.id]: e.target.value }))}
+                onBlur={() => void saveContent(section.id)}
+                rows={10}
+                style={{ minHeight: '220px' }}
+                placeholder="Escribe el contenido de esta sección o usa ✦ para generarlo con IA…"
+                className="w-full resize-y rounded-xl border border-ink/10 bg-paper px-4 py-3 text-sm leading-relaxed text-ink placeholder-ink/25 outline-none transition focus:border-ember focus:ring-2 focus:ring-ember/20"
+              />
+              <div className="mt-1.5 flex items-center justify-between text-xs text-ink/30">
+                <span>{content.length} caracteres</span>
+                <span>
+                  {saving === section.id && <span className="text-ink/40">Guardando…</span>}
+                  {savedId === section.id && saving !== section.id && <span className="text-moss">Guardado ✓</span>}
+                  {saveError === section.id && saving !== section.id && <span className="text-ember">Error al guardar</span>}
+                </span>
+                <span>{wordCount} palabras</span>
+              </div>
+
+              {section.children.length > 0 && (
+                <div className="mt-4 space-y-2">
+                  {section.children.map((child) => renderSection(child, depth + 1))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8">
+    <div className="mx-auto max-w-4xl px-4 py-8">
 
       {/* Cabecera */}
       <div className="mb-6 flex flex-wrap items-start gap-5">
@@ -367,7 +477,6 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
       {/* Barra de acciones */}
       <div className="mb-7 border-b border-ink/10 pb-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          {/* Estado (izquierda) */}
           {card.status === 'published' ? (
             <span className="flex items-center gap-1.5 text-sm font-semibold text-moss">
               <span className="h-2 w-2 rounded-full bg-moss" />
@@ -380,7 +489,6 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
             </span>
           )}
 
-          {/* Acciones (derecha) */}
           <div className="flex items-center gap-2">
             <button
               onClick={generateAll}
@@ -442,110 +550,20 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
         </div>
       )}
 
-      <div className="flex gap-6">
-        {/* Panel izquierdo — secciones */}
-        <aside className="w-56 shrink-0">
-          <div className="mb-3 flex items-center justify-between">
-            <p className="text-xs font-semibold uppercase tracking-wider text-ink/40">Secciones</p>
-            <button
-              onClick={() => setModal({ parentId: null })}
-              className="rounded-md bg-ember px-2 py-1 text-[11px] font-semibold text-white hover:bg-ember/90"
-            >
-              + Añadir
-            </button>
+      {/* Acordeón de secciones */}
+      <div className="space-y-2">
+        {card.sections.length === 0 && (
+          <div className="flex h-32 items-center justify-center rounded-xl border border-ink/10 bg-ink/5 text-ink/30">
+            <p className="text-sm">Sin secciones. Crea la primera.</p>
           </div>
-
-          <nav className="space-y-0.5">
-            {card.sections.length === 0 && (
-              <p className="py-4 text-center text-xs text-ink/30">Sin secciones</p>
-            )}
-            {card.sections.map((section) => (
-              <div key={section.id}>
-                <div className="flex items-center gap-1">
-                  <button
-                    onClick={() => setSelectedId(section.id)}
-                    className={`flex-1 rounded-lg px-2.5 py-1.5 text-left text-sm transition ${
-                      selectedId === section.id
-                        ? 'bg-ember/10 font-semibold text-ember'
-                        : 'text-ink/70 hover:bg-ink/5 hover:text-ink'
-                    }`}
-                  >
-                    <span className="flex items-center gap-1.5">
-                      {section.short_label ?? section.label}
-                      {generatingSections.has(section.id) && (
-                        <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-plum/60" />
-                      )}
-                    </span>
-                  </button>
-                  <button
-                    onClick={() => setModal({ parentId: section.id, parentLabel: section.label })}
-                    title="Añadir subsección"
-                    className="rounded px-1 py-1 text-ink/30 hover:text-ink/60"
-                  >
-                    +
-                  </button>
-                </div>
-                {section.children.map((child) => (
-                  <button
-                    key={child.id}
-                    onClick={() => setSelectedId(child.id)}
-                    className={`ml-4 mt-0.5 block w-[calc(100%-1rem)] rounded-lg px-2.5 py-1.5 text-left text-xs transition ${
-                      selectedId === child.id
-                        ? 'bg-ember/10 font-semibold text-ember'
-                        : 'text-ink/50 hover:bg-ink/5 hover:text-ink'
-                    }`}
-                  >
-                    {child.short_label ?? child.label}
-                  </button>
-                ))}
-              </div>
-            ))}
-          </nav>
-        </aside>
-
-        {/* Panel derecho — editor */}
-        <div className="min-w-0 flex-1">
-          {!selectedSection ? (
-            <div className="flex h-64 items-center justify-center rounded-xl border border-ink/10 bg-ink/5 text-ink/30">
-              <p className="text-sm">Selecciona o crea una sección para empezar</p>
-            </div>
-          ) : (
-            <div>
-              <div className="mb-3 flex items-center gap-3">
-                <div>
-                  {parentOfSelected && (
-                    <p className="text-xs text-ink/40">{parentOfSelected.label} /</p>
-                  )}
-                  <h2 className="text-lg font-black text-ink">{selectedSection.label}</h2>
-                </div>
-                {saving === selectedSection.id && (
-                  <span className="text-xs text-ink/40">Guardando…</span>
-                )}
-                {savedId === selectedSection.id && saving !== selectedSection.id && (
-                  <span className="text-xs text-moss">Guardado ✓</span>
-                )}
-                {saveError === selectedSection.id && saving !== selectedSection.id && (
-                  <span className="text-xs text-ember">Error al guardar</span>
-                )}
-              </div>
-
-              <textarea
-                value={editContent[selectedSection.id] ?? ''}
-                onChange={(e) => setEditContent((prev) => ({ ...prev, [selectedSection.id]: e.target.value }))}
-                onBlur={() => saveContent(selectedSection.id)}
-                rows={11}
-                style={{ minHeight: '240px' }}
-                placeholder="Escribe el contenido de esta sección o usa el botón ✨ para generarlo con IA…"
-                className="w-full resize-y rounded-xl border border-ink/10 bg-paper px-4 py-3 text-sm leading-relaxed text-ink placeholder-ink/25 outline-none transition focus:border-ember focus:ring-2 focus:ring-ember/20"
-              />
-
-              <div className="mt-2 flex items-center justify-between text-xs text-ink/30">
-                <span>{(editContent[selectedSection.id] ?? '').length} caracteres</span>
-                <span>{(editContent[selectedSection.id] ?? '').split(/\s+/).filter(Boolean).length} palabras</span>
-              </div>
-            </div>
-          )}
-        </div>
+        )}
+        {card.sections.map((section) => renderSection(section))}
+        <button
+          onClick={() => setModal({ parentId: null })}
+          className="w-full rounded-xl border border-dashed border-ink/20 py-2.5 text-sm font-semibold text-ink/40 transition hover:border-ink/40 hover:text-ink/60"
+        >
+          + Añadir sección
+        </button>
       </div>
 
       {/* Panel de temporadas — solo para series */}
