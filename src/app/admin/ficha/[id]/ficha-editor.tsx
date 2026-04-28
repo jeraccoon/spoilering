@@ -413,8 +413,8 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
                 value={content}
                 onChange={(e) => setEditContent((prev) => ({ ...prev, [section.id]: e.target.value }))}
                 onBlur={() => void saveContent(section.id)}
-                rows={10}
-                style={{ minHeight: '220px' }}
+                rows={6}
+                style={{ minHeight: '140px' }}
                 placeholder="Escribe el contenido de esta sección o usa ✦ para generarlo con IA…"
                 className="w-full resize-y rounded-xl border border-ink/10 bg-paper px-4 py-3 text-sm leading-relaxed text-ink placeholder-ink/25 outline-none transition focus:border-ember focus:ring-2 focus:ring-ember/20"
               />
