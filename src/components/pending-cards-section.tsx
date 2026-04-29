@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 
 export interface PendingCard {
   id: string
@@ -23,6 +24,7 @@ function formatDate(iso: string) {
 }
 
 export function PendingCardsSection({ initialCards }: { initialCards: PendingCard[] }) {
+  const router = useRouter()
   const [cards, setCards] = useState(initialCards)
   const [loading, setLoading] = useState<string | null>(null)
 
@@ -46,6 +48,7 @@ export function PendingCardsSection({ initialCards }: { initialCards: PendingCar
     try {
       await fetch(`/api/admin/cards/${id}`, { method: 'DELETE' })
       setCards((prev) => prev.filter((c) => c.id !== id))
+      router.refresh()
     } finally {
       setLoading(null)
     }

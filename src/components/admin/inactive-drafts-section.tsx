@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 
 const TYPE_LABELS: Record<string, string> = {
   movie: 'Película', series: 'Serie', book: 'Libro',
@@ -20,6 +21,7 @@ function formatDate(iso: string) {
 }
 
 export function InactiveDraftsSection({ initialDrafts }: { initialDrafts: InactiveDraft[] }) {
+  const router = useRouter()
   const [drafts, setDrafts] = useState<InactiveDraft[]>(initialDrafts)
   const [deleting, setDeleting] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -35,6 +37,7 @@ export function InactiveDraftsSection({ initialDrafts }: { initialDrafts: Inacti
         return
       }
       setDrafts((prev) => prev.filter((d) => d.id !== cardId))
+      router.refresh()
     } catch {
       setError('Error inesperado al eliminar')
     } finally {

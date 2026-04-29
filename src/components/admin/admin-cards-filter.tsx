@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 
 const TYPE_LABELS: Record<string, string> = { movie: 'Película', series: 'Serie', book: 'Libro' }
 
@@ -61,6 +62,7 @@ export function AdminCardsFilter({
   allCards: Card[]
   stats: Stats
 }) {
+  const router = useRouter()
   const [activeFilter, setActiveFilter] = useState<FilterKey>('draft')
   const [cards, setCards] = useState<Card[]>(allCards)
   const [deleting, setDeleting] = useState<string | null>(null)
@@ -87,6 +89,7 @@ export function AdminCardsFilter({
       console.log('[DELETE card]', cardId, res.status, data)
       if (!res.ok) { setError(data.error ?? 'Error al eliminar'); return }
       setCards((prev) => prev.filter((c) => c.id !== cardId))
+      router.refresh()
     } catch {
       setError('Error inesperado al eliminar')
     } finally {
