@@ -174,6 +174,11 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
     })
   }
 
+  const allSections: Section[] = []
+  ;(function collect(sections: Section[]) {
+    for (const s of sections) { allSections.push(s); collect(s.children) }
+  })(card.sections)
+
   async function saveContent(sectionId: string) {
     setSaving(sectionId)
     setSaveError(null)
@@ -253,6 +258,11 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
           const data = await res.json()
           if (res.ok && data.content) {
             setEditContent((prev) => ({ ...prev, [section.id]: data.content }))
+            await fetch(`/api/admin/sections/${section.id}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ content: data.content }),
+            })
           } else if (!res.ok) {
             setGenerateError(data.error ?? 'Error al generar una sección')
           }
@@ -275,6 +285,17 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
   async function toggleStatus() {
     setStatusLoading(true)
     const next = card.status === 'published' ? 'draft' : 'published'
+    if (next === 'published') {
+      await Promise.all(
+        allSections.map((s) =>
+          fetch(`/api/admin/sections/${s.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ content: editContent[s.id] ?? '' }),
+          })
+        )
+      )
+    }
     const res = await fetch(`/api/admin/cards/${card.id}/status`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
@@ -323,6 +344,15 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
 
   async function saveAsDraft() {
     setSavingMeta(true)
+    await Promise.all(
+      allSections.map((s) =>
+        fetch(`/api/admin/sections/${s.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ content: editContent[s.id] ?? '' }),
+        })
+      )
+    )
     const res = await fetch(`/api/admin/cards/${card.id}/status`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
