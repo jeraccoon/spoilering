@@ -101,20 +101,20 @@ export async function Header() {
           <span>→</span>
         </Link>
       )}
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-6 px-6 py-4">
+      <div className="mx-auto flex max-w-6xl items-center justify-between gap-2 px-3 py-3 sm:gap-6 sm:px-6 sm:py-4">
 
         <Link
           href="/"
-          className="flex items-center gap-3 font-black tracking-tight text-ink"
+          className="flex items-center gap-2 font-black tracking-tight text-ink sm:gap-3"
         >
-          <svg width="36" height="36" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <svg viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" className="size-7 sm:size-9">
             <rect width="36" height="36" rx="7" fill="#18181b"/>
             <ellipse cx="18" cy="18" rx="13" ry="8" fill="#fbfaf7"/>
             <circle cx="18" cy="18" r="6.5" fill="#d84f2a"/>
             <circle cx="18" cy="18" r="3.2" fill="#18181b"/>
             <circle cx="20.8" cy="15.5" r="1.6" fill="white" opacity="0.65"/>
           </svg>
-          <span className="text-xl">Spoilering</span>
+          <span className="text-lg sm:text-xl">Spoilering</span>
         </Link>
 
         <nav aria-label="Navegación principal" className="hidden items-center gap-6 sm:flex">
@@ -129,7 +129,7 @@ export async function Header() {
           ))}
         </nav>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-1.5 sm:gap-3">
           <NavSearch />
           {auth?.user ? (
             <>
@@ -151,13 +151,13 @@ export async function Header() {
             <>
               <Link
                 href="/login"
-                className="text-sm font-semibold text-ink/70 transition hover:text-ink"
+                className="hidden text-sm font-semibold text-ink/70 transition hover:text-ink sm:block"
               >
                 Iniciar sesión
               </Link>
               <Link
                 href="/registro"
-                className="rounded-lg bg-ink px-4 py-2 text-sm font-semibold text-paper transition hover:bg-ember"
+                className="rounded-lg bg-ink px-3 py-1.5 text-sm font-semibold text-paper transition hover:bg-ember sm:px-4 sm:py-2"
               >
                 Registrarse
               </Link>
