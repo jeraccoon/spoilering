@@ -6,13 +6,12 @@ import { useRouter } from 'next/navigation'
 
 const TYPE_LABELS: Record<string, string> = { movie: 'Película', series: 'Serie', book: 'Libro' }
 
-type FilterKey = 'all' | 'published' | 'draft' | 'incomplete'
+type FilterKey = 'all' | 'published' | 'draft'
 
 interface Card {
   id: string
   status: string
   created_at: string
-  is_complete: boolean
   work: { title: string; type: string; slug: string } | null
   creator: { username: string; role: string } | null
 }
@@ -22,7 +21,6 @@ interface Stats {
   published: number
   drafts: number
   users: number
-  incomplete: number
 }
 
 function formatDate(iso: string) {
@@ -75,7 +73,6 @@ export function AdminCardsFilter({
   const filtered = cards.filter((c) => {
     if (activeFilter === 'published') return c.status === 'published'
     if (activeFilter === 'draft') return c.status === 'draft' && (!c.creator || c.creator.role !== 'user')
-    if (activeFilter === 'incomplete') return c.is_complete === false
     return c.status === 'draft' && (!c.creator || c.creator.role !== 'user')
   })
 
@@ -86,7 +83,6 @@ export function AdminCardsFilter({
     try {
       const res = await fetch(`/api/admin/cards/${cardId}`, { method: 'DELETE' })
       const data = await res.json()
-      console.log('[DELETE card]', cardId, res.status, data)
       if (!res.ok) { setError(data.error ?? 'Error al eliminar'); return }
       setCards((prev) => prev.filter((c) => c.id !== cardId))
       router.refresh()
@@ -101,7 +97,6 @@ export function AdminCardsFilter({
     all: 'Fichas (admin / editor)',
     published: 'Fichas publicadas',
     draft: 'Fichas en borrador',
-    incomplete: 'Fichas incompletas',
   }
 
   return (
@@ -114,9 +109,6 @@ export function AdminCardsFilter({
           <StatCard value={stats.published} label="Fichas publicadas"  accent="text-moss"    filter="published" active={activeFilter === 'published'}  onClick={() => toggle('published')} />
           <StatCard value={stats.drafts}    label="En borrador"        accent="text-ember"   filter="draft"     active={activeFilter === 'draft'}      onClick={() => toggle('draft')} />
           <StatCard value={stats.users}     label="Usuarios"           filter={null}         active={false}                         onClick={() => {}} />
-          {stats.incomplete > 0 && (
-            <StatCard value={stats.incomplete} label="Fichas incompletas" accent="text-amber-600" filter="incomplete" active={activeFilter === 'incomplete'} onClick={() => toggle('incomplete')} />
-          )}
         </div>
       </section>
 
@@ -147,10 +139,7 @@ export function AdminCardsFilter({
                 {filtered.map((card) => (
                   <tr key={card.id} className="transition hover:bg-ink/5">
                     <td className="px-4 py-3 font-semibold text-ink">
-                      <span>{card.work?.title ?? '—'}</span>
-                      {card.is_complete === false && (
-                        <span className="ml-2 rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700">Incompleta</span>
-                      )}
+                      {card.work?.title ?? '—'}
                     </td>
                     <td className="px-4 py-3 text-ink/50">{TYPE_LABELS[card.work?.type ?? ''] ?? '—'}</td>
                     <td className="px-4 py-3 text-ink/50">{card.created_at ? formatDate(card.created_at) : '—'}</td>

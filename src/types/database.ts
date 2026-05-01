@@ -51,7 +51,6 @@ export interface Card {
   work_id: string
   status: CardStatus
   created_by: string | null
-  is_complete: boolean
   created_at: string
   updated_at: string
 }

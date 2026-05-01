@@ -24,7 +24,6 @@ interface Card {
   status: string
   is_committed: boolean
   updated_at: string
-  is_complete: boolean
   work: {
     title: string
     type: string

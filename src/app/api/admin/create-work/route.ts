@@ -192,7 +192,6 @@ export async function POST(request: NextRequest) {
     console.log('[create-work] paso 3c resultado — cast:', enrichedCast, '| runtime:', enrichedRuntime, '| imdb_id:', enrichedImdbId, '| tracktv_url:', enrichedTracktvUrl, '| letterboxd_url:', enrichedLetterboxdUrl)
 
     const genres_arr: string[] = genres ?? []
-    const is_complete = Boolean(poster_url && overview && genres_arr.length > 0)
 
     const workPayload = {
       type,
@@ -266,9 +265,8 @@ export async function POST(request: NextRequest) {
 
         // No card yet — create card + sections for the existing work
         console.log('[create-work] work existente sin card — creando card para work.id:', existingWork.id)
-        const is_complete = Boolean(poster_url && overview && (genres ?? []).length > 0)
         const { data: newCard, error: cardErr } = await (supabase.from('cards') as any)
-          .insert({ work_id: existingWork.id, status: 'draft', created_by: user.id, is_complete, is_committed: false })
+          .insert({ work_id: existingWork.id, status: 'draft', created_by: user.id, is_committed: false })
           .select()
           .single()
 
@@ -295,7 +293,7 @@ export async function POST(request: NextRequest) {
     console.log('[create-work] paso 5: insertando card...')
     const { data: card, error: cardError } = await (supabase
       .from('cards') as any)
-      .insert({ work_id: work.id, status: 'draft', created_by: user.id, is_complete, is_committed: false })
+      .insert({ work_id: work.id, status: 'draft', created_by: user.id, is_committed: false })
       .select()
       .single()
 

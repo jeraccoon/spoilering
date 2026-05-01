@@ -10,7 +10,7 @@ async function getAdminData() {
 
   const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
 
-  const [works, published, drafts, users, pendingRevisions, pendingSuggestions, incomplete, allDraftCards, orphanWorksResult, inactiveDraftsResult, { data: { user } }, contactResult] =
+  const [works, published, drafts, users, pendingRevisions, pendingSuggestions, allDraftCards, orphanWorksResult, inactiveDraftsResult, { data: { user } }, contactResult] =
     await Promise.all([
       supabase.from('works').select('*', { count: 'exact', head: true }),
       supabase.from('cards').select('*', { count: 'exact', head: true }).eq('status', 'published'),
@@ -18,9 +18,8 @@ async function getAdminData() {
       supabase.from('profiles').select('*', { count: 'exact', head: true }),
       supabase.from('revisions').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
       (supabase.from('suggestions') as any).select('*', { count: 'exact', head: true }).eq('status', 'pending'),
-      (supabase.from('cards') as any).select('*', { count: 'exact', head: true }).eq('is_complete', false),
       (supabase.from('cards') as any)
-        .select('id, status, is_committed, created_at, is_complete, work:works(title, type, slug), creator:profiles!created_by(username, role)')
+        .select('id, status, is_committed, created_at, work:works(title, type, slug), creator:profiles!created_by(username, role)')
         .order('created_at', { ascending: false })
         .limit(100),
       (supabase.from('works') as any)
@@ -74,7 +73,6 @@ async function getAdminData() {
       users: users.count ?? 0,
       pendingRevisions: pendingRevisions.count ?? 0,
       pendingSuggestions: pendingSuggestions.count ?? 0,
-      incomplete: incomplete.count ?? 0,
       uncommitted: uncommittedCount,
     },
     allCards,

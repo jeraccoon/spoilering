@@ -48,7 +48,6 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
       work_id: season.work_id,
       episode_id: episodeId,
       status: 'draft',
-      is_complete: false,
       created_by: user.id,
     })
     .select('id')

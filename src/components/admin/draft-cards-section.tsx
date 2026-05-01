@@ -10,7 +10,6 @@ const TYPE_LABELS: Record<string, string> = {
 interface DraftCard {
   id: string
   created_at: string
-  is_complete: boolean
   work: { title: string; type: string; slug: string } | null
   creator: { username: string; role: string } | null
 }
@@ -73,9 +72,6 @@ export function DraftCardsSection({ initialCards }: { initialCards: DraftCard[] 
               <tr key={card.id} className="transition hover:bg-ink/5">
                 <td className="px-4 py-3 font-semibold text-ink">
                   <span>{card.work?.title ?? '—'}</span>
-                  {card.is_complete === false && (
-                    <span className="ml-2 rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700">Incompleta</span>
-                  )}
                 </td>
                 <td className="px-4 py-3 text-ink/50">
                   {TYPE_LABELS[card.work?.type ?? ''] ?? '—'}

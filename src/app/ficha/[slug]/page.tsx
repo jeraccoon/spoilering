@@ -241,17 +241,7 @@ export default async function CardPage({ params }: Props) {
 
   return (
     <div>
-      {card.is_complete === false && card.status === 'published' && (
-        <div className="border-b border-amber-200 bg-amber-50 px-4 py-3">
-          <div className="mx-auto max-w-5xl">
-            <p className="text-sm text-amber-800">
-              ⚠️ Esta ficha está incompleta. ¿La conoces? Ayúdanos a completarla usando el botón &quot;Sugerir corrección&quot; en cada sección.
-            </p>
-          </div>
-        </div>
-      )}
-
-      {isDraft && (
+{isDraft && (
         <div className="border-b border-amber-300 bg-amber-50 px-4 py-3">
           <div className="mx-auto flex max-w-5xl items-center justify-between gap-4">
             <p className="text-sm font-medium text-amber-800">

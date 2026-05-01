@@ -29,7 +29,7 @@ export async function POST(
   }
 
   const { data: work } = await (supabase.from('works') as any)
-    .select('id, title, type, tmdb_id, poster_url, overview, genres').eq('id', workId).maybeSingle()
+    .select('id, title, type, tmdb_id').eq('id', workId).maybeSingle()
   if (!work) return NextResponse.json({ error: 'Obra no encontrada' }, { status: 404 })
 
   const { data: existingCard } = await (supabase.from('cards') as any)
@@ -38,10 +38,8 @@ export async function POST(
     return NextResponse.json({ error: 'Ya existe una ficha para esta obra', cardId: existingCard.id }, { status: 409 })
   }
 
-  const is_complete = Boolean(work.poster_url && work.overview && work.genres?.length > 0)
-
   const { data: card, error: cardError } = await (supabase.from('cards') as any)
-    .insert({ work_id: workId, status: 'draft', created_by: user.id, is_complete })
+    .insert({ work_id: workId, status: 'draft', created_by: user.id })
     .select('id')
     .single()
 

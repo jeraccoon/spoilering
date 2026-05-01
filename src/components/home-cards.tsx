@@ -78,9 +78,6 @@ function GridView({ cards }: { cards: CardWithWork[] }) {
           <div className="flex flex-col gap-0.5 p-2">
             <p className="line-clamp-2 text-xs font-semibold leading-tight text-ink">{card.work.title}</p>
             {card.work.year && <p className="text-[11px] text-ink/40">{card.work.year}</p>}
-            {card.is_complete === false && (
-              <p className="text-[10px] font-medium text-amber-600">⚠ Incompleta</p>
-            )}
           </div>
         </Link>
       ))}
