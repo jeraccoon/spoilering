@@ -100,10 +100,11 @@ En producción en www.spoilering.com. Base completa funcionando. Fase actual: me
 - Añadir letterboxd_profile, tracktv_profile, goodreads_profile, filmaffinity_profile en tabla profiles
 - Mostrar en perfil público con enlaces
 
-### 2. Resumen rápido (TL;DR) — eliminado temporalmente
+### 2. Resumen rápido (TL;DR) — eliminado temporalmente, redefinir antes de reimplantar
 - Se eliminó de la ficha pública y del editor por ser redundante con el `overview` de la obra.
 - La columna `cards.summary` sigue en BD por si se reactiva en el futuro.
-- Si se retoma: redefinirlo como spoiler del desenlace ("El final en 3 frases"), visible solo dentro del SpoilerGate, y generado por IA junto al resto de secciones.
+- **Propuesta para reimplantar**: generado por IA condensando todas las secciones de la ficha en 3-5 frases con spoilers completos. Completamente distinto al overview (que no tiene spoilers y viene de TMDb/Google Books). Visible solo dentro del SpoilerGate.
+- **Implementación sugerida (Opción A)**: botón "Generar resumen" en el editor que llame a la API pasando el contenido de todas las secciones → guarda en `cards.summary` → muestra en ficha pública dentro del SpoilerGate. Sin coste extra en cada visita, el editor puede regenerarlo si no convence.
 
 ### 3. Cleanup técnico
 - `src/components/home-cards.tsx` parece huérfano. Confirmar y borrar.
@@ -158,6 +159,7 @@ El objetivo es que Spoilering funcione en varios idiomas sin duplicar obras. Una
 - Notificaciones al usuario cuando se aprueba/rechaza una ficha o sugerencia
 - Búsqueda pública mejorada: filtros por género y año
 - Valoraciones y listas de usuario (quiero ver, puntuaciones...)
+- Ordenar fichas en el perfil de usuario: por orden alfabético, fecha de creación, estado (publicada/borrador), tipo de obra
 - Open Graph con imagen de póster por ficha
 - JSON-LD estructurado para SEO
 - Sistema de reputación por contribuciones
