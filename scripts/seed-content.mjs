@@ -272,6 +272,63 @@ ${guide}
   return data.content?.[0]?.text ?? ''
 }
 
+// ─── TMDb Seasons ────────────────────────────────────────────────────────────
+
+async function fetchSeasonsForSeries(workId, tmdbId) {
+  const key = `api_key=${TMDB_API_KEY}`
+  const lang = 'language=es-ES'
+
+  const showRes = await fetch(`https://api.themoviedb.org/3/tv/${tmdbId}?${key}&${lang}`)
+  if (!showRes.ok) throw new Error(`TMDb show error ${showRes.status}`)
+  const show = await showRes.json()
+
+  const tmdbSeasons = (show.seasons ?? []).filter(s => s.season_number > 0)
+  let totalEpisodes = 0
+
+  for (const tmdbSeason of tmdbSeasons) {
+    const seasonRes = await fetch(`https://api.themoviedb.org/3/tv/${tmdbId}/season/${tmdbSeason.season_number}?${key}&${lang}`)
+    if (!seasonRes.ok) continue
+    const seasonData = await seasonRes.json()
+
+    // Upsert season
+    const { data: upsertedSeason } = await supabase.from('seasons').upsert(
+      {
+        work_id: workId,
+        season_number: tmdbSeason.season_number,
+        name: tmdbSeason.name ?? seasonData.name ?? null,
+        tmdb_season_id: tmdbSeason.id,
+        episode_count: tmdbSeason.episode_count ?? seasonData.episodes?.length ?? 0,
+        poster_path: tmdbSeason.poster_path ?? null,
+      },
+      { onConflict: 'work_id,season_number' }
+    ).select('id').single()
+
+    if (!upsertedSeason) continue
+
+    const episodes = seasonData.episodes ?? []
+    totalEpisodes += episodes.length
+
+    for (const ep of episodes) {
+      await supabase.from('episodes').upsert(
+        {
+          season_id: upsertedSeason.id,
+          episode_number: ep.episode_number,
+          name: ep.name ?? null,
+          air_date: ep.air_date || null,
+          runtime: ep.runtime ?? null,
+          tmdb_episode_id: ep.id,
+          still_path: ep.still_path ?? null,
+        },
+        { onConflict: 'season_id,episode_number' }
+      )
+    }
+
+    await sleep(300) // pausa entre temporadas para no saturar TMDb
+  }
+
+  return { seasons: tmdbSeasons.length, episodes: totalEpisodes }
+}
+
 // ─── Proceso principal ───────────────────────────────────────────────────────
 
 async function getOrCreateAdminUserId() {
@@ -359,6 +416,17 @@ async function processWork({ title, original_title, year, type, tmdb_id, authors
     return { status: 'error', title, error: workErr.message }
   }
   console.log(`  ✅ Work creado (id: ${work.id})`)
+
+  // Importar temporadas y episodios si es serie
+  if (type === 'series' && tmdb_id) {
+    try {
+      console.log(`  📺 Importando temporadas desde TMDb...`)
+      const { seasons: ns, episodes: ne } = await fetchSeasonsForSeries(work.id, tmdb_id)
+      console.log(`  ✅ ${ns} temporadas, ${ne} episodios importados`)
+    } catch (e) {
+      console.log(`  ⚠️  Error importando temporadas: ${e.message} — continúa sin ellas`)
+    }
+  }
 
   // Insertar card
   const { data: card, error: cardErr } = await supabase.from('cards').insert({
