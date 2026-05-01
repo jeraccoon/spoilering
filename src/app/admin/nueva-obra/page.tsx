@@ -223,6 +223,8 @@ export default function NuevaObraPage() {
         google_books_id: null,
         open_library_id: (book.key as string) ?? null,
         isbn: isbn || null,
+        publisher: publisher || null,
+        pages: book.number_of_pages ?? null,
       })
       setForm((prev) => ({
         ...prev,
