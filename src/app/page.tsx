@@ -37,9 +37,13 @@ export default async function HomePage() {
           Spoilers incluidos. Resúmenes completos de películas, series y libros para retomar una saga, recordar un final o entender qué pasó sin rodeos.
         </p>
         <HeroActions />
-        <p className="mt-6 text-sm text-ink/40">
-          📖 Spoilers completos &nbsp;·&nbsp; 🚫 Sin opiniones &nbsp;·&nbsp; ✏️ Fichas colaborativas
-        </p>
+        <div className="mt-6 inline-flex items-center gap-3 rounded-full border border-ink/15 bg-ink/[0.03] px-6 py-2.5 text-[15px] font-medium text-ink/65">
+          <span>📖 Spoilers completos</span>
+          <span className="text-ink/25">·</span>
+          <span>🚫 Sin opiniones</span>
+          <span className="text-ink/25">·</span>
+          <span>✏️ Fichas colaborativas</span>
+        </div>
       </section>
 
       {/* Contenido editorial */}
