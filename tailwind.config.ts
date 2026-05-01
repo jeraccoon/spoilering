@@ -15,7 +15,8 @@ const config: Config = {
         plum: "#6d4f72",
       },
       fontFamily: {
-        sans: ["Arial", "Helvetica", "sans-serif"],
+        sans: ["var(--font-sans)", "system-ui", "Helvetica", "Arial", "sans-serif"],
+        serif: ["var(--font-serif)", "Georgia", "Cambria", "Times New Roman", "serif"],
       },
     },
   },

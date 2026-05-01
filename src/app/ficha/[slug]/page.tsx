@@ -284,7 +284,7 @@ export default async function CardPage({ params }: Props) {
               )}
             </div>
 
-            <h1 className="text-3xl font-black tracking-tight text-ink sm:text-4xl">{work.title}</h1>
+            <h1 className="font-serif text-3xl font-black leading-[1.1] tracking-tight text-ink sm:text-4xl md:text-5xl">{work.title}</h1>
 
             {work.original_title && work.original_title !== work.title && (
               <p className="text-sm text-ink/40 italic">{work.original_title}</p>

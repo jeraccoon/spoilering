@@ -139,7 +139,7 @@ export default function FaqPage() {
     <div className="mx-auto max-w-2xl px-4 py-12">
       {/* Cabecera */}
       <div className="mb-10 text-center">
-        <h1 className="text-3xl font-black tracking-tight text-ink">Preguntas frecuentes</h1>
+        <h1 className="font-serif text-3xl font-black tracking-tight text-ink sm:text-4xl">Preguntas frecuentes</h1>
         <p className="mt-2 text-base text-ink/50">Todo lo que necesitas saber sobre Spoilering</p>
       </div>
 

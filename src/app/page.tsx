@@ -30,7 +30,7 @@ export default async function HomePage() {
     <div>
       {/* Hero */}
       <section className="border-b border-ink/10 px-4 py-16 text-center">
-        <h1 className="text-4xl font-black tracking-tight text-ink sm:text-5xl">
+        <h1 className="font-serif text-[34px] font-black leading-[1.05] tracking-tight text-ink sm:text-5xl md:text-[56px]">
           El resumen que necesitabas
         </h1>
         <p className="mx-auto mt-4 max-w-xl text-base text-ink/60 sm:text-lg">
