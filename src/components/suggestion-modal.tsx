@@ -18,7 +18,7 @@ export function SuggestionModal({ sectionId, sectionLabel, originalContent }: Pr
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (content.trim().length < 50) return
+    if (!content.trim()) return
     setSending(true)
     setError(null)
     try {
@@ -91,7 +91,7 @@ export function SuggestionModal({ sectionId, sectionLabel, originalContent }: Pr
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div>
                     <label className="mb-1.5 block text-sm font-semibold text-ink">
-                      Texto corregido <span className="font-normal text-ink/40">(mínimo 50 caracteres)</span>
+                      Texto corregido
                     </label>
                     <textarea
                       value={content}
@@ -102,9 +102,7 @@ export function SuggestionModal({ sectionId, sectionLabel, originalContent }: Pr
                       placeholder="Escribe aquí el texto correcto para esta sección…"
                       className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2.5 text-sm text-ink placeholder-ink/30 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
                     />
-                    <p className={`mt-1 text-right text-xs tabular-nums ${content.length >= 50 ? 'text-moss' : 'text-ink/30'}`}>
-                      {content.length} / 50 mínimo
-                    </p>
+
                   </div>
 
                   <div>
@@ -126,7 +124,7 @@ export function SuggestionModal({ sectionId, sectionLabel, originalContent }: Pr
                   <div className="flex gap-3 pt-1">
                     <button
                       type="submit"
-                      disabled={sending || content.trim().length < 50}
+                      disabled={sending || !content.trim()}
                       className="rounded-lg bg-ember px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-ember/90 disabled:opacity-50"
                     >
                       {sending ? 'Enviando…' : 'Enviar sugerencia'}
