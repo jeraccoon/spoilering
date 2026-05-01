@@ -9,7 +9,6 @@ import type { SectionWithChildren } from '@/types/database'
 
 interface Props {
   sections: SectionWithChildren[]
-  summary: string | null
   isLoggedIn: boolean
   slug: string
   cardId: string
@@ -47,7 +46,7 @@ const mdComponents = {
   hr: () => <hr className="my-6 border-ink/10" />,
 }
 
-export function CardContent({ sections, summary, isLoggedIn, slug }: Props) {
+export function CardContent({ sections, isLoggedIn, slug }: Props) {
   const [openIds, setOpenIds] = useState<Set<string>>(
     () => new Set(sections[0] ? [sections[0].id] : [])
   )
@@ -63,16 +62,6 @@ export function CardContent({ sections, summary, isLoggedIn, slug }: Props) {
   return (
     <SpoilerGate slug={slug}>
       <div className="mx-auto max-w-5xl px-4 py-8">
-        {summary && (
-          <div className="mb-8 rounded-2xl border border-ember/20 bg-ember/[0.04] p-5 sm:p-6">
-            <p className="mb-2 text-xs font-black uppercase tracking-widest text-ember/80">
-              Resumen rápido
-            </p>
-            <p className="text-[16px] leading-relaxed text-ink/85 sm:text-[17px]">
-              {summary}
-            </p>
-          </div>
-        )}
         {sections.length === 0 ? (
           <p className="text-ink/45">Esta ficha todavía no tiene contenido.</p>
         ) : (

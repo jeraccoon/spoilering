@@ -112,7 +112,7 @@ Requiere las variables de entorno en `.env.local`.
 - Actualizar **CLAUDE.md** y **docs/roadmap.md** al final de cada sesión de trabajo.
 - Al iniciar una nueva sesión, revisar siempre CLAUDE.md y docs/roadmap.md para recuperar contexto.
 
-## Estado actual (1 mayo 2026 — noche)
+## Estado actual (1 mayo 2026 — noche, sesión 2)
 
 ### Funcionando correctamente
 - Autenticación completa con confirmación por email apuntando a www.spoilering.com
@@ -173,22 +173,37 @@ Requiere las variables de entorno en `.env.local`.
 - covers.openlibrary.org añadido a dominios permitidos en next.config.ts
 
 ### Lifting visual / SEO / UX (sesión 1 mayo — noche)
-- **Tipografía editorial**: Inter para cuerpo, Fraunces para titulares clave (`font-serif` aplicado a H1 hero, H1 ficha, H1 FAQ, H1 /buscar y título de FeaturedCard).
-- **Paleta centralizada**: `src/lib/work-types.ts` exporta `TYPE_LABELS`, `TYPE_BADGE` (con /90), `TYPE_BADGE_SOLID`, `TYPE_HEX`. Importar desde aquí en componentes nuevos.
-- **Color `tide`** (#3a6fb0) reemplaza todos los `bg-blue-600` para badges de películas. Series sigue en `plum`, libros en `moss`.
-- **Contrastes WCAG**: sweep global elevando todos los `text-ink/30 → /45`, `text-ink/40 → /55`, `text-paper/40 → /65`, placeholders `/30 → /45`. Mejor legibilidad en años, secundarios, footer y placeholders.
-- **/buscar Server Component**: split en `page.tsx` (async, fetch SSR de catálogo según `?tipo=`) + `buscar-client.tsx` (interactividad). Catálogo indexable por Google. `generateMetadata` dinámica por tipo.
-- **FeaturedCard rediseñada**: pretítulo "Ficha destacada", `justify-between` para anclar CTA abajo, sin `max-w-lg/xl` que cortaban la sinopsis, `line-clamp-3 sm:line-clamp-4`, fondo con gradiente sutil ember/moss, CTA "Ver el resumen".
-- **Header móvil**: paddings/gaps reducidos en mobile (`px-3 py-3 sm:px-6 sm:py-4`, `gap-2 sm:gap-6`, `gap-1.5 sm:gap-3`); logo `size-7 sm:size-9`; "Iniciar sesión" oculto en mobile (`hidden sm:block`); "Registrarse" con padding compacto en mobile. Resultado: cabe en 360px+.
-- **Strips home**: "Ver todas / Ver catálogo" ya NO va en la fila de cabecera — es una **tarjeta fantasma** al final del strip (ghost tile con borde discontinuo y flecha hover). El espacio queda más denso y editorial.
-- **Copy del hero**: H1 "Recuerda cualquier historia sin volver al principio", subtítulo "Resúmenes completos con spoilers de películas, series y libros. Para retomar una saga, recordar un final o entender qué pasó sin rodeos.". Beneficios reescritos: "Todo el argumento" / "Sin opiniones ni notas" / "Hecho por la comunidad". CTAs grandes "Buscar una obra" + "+ Añadir obra" (`text-base px-6 py-3`).
-- **Footer rediseñado**: 2 filas. Fila 1 = marca + tagline ("No es un agregador de reseñas ni un sustituto de la obra. Es un archivo de resúmenes escrito por la comunidad.") + CTA "Únete". Fila 2 = enlaces legales + © separados por `border-t paper/10`. Contraste paper/55-70.
-- **Resumen rápido (TL;DR) en ficha**: nueva columna `cards.summary text`. UI en editor con autoguardado (`onBlur` → `PATCH /api/admin/cards/[id]`). Render público en CardContent dentro del SpoilerGate, recuadro `bg-ember/[0.04]` con label "RESUMEN RÁPIDO" en uppercase. Migración SQL en `scripts/migration-summary.sql`.
+- **Tipografía editorial**: Inter para cuerpo, Fraunces para titulares clave.
+- **Paleta centralizada**: `src/lib/work-types.ts` exporta `TYPE_LABELS`, `TYPE_BADGE`, `TYPE_BADGE_SOLID`, `TYPE_HEX`.
+- **Color `tide`** (#3a6fb0) reemplaza `bg-blue-600` para badges de películas.
+- **Contrastes WCAG**: sweep global de opacidades de texto.
+- **/buscar Server Component**: SSR + buscar-client.tsx para interactividad. Indexable por Google.
+- **FeaturedCard rediseñada**: gradiente ember/moss, CTA "Ver el resumen", justify-between.
+- **Footer rediseñado**: tagline + CTA "Únete" + enlaces legales.
+- **Resumen rápido (TL;DR)**: columna `cards.summary`, editor con autoguardado, render en ficha pública. Migración SQL en `scripts/migration-summary.sql`.
+
+### UX / visual (sesión 1 mayo — noche, sesión 2)
+- **Hero**: H1 "Recuerda cualquier historia sin volver a verla". Subtítulo con "Spoilers incluidos" al principio. Trust bar compacta con cápsula: "📖 Spoilers completos · 🚫 Sin opiniones · ✏️ Fichas colaborativas". Bloque de 3 características eliminado.
+- **Header**: Nav con "Catálogo" (→/buscar) y "Cómo funciona" (→/faq). "Inicio" y "Buscar" eliminados. "+ Añadir obra" con estilo ember. UserMenu como dropdown `juanes ▾` con Mi perfil + Cerrar sesión.
+- **scrollbar-none**: CSS global añadido en globals.css para funcionar en todos los navegadores.
+- **Home strips**: carrusel horizontal en todas las pantallas (eliminado sm:flex-wrap). "Ver todas" en cabecera de cada sección.
+- **Ficha pública**: texto de secciones a ancho completo (eliminado max-w-2xl). Tamaño de letra 15px en contenido y overview.
+- **Página /faq**: creada con preguntas frecuentes en acordeón por secciones (Sobre Spoilering, Las fichas, Contribuir, Cuenta).
+- **destripando.com**: redirige a spoilering.com vía Cloudflare Page Rule (301 permanente).
+
+### Fixes sesión 2 (cierre)
+- **Ficha destacada aleatoria**: `Math.random()` entre las 20 más recientes. La ficha destacada no se repite en "Recién añadidas".
+- **updated_at al publicar**: `PATCH /api/admin/cards/[id]/status` actualiza `updated_at = now()` al publicar, para que la ficha aparezca en "Recién añadidas".
+- **Póster en editor**: cabecera del editor usa `meta.poster_url` en lugar de `card.work.poster_url` → preview en tiempo real al cambiar la URL.
+- **Dominios Next.js Image**: añadidos `m.media-amazon.com`, `*.media-amazon.com`, `i.gr-assets.com`, `*.goodreads.com` a `remotePatterns` en `next.config.ts`.
+- **Home force-dynamic**: `export const dynamic = 'force-dynamic'` en `src/app/page.tsx` para evitar caché de Vercel y mostrar siempre datos frescos.
+- **destripando.com**: redirige a spoilering.com vía Cloudflare Page Rule (301 permanente) con registro DNS A proxy a 192.0.2.1.
 
 ### Pendiente de resolver (próxima sesión)
-- **Letterboxd y Trakt URL — solo manual** — no se pueden auto-rellenar desde Vercel. Flujo: clic en "Buscar en Letterboxd ↗" → copiar URL → pegar. Aceptado así.
+- **Migración SQL** (si no ejecutada): `ALTER TABLE cards ADD COLUMN IF NOT EXISTS summary text;` en Supabase.
 - **Perfiles de usuario con redes sociales** — añadir letterboxd_profile, tracktv_profile, goodreads_profile, filmaffinity_profile en tabla profiles. Mostrar en perfil público.
-- **Créditos de colaboración en ficha pública** — mostrar el usuario que creó la ficha y contribuidores.
+- **Cleanup técnico**: `home-cards.tsx` probablemente huérfano — confirmar y borrar. Centralizar TYPE_LABELS en admin.
+- **Multidioma** — ítem estratégico importante. Ver docs/roadmap.md para modelo propuesto (columna `language` en `cards`). Tomar decisiones de arquitectura antes de que el catálogo crezca.
 
 ### Conocido pero no urgente
 - Ejecutar en Supabase las policies RLS para fichas de usuarios si no se han ejecutado:

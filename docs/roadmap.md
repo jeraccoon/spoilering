@@ -100,7 +100,12 @@ En producción en www.spoilering.com. Base completa funcionando. Fase actual: me
 - Añadir letterboxd_profile, tracktv_profile, goodreads_profile, filmaffinity_profile en tabla profiles
 - Mostrar en perfil público con enlaces
 
-### 2. Cleanup técnico
+### 2. Resumen rápido (TL;DR) — eliminado temporalmente
+- Se eliminó de la ficha pública y del editor por ser redundante con el `overview` de la obra.
+- La columna `cards.summary` sigue en BD por si se reactiva en el futuro.
+- Si se retoma: redefinirlo como spoiler del desenlace ("El final en 3 frases"), visible solo dentro del SpoilerGate, y generado por IA junto al resto de secciones.
+
+### 3. Cleanup técnico
 - `src/components/home-cards.tsx` parece huérfano. Confirmar y borrar.
 - Centralizar TYPE_LABELS en componentes admin usando `@/lib/work-types`.
 - Valorar si el Resumen rápido debería ser visible SIN pasar el SpoilerGate.

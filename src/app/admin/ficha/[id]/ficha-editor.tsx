@@ -181,34 +181,6 @@ export function FichaEditor({ card: initialCard, initialUserContent }: { card: C
 
   const [committed, setCommitted] = useState(initialCard.is_committed)
 
-  const [summary, setSummary] = useState(initialCard.summary ?? '')
-  const [savingSummary, setSavingSummary] = useState(false)
-  const [savedSummary, setSavedSummary] = useState(false)
-  const [summaryError, setSummaryError] = useState<string | null>(null)
-
-  async function saveSummary() {
-    setSavingSummary(true)
-    setSavedSummary(false)
-    setSummaryError(null)
-    try {
-      const res = await fetch(`/api/admin/cards/${card.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ summary: summary.trim() || null }),
-      })
-      if (!res.ok) {
-        const d = await res.json().catch(() => ({}))
-        setSummaryError(d.error ?? 'Error al guardar')
-      } else {
-        setSavedSummary(true)
-        setTimeout(() => setSavedSummary(false), 2000)
-      }
-    } catch {
-      setSummaryError('Error de red')
-    } finally {
-      setSavingSummary(false)
-    }
-  }
 
   function toggleOpen(id: string) {
     setOpenIds((prev) => {
@@ -630,28 +602,6 @@ export function FichaEditor({ card: initialCard, initialUserContent }: { card: C
         </div>
       )}
 
-      {/* Resumen rápido — TL;DR de toda la ficha */}
-      <section className="mb-8">
-        <div className="mb-2 flex items-center justify-between gap-3">
-          <div>
-            <h2 className="text-sm font-bold text-ink">Resumen rápido</h2>
-            <p className="text-xs text-ink/55">3-7 frases con lo esencial. Aparece arriba de la ficha pública, dentro del aviso de spoilers.</p>
-          </div>
-          <div className="flex items-center gap-2 text-xs">
-            {savingSummary && <span className="text-ink/45">Guardando…</span>}
-            {savedSummary && <span className="text-moss">✓ Guardado</span>}
-            {summaryError && <span className="text-ember">{summaryError}</span>}
-          </div>
-        </div>
-        <textarea
-          value={summary}
-          onChange={(e) => setSummary(e.target.value)}
-          onBlur={() => void saveSummary()}
-          rows={4}
-          placeholder="Lo esencial de la trama en pocas frases. Para quien solo quiere refrescar la memoria sin leer la ficha entera."
-          className="w-full resize-y rounded-xl border border-ink/10 bg-paper px-4 py-3 text-sm leading-relaxed text-ink placeholder-ink/35 outline-none transition focus:border-ember focus:ring-2 focus:ring-ember/20"
-        />
-      </section>
 
       {/* Acordeón de secciones */}
       <div className="space-y-2">

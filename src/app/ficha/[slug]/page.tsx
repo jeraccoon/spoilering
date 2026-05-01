@@ -393,7 +393,7 @@ export default async function CardPage({ params }: Props) {
         firstSection={sections[0] ? { id: sections[0].id, label: sections[0].label, content: sections[0].content ?? '' } : null}
       />
 
-      <CardContent sections={sections} summary={(card as any).summary ?? null} isLoggedIn={isLoggedIn} slug={slug} cardId={card.id} />
+      <CardContent sections={sections} isLoggedIn={isLoggedIn} slug={slug} cardId={card.id} />
 
       {seasons.length > 0 && (
         <SeasonsAccordion
