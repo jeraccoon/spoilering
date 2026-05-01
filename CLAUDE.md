@@ -5,7 +5,8 @@ Spoilering es una web colaborativa de resúmenes con spoilers de series, pelícu
 
 ## Stack tecnológico
 - Next.js 15 con App Router y TypeScript
-- Tailwind CSS — paleta: `ink` (#18181b), `paper` (#fbfaf7), `ember` (#d84f2a), `moss` (#52715a), `plum` (#6d4f72)
+- Tailwind CSS — paleta: `ink` (#18181b), `paper` (#fbfaf7), `ember` (#d84f2a), `moss` (#52715a), `plum` (#6d4f72), `tide` (#3a6fb0)
+- Tipografía: **Inter** (sans, body) + **Fraunces** (serif, titulares editoriales) cargadas vía `next/font/google`. Variables CSS `--font-sans` y `--font-serif` en `<html>`. Usar `font-serif` solo en H1/H2 destacados (hero, ficha pública, FeaturedCard, FAQ, /buscar).
 - Supabase como backend completo (PostgreSQL, autenticación, RLS)
 - Vercel para deploy
 - TMDb API para películas y series
@@ -49,6 +50,7 @@ El git está en `C:\Proyectos\spoilering\spoilering\`. El `tsconfig.json` excluy
 - `POST /api/admin/sections/[id]/generate` — genera sección con Claude. Responde NO_CONOCIDA si la IA no conoce la obra (devuelve 422)
 - `POST /api/admin/cards/[id]/generate-all` — genera todas las secciones en paralelo. Mismo control NO_CONOCIDA
 - `PATCH /api/admin/cards/[id]/status` — cambia estado draft/published
+- `PATCH /api/admin/cards/[id]` — actualiza campos editables de la card (por ahora `summary`). Permisos: creador, editor o admin
 - `DELETE /api/admin/cards/[id]` — elimina card y secciones
 - `POST /api/suggestions` — crea sugerencia de corrección
 - `GET /api/admin/users` — lista usuarios (requiere service role)
@@ -72,7 +74,7 @@ El git está en `C:\Proyectos\spoilering\spoilering\`. El `tsconfig.json` excluy
 ## Tablas en Supabase
 - `works` — obras. Unique en tmdb_id y google_books_id. Extra para libros: isbn, publisher, pages, saga, saga_order. Nuevas columnas: `"cast"` text[], runtime integer, imdb_id text, letterboxd_url text, goodreads_url text, filmaffinity_url text, tracktv_url text, poster_url text. Ejecutar en Supabase si faltan: `ALTER TABLE works ADD COLUMN IF NOT EXISTS filmaffinity_url text; ALTER TABLE works ADD COLUMN IF NOT EXISTS tracktv_url text;`
 - `contact_messages` — nombre, email, tipo (Sugerencia/Error/Otro), mensaje, user_id nullable, created_at. RLS: insert público, select solo admin
-- `cards` — fichas (status: draft/published, is_committed: boolean, created_by: uuid). El campo `is_complete` fue eliminado.
+- `cards` — fichas (status: draft/published, is_committed: boolean, created_by: uuid, **summary** text nullable). El campo `is_complete` fue eliminado. Migración necesaria si falta `summary`: `ALTER TABLE cards ADD COLUMN IF NOT EXISTS summary text;` (ver `scripts/migration-summary.sql`)
 - `sections` — secciones en markdown
 - `profiles` — usuario con rol (admin/editor/user), username único, is_active boolean
 - `suggestions` — correcciones (status: pending/approved/rejected, user_id: uuid)
@@ -110,7 +112,7 @@ Requiere las variables de entorno en `.env.local`.
 - Actualizar **CLAUDE.md** y **docs/roadmap.md** al final de cada sesión de trabajo.
 - Al iniciar una nueva sesión, revisar siempre CLAUDE.md y docs/roadmap.md para recuperar contexto.
 
-## Estado actual (1 mayo 2026 — tarde)
+## Estado actual (1 mayo 2026 — noche)
 
 ### Funcionando correctamente
 - Autenticación completa con confirmación por email apuntando a www.spoilering.com
@@ -169,6 +171,19 @@ Requiere las variables de entorno en `.env.local`.
 - Aviso en cabecera para admins cuando hay mensajes de contacto sin leer (banner ember)
 - is_complete eliminado completamente del código (columna puede quedar en BD sin efecto)
 - covers.openlibrary.org añadido a dominios permitidos en next.config.ts
+
+### Lifting visual / SEO / UX (sesión 1 mayo — noche)
+- **Tipografía editorial**: Inter para cuerpo, Fraunces para titulares clave (`font-serif` aplicado a H1 hero, H1 ficha, H1 FAQ, H1 /buscar y título de FeaturedCard).
+- **Paleta centralizada**: `src/lib/work-types.ts` exporta `TYPE_LABELS`, `TYPE_BADGE` (con /90), `TYPE_BADGE_SOLID`, `TYPE_HEX`. Importar desde aquí en componentes nuevos.
+- **Color `tide`** (#3a6fb0) reemplaza todos los `bg-blue-600` para badges de películas. Series sigue en `plum`, libros en `moss`.
+- **Contrastes WCAG**: sweep global elevando todos los `text-ink/30 → /45`, `text-ink/40 → /55`, `text-paper/40 → /65`, placeholders `/30 → /45`. Mejor legibilidad en años, secundarios, footer y placeholders.
+- **/buscar Server Component**: split en `page.tsx` (async, fetch SSR de catálogo según `?tipo=`) + `buscar-client.tsx` (interactividad). Catálogo indexable por Google. `generateMetadata` dinámica por tipo.
+- **FeaturedCard rediseñada**: pretítulo "Ficha destacada", `justify-between` para anclar CTA abajo, sin `max-w-lg/xl` que cortaban la sinopsis, `line-clamp-3 sm:line-clamp-4`, fondo con gradiente sutil ember/moss, CTA "Ver el resumen".
+- **Header móvil**: paddings/gaps reducidos en mobile (`px-3 py-3 sm:px-6 sm:py-4`, `gap-2 sm:gap-6`, `gap-1.5 sm:gap-3`); logo `size-7 sm:size-9`; "Iniciar sesión" oculto en mobile (`hidden sm:block`); "Registrarse" con padding compacto en mobile. Resultado: cabe en 360px+.
+- **Strips home**: "Ver todas / Ver catálogo" ya NO va en la fila de cabecera — es una **tarjeta fantasma** al final del strip (ghost tile con borde discontinuo y flecha hover). El espacio queda más denso y editorial.
+- **Copy del hero**: H1 "Recuerda cualquier historia sin volver al principio", subtítulo "Resúmenes completos con spoilers de películas, series y libros. Para retomar una saga, recordar un final o entender qué pasó sin rodeos.". Beneficios reescritos: "Todo el argumento" / "Sin opiniones ni notas" / "Hecho por la comunidad". CTAs grandes "Buscar una obra" + "+ Añadir obra" (`text-base px-6 py-3`).
+- **Footer rediseñado**: 2 filas. Fila 1 = marca + tagline ("No es un agregador de reseñas ni un sustituto de la obra. Es un archivo de resúmenes escrito por la comunidad.") + CTA "Únete". Fila 2 = enlaces legales + © separados por `border-t paper/10`. Contraste paper/55-70.
+- **Resumen rápido (TL;DR) en ficha**: nueva columna `cards.summary text`. UI en editor con autoguardado (`onBlur` → `PATCH /api/admin/cards/[id]`). Render público en CardContent dentro del SpoilerGate, recuadro `bg-ember/[0.04]` con label "RESUMEN RÁPIDO" en uppercase. Migración SQL en `scripts/migration-summary.sql`.
 
 ### Pendiente de resolver (próxima sesión)
 - **Letterboxd y Trakt URL — solo manual** — no se pueden auto-rellenar desde Vercel. Flujo: clic en "Buscar en Letterboxd ↗" → copiar URL → pegar. Aceptado así.

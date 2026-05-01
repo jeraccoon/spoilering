@@ -1,5 +1,5 @@
 # Roadmap — Spoilering
-_Última actualización: 1 mayo 2026 — tarde_
+_Última actualización: 1 mayo 2026 — noche_
 
 ## Estado del proyecto
 En producción en www.spoilering.com. Base completa funcionando. Fase actual: mejoras de UX, comunidad y calidad de datos.
@@ -72,9 +72,25 @@ En producción en www.spoilering.com. Base completa funcionando. Fase actual: me
 - Placeholder del login corregido: "tu@email.com o tu_nombre"
 - USER_CARD_LIMIT corregido a 5 en perfil/page.tsx
 
+### Lifting visual + SEO + UX (1 mayo, noche)
+- **Tipografía editorial**: Inter (cuerpo) + Fraunces (titulares serif) cargadas con `next/font/google`. Aplicada a H1 hero, H1 ficha, FAQ, /buscar y FeaturedCard.
+- **Paleta unificada**: nuevo `src/lib/work-types.ts` con TYPE_LABELS, TYPE_BADGE, TYPE_BADGE_SOLID, TYPE_HEX. Color `tide` (#3a6fb0) sustituye al `bg-blue-600` antiguo. Cero ocurrencias de Tailwind colors fuera de paleta en el árbol src/.
+- **Contraste WCAG AA**: sweep global subiendo `text-ink/30→/45`, `/40→/55`, `text-paper/40→/65`, placeholders `/30→/45` (~50 ficheros).
+- **/buscar pasa a Server Component**: page.tsx (SSR con catálogo según `?tipo=`) + buscar-client.tsx (interactividad). Ahora indexable por Google. Metadata dinámica por tipo.
+- **FeaturedCard arreglada**: pretítulo "Ficha destacada", `justify-between` (CTA abajo), sin `max-w-lg/xl`, gradiente ember/moss, CTA "Ver el resumen". Resuelve el problema de texto descuadrado.
+- **Header móvil**: cabe en 360px+. Paddings y gaps responsive, logo más pequeño en móvil, "Iniciar sesión" hidden en móvil. "Registrarse" ya no se sale.
+- **"Ver todas" como tarjeta fantasma** al final de cada strip (en vez de fila de cabecera con espacio en blanco).
+- **Copy del hero rehecho**: H1 "Recuerda cualquier historia sin volver al principio" + nuevo subtítulo. Beneficios reescritos. CTAs grandes ("Buscar una obra"). Banner beta intacto.
+- **Footer rediseñado**: dos filas, tagline "No es un agregador de reseñas...", CTA "Únete". Mucho más legible.
+- **Resumen rápido (TL;DR) en ficha**: nueva columna `cards.summary` (requiere SQL `ALTER TABLE cards ADD COLUMN IF NOT EXISTS summary text;`). Editor con textarea autoguardable. Render arriba de la ficha pública dentro del SpoilerGate.
+
 ---
 
 ## 🔧 Pendiente — próxima sesión (por prioridad)
+
+### 0. Migración SQL (manual)
+- Ejecutar en Supabase: `ALTER TABLE cards ADD COLUMN IF NOT EXISTS summary text;` (script en `scripts/migration-summary.sql`).
+- Sin esto, el guardado del Resumen rápido devuelve 500.
 
 ### 1. Perfiles con redes sociales
 - Añadir letterboxd_profile, tracktv_profile, goodreads_profile, filmaffinity_profile en tabla profiles
@@ -82,6 +98,17 @@ En producción en www.spoilering.com. Base completa funcionando. Fase actual: me
 
 ### 2. Créditos de colaboración en ficha pública
 - Mostrar quién creó la ficha y quién ha contribuido con sugerencias aprobadas
+
+### 3. Cleanup (técnico)
+- `src/components/home-cards.tsx` parece huérfano (no se importa en ninguna ruta). Confirmar y borrar o documentar uso.
+- Centralizar TYPE_LABELS también en componentes admin (admin/nueva-obra, admin/ficha/[id]/ficha-editor, draft-cards-section, etc.) usando `@/lib/work-types`.
+- Algún refactor más fino del CardContent: el SpoilerGate envuelve la sección + summary; valorar si Resumen rápido debería ser visible SIN pasar el gate (porque algunos usuarios solo querrán el TL;DR rápido sin ver el resto).
+
+### 4. Ideas potenciales (sin priorizar)
+- "Antes de seguir con T2" — variante del Resumen rápido limitado a hasta el episodio/capítulo X (idea de ChatGPT, particularmente útil para series y sagas).
+- "Si te gustó X, también te puede sonar Y" al final de cada ficha (3 obras del mismo género).
+- Compartir tarjeta visual generada con `next/og` (poster + título + frase) para RR.SS.
+- "Continuar leyendo" en home para usuarios logueados (últimas fichas vistas sin marcar como completadas).
 
 ---
 
