@@ -1,22 +1,30 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
-import { HomeCards } from '@/components/home-cards'
+import { HomeSections } from '@/components/home-sections'
 import { HeroActions } from '@/components/HeroActions'
 import type { CardWithWork } from '@/types/database'
 
 async function getData() {
   const supabase = await createClient()
-  const { data: cards } = await supabase
+  const { data } = await (supabase
     .from('cards')
     .select('*, work:works(*)')
     .eq('status', 'published')
     .order('updated_at', { ascending: false })
-    .limit(200)
-  return { cards: (cards ?? []) as CardWithWork[] }
+    .limit(60) as any)
+
+  const cards = (data ?? []) as CardWithWork[]
+  const featured = cards[0] ?? null
+  const recent = cards.slice(1, 7)
+  const movies = cards.filter((c) => c.work.type === 'movie').slice(0, 6)
+  const series = cards.filter((c) => c.work.type === 'series').slice(0, 6)
+  const books = cards.filter((c) => c.work.type === 'book').slice(0, 6)
+
+  return { featured, recent, movies, series, books, total: cards.length }
 }
 
 export default async function HomePage() {
-  const { cards } = await getData()
+  const { featured, recent, movies, series, books, total } = await getData()
 
   return (
     <div>
@@ -32,7 +40,7 @@ export default async function HomePage() {
         <HeroActions />
       </section>
 
-      {/* Sección de características */}
+      {/* Características */}
       <section className="border-b border-ink/10 bg-ink/[0.02] px-4 py-10">
         <div className="mx-auto grid max-w-3xl grid-cols-1 gap-8 sm:grid-cols-3">
           <div className="text-center">
@@ -53,22 +61,26 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Grid de fichas */}
-      <section className="mx-auto max-w-6xl px-4 py-10">
-        {cards.length === 0 ? (
-          <div className="py-24 text-center text-ink/40">
-            <p className="text-lg">Todavía no hay fichas publicadas.</p>
-            <Link
-              href="/nueva-obra"
-              className="mt-4 inline-block text-sm text-ink/60 underline hover:text-ink"
-            >
-              Sé el primero en crear una
-            </Link>
-          </div>
-        ) : (
-          <HomeCards cards={cards} totalCount={cards.length} />
-        )}
-      </section>
+      {/* Contenido editorial */}
+      {total === 0 ? (
+        <div className="py-24 text-center text-ink/40">
+          <p className="text-lg">Todavía no hay fichas publicadas.</p>
+          <Link
+            href="/nueva-obra"
+            className="mt-4 inline-block text-sm text-ink/60 underline hover:text-ink"
+          >
+            Sé el primero en crear una
+          </Link>
+        </div>
+      ) : (
+        <HomeSections
+          featured={featured}
+          recent={recent}
+          movies={movies}
+          series={series}
+          books={books}
+        />
+      )}
     </div>
   )
 }
