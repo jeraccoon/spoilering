@@ -75,8 +75,8 @@ export function BetaBanner() {
     <>
       {/* Banner */}
       <div className="relative z-30 bg-moss px-4 py-2.5">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
+        <div className="mx-auto flex max-w-6xl items-center gap-4">
+          <div className="flex flex-1 items-center justify-center gap-3">
             <span className="shrink-0 rounded-full bg-white/20 px-2 py-0.5 text-[11px] font-black uppercase tracking-wider text-white">
               Beta
             </span>
@@ -87,7 +87,7 @@ export function BetaBanner() {
                 onClick={openModal}
                 className="font-semibold text-white underline underline-offset-2 hover:text-white/80"
               >
-                Cuéntanos →
+                ¡Cuéntanos, gracias! →
               </button>
             </p>
           </div>
