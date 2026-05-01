@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
@@ -31,9 +32,21 @@ const FILTERS: { value: Filter; label: string }[] = [
   { value: 'book', label: 'Libros' },
 ]
 
-export default function BuscarPage() {
+const PAGE_TITLE: Record<Filter, string> = {
+  all: 'Catálogo completo',
+  movie: 'Películas',
+  series: 'Series',
+  book: 'Libros',
+}
+
+function BuscarInner() {
+  const searchParams = useSearchParams()
+  const initialFilter = (searchParams.get('tipo') as Filter | null) ?? 'all'
+
   const [query, setQuery] = useState('')
-  const [filter, setFilter] = useState<Filter>('all')
+  const [filter, setFilter] = useState<Filter>(
+    FILTERS.some((f) => f.value === initialFilter) ? initialFilter : 'all'
+  )
   const [results, setResults] = useState<Result[]>([])
   const [loading, setLoading] = useState(false)
   const [searched, setSearched] = useState(false)
@@ -44,29 +57,45 @@ export default function BuscarPage() {
     supabase.auth.getUser().then(async ({ data: { user } }) => {
       if (!user) return
       const { data: profile } = await (supabase.from('profiles') as any)
-        .select('role')
-        .eq('id', user.id)
-        .single()
+        .select('role').eq('id', user.id).single()
       setIsAdmin(profile?.role === 'admin')
     })
   }, [])
 
+  // Carga el catálogo cuando no hay query (browse mode)
+  useEffect(() => {
+    if (query.trim().length >= 2) return // la búsqueda por texto tiene su propio efecto
+
+    const load = async () => {
+      setLoading(true)
+      let q = (supabase.from('works') as any)
+        .select('slug, title, type, year, poster_url, cards!inner(status)')
+        .eq('cards.status', 'published')
+        .order('updated_at', { ascending: false })
+        .limit(60)
+
+      if (filter !== 'all') q = q.eq('type', filter)
+
+      const { data } = await q
+      setResults((data ?? []) as Result[])
+      setLoading(false)
+      setSearched(false)
+    }
+
+    void load()
+  }, [filter])
+
+  // Búsqueda por texto con debounce
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current)
 
-    if (query.trim().length < 2) {
-      setResults([])
-      setSearched(false)
-      return
-    }
+    if (query.trim().length < 2) return
 
     debounceRef.current = setTimeout(async () => {
       setLoading(true)
       setSearched(false)
 
-      // cards!inner filtra solo works que tienen al menos una card publicada
-      let q = (supabase
-        .from('works') as any)
+      let q = (supabase.from('works') as any)
         .select('slug, title, type, year, poster_url, cards!inner(status)')
         .eq('cards.status', 'published')
         .ilike('title', `%${query.trim()}%`)
@@ -84,16 +113,22 @@ export default function BuscarPage() {
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current) }
   }, [query, filter])
 
-  // re-run search when filter changes with existing query
   const isEmpty = searched && results.length === 0
+  const isBrowsing = query.trim().length < 2
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-12">
 
       {/* Cabecera */}
       <div className="mb-8 text-center">
-        <h1 className="text-3xl font-black tracking-tight text-ink sm:text-4xl">Buscar fichas</h1>
-        <p className="mt-2 text-sm text-ink/50">Solo obras que ya tienen ficha publicada en Spoilering</p>
+        <h1 className="text-3xl font-black tracking-tight text-ink sm:text-4xl">
+          {PAGE_TITLE[filter]}
+        </h1>
+        <p className="mt-2 text-sm text-ink/50">
+          {isBrowsing
+            ? 'Fichas publicadas en Spoilering'
+            : 'Solo obras que ya tienen ficha publicada en Spoilering'}
+        </p>
       </div>
 
       {/* Input de búsqueda */}
@@ -107,7 +142,9 @@ export default function BuscarPage() {
           className="w-full rounded-xl border border-ink/20 bg-paper px-5 py-4 text-base text-ink placeholder-ink/30 shadow-sm outline-none transition focus:border-ember focus:ring-2 focus:ring-ember/20"
         />
         {loading && (
-          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-ink/30">Buscando…</span>
+          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-ink/30">
+            Cargando…
+          </span>
         )}
       </div>
 
@@ -163,7 +200,7 @@ export default function BuscarPage() {
         </div>
       )}
 
-      {/* Sin resultados */}
+      {/* Sin resultados al buscar */}
       {isEmpty && (
         <div className="py-20 text-center">
           <p className="text-lg font-semibold text-ink/40">
@@ -180,14 +217,14 @@ export default function BuscarPage() {
           )}
         </div>
       )}
-
-      {/* Estado inicial */}
-      {!searched && !loading && query.trim().length < 2 && (
-        <div className="py-16 text-center text-ink/25">
-          <p className="text-5xl">🔍</p>
-          <p className="mt-4 text-sm">Escribe al menos 2 caracteres para buscar</p>
-        </div>
-      )}
     </div>
+  )
+}
+
+export default function BuscarPage() {
+  return (
+    <Suspense>
+      <BuscarInner />
+    </Suspense>
   )
 }

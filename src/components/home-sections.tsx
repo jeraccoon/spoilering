@@ -94,10 +94,12 @@ function StripCard({ card }: { card: CardWithWork }) {
 function CardSection({
   title,
   cards,
+  seeAllHref = '/buscar',
   seeAllLabel = 'Ver todas',
 }: {
   title: string
   cards: CardWithWork[]
+  seeAllHref?: string
   seeAllLabel?: string
 }) {
   if (cards.length === 0) return null
@@ -106,7 +108,7 @@ function CardSection({
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-xs font-black uppercase tracking-widest text-ink/50">{title}</h2>
         <Link
-          href="/buscar"
+          href={seeAllHref}
           className="text-xs font-semibold text-ember/70 transition hover:text-ember"
         >
           {seeAllLabel} →
@@ -137,12 +139,12 @@ export function HomeSections({ featured, recent, movies, series, books }: HomeSe
       {featured && <FeaturedCard card={featured} />}
 
       {recent.length > 0 && (
-        <CardSection title="Recién añadidas" cards={recent} seeAllLabel="Ver catálogo" />
+        <CardSection title="Recién añadidas" cards={recent} seeAllHref="/buscar" seeAllLabel="Ver catálogo" />
       )}
 
-      <CardSection title="Películas" cards={movies} seeAllLabel="Ver todas" />
-      <CardSection title="Series" cards={series} seeAllLabel="Ver todas" />
-      <CardSection title="Libros" cards={books} seeAllLabel="Ver todos" />
+      <CardSection title="Películas" cards={movies} seeAllHref="/buscar?tipo=movie" seeAllLabel="Ver todas" />
+      <CardSection title="Series" cards={series} seeAllHref="/buscar?tipo=series" seeAllLabel="Ver todas" />
+      <CardSection title="Libros" cards={books} seeAllHref="/buscar?tipo=book" seeAllLabel="Ver todos" />
 
       <div className="border-t border-ink/10 pt-6 text-center">
         <Link
