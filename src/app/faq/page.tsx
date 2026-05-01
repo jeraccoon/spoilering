@@ -27,7 +27,7 @@ const SECTIONS: Section[] = [
       },
       {
         q: '¿Necesito registrarme para leer las fichas?',
-        a: 'No. Puedes leer todas las fichas publicadas sin necesidad de crear una cuenta. El registro solo es necesario si quieres contribuir creando o corrigiendo fichas.',
+        a: 'No. Puedes leer todas las fichas publicadas sin necesidad de crear una cuenta. El registro solo es necesario si quieres contribuir creando fichas, sugerir correcciones o llevar un registro de lo que has visto o leído.',
       },
     ],
   },
@@ -36,7 +36,7 @@ const SECTIONS: Section[] = [
     questions: [
       {
         q: '¿Qué es una ficha?',
-        a: 'Una ficha es el resumen completo de una obra. Está dividida en secciones: Inicio, Nudo, Desenlace y Subtramas. Cada sección cubre una parte de la historia con todos los detalles y spoilers importantes.',
+        a: 'Una ficha es el resumen completo de una obra. Está dividida en secciones en acordeón: Inicio, Nudo, Desenlace y Subtramas. Cada sección cubre una parte de la historia con todos los detalles y spoilers importantes. También incluye metadatos como reparto, director, duración, géneros y enlaces a plataformas externas.',
       },
       {
         q: '¿Las fichas tienen spoilers?',
@@ -48,7 +48,11 @@ const SECTIONS: Section[] = [
       },
       {
         q: '¿Puedo confiar en que la información es correcta?',
-        a: 'Hacemos todo lo posible para que el contenido sea preciso, pero al ser una web colaborativa pueden existir errores. Si encuentras algo incorrecto, puedes sugerir una corrección directamente desde la ficha.',
+        a: 'Hacemos todo lo posible para que el contenido sea preciso, pero al ser una web colaborativa pueden existir errores. Si encuentras algo incorrecto, puedes sugerir una corrección directamente desde la ficha usando el botón "Sugerir corrección" en cada sección.',
+      },
+      {
+        q: '¿Puedo marcar obras como vistas?',
+        a: 'Sí. Si tienes cuenta, en cada ficha encontrarás el panel "Mi actividad" donde puedes marcar la obra como vista, añadir la fecha y escribir notas personales. Tu historial completo está disponible en tu perfil.',
       },
     ],
   },
@@ -57,7 +61,7 @@ const SECTIONS: Section[] = [
     questions: [
       {
         q: '¿Cómo puedo añadir una ficha?',
-        a: 'Crea una cuenta gratuita, inicia sesión y usa el botón "+ Añadir obra" que aparece en la barra superior. Puedes buscar la obra en nuestra base de datos o introducir los datos manualmente. Los nuevos usuarios pueden crear hasta 3 fichas, que quedan pendientes de revisión antes de publicarse.',
+        a: 'Inicia sesión y usa el botón "+ Añadir obra" en la barra superior o en la página de inicio. Busca la obra en nuestra base de datos (conectada a TMDb y Google Books) o introduce los datos manualmente. Los nuevos usuarios pueden crear hasta 5 fichas, que quedan pendientes de revisión antes de publicarse.',
       },
       {
         q: '¿Cómo puedo corregir un error en una ficha?',
@@ -65,7 +69,11 @@ const SECTIONS: Section[] = [
       },
       {
         q: '¿Qué pasa con mis fichas tras enviarlas?',
-        a: 'Las fichas nuevas de usuarios registrados quedan en estado "Pendiente de revisión" hasta que un editor o administrador las aprueba. Puedes ver el estado de tus fichas en tu perfil.',
+        a: 'Las fichas nuevas quedan en estado "Pendiente de revisión" hasta que un editor o administrador las aprueba y publica. Puedes ver el estado de tus fichas en tu perfil.',
+      },
+      {
+        q: '¿Puedo invitar a otras personas?',
+        a: 'Sí. Desde tu perfil puedes enviar hasta 5 invitaciones por mes. La persona invitada recibe un email para crear su cuenta directamente.',
       },
     ],
   },
@@ -73,8 +81,16 @@ const SECTIONS: Section[] = [
     title: 'Cuenta',
     questions: [
       {
+        q: '¿Puedo iniciar sesión con mi nombre de usuario?',
+        a: 'Sí. En el login puedes usar tanto tu email como tu nombre de usuario. Ambos funcionan igual.',
+      },
+      {
+        q: '¿Puedo añadir mis perfiles de Letterboxd, Goodreads u otras plataformas?',
+        a: 'Sí. En tu perfil encontrarás una sección "Mis perfiles externos" donde puedes añadir enlaces a tu perfil de Letterboxd, Trakt.tv, Goodreads y Filmaffinity.',
+      },
+      {
         q: '¿Cómo cambio mi contraseña?',
-        a: 'Ve a tu perfil (enlace en la barra superior) y en la sección "Mi cuenta" encontrarás la opción de cambiar tu contraseña.',
+        a: 'Ve a tu perfil y en la sección "Mi cuenta" encontrarás la opción de cambiar tu contraseña.',
       },
       {
         q: '¿Puedo eliminar mi cuenta?',
@@ -157,10 +173,10 @@ export default function FaqPage() {
         <p className="text-sm text-ink/60">
           ¿Tienes más preguntas?{' '}
           <Link
-            href="mailto:hola@spoilering.com"
+            href="mailto:spoilering@outlook.com"
             className="font-semibold text-ember hover:underline"
           >
-            Escríbenos a hola@spoilering.com
+            Escríbenos a spoilering@outlook.com
           </Link>
         </p>
       </div>

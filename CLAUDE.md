@@ -24,7 +24,7 @@ El git está en `C:\Proyectos\spoilering\spoilering\`. El `tsconfig.json` excluy
 - El cliente admin de Supabase está en `src/lib/supabase/admin.ts` con `import 'server-only'` y usa `SUPABASE_SERVICE_ROLE_KEY`
 
 ## Roles de usuario
-- **user** — hasta 3 fichas (pendientes de aprobación), sugerir correcciones, gestionar perfil
+- **user** — hasta 5 fichas (pendientes de aprobación), sugerir correcciones, gestionar perfil
 - **editor** — fichas ilimitadas, publicación directa, editar cualquier ficha, aprobar sugerencias, acceso parcial al admin
 - **admin** — acceso completo: gestión de usuarios, aprobar/rechazar fichas, todo lo del editor
 
@@ -104,7 +104,7 @@ El git está en `C:\Proyectos\spoilering\spoilering\`. El `tsconfig.json` excluy
 - Actualizar **CLAUDE.md** y **docs/roadmap.md** al final de cada sesión de trabajo.
 - Al iniciar una nueva sesión, revisar siempre CLAUDE.md y docs/roadmap.md para recuperar contexto.
 
-## Estado actual (26 abril 2026 — tarde)
+## Estado actual (29 abril 2026)
 
 ### Funcionando correctamente
 - Autenticación completa con confirmación por email apuntando a www.spoilering.com
@@ -113,14 +113,14 @@ El git está en `C:\Proyectos\spoilering\spoilering\`. El `tsconfig.json` excluy
 - Recuperar contraseña, cambiar contraseña desde perfil, eliminar cuenta
 - Roles admin/editor/user con permisos diferenciados
 - Navbar con botón "+ Añadir obra" para todos los usuarios logueados
-- Botón añadir obra en hero de home (solo usuarios logueados, client component)
+- Botón añadir obra en hero de home visible para todos (logueados → /nueva-obra, no logueados → /login?redirect=/nueva-obra)
 - Home con grid de fichas publicadas
 - Panel de admin completo: estadísticas, fichas, sugerencias, fichas pendientes de usuarios
 - Gestión de usuarios en /admin/usuarios: cambiar rol, activar/desactivar, eliminar
 - Búsqueda en TMDb, Google Books y Open Library con deduplicación
 - Campos específicos para libros: ISBN, editorial, páginas, saga
 - Creación de obras: slug automático, toggle URL/subir imagen para póster
-- Usuarios normales pueden crear hasta 3 fichas pendientes de aprobación
+- Usuarios normales pueden crear hasta 5 fichas pendientes de aprobación
 - Generación de secciones en paralelo con indicador de progreso
 - Prompts con SECTION_GUIDES: 500-900 palabras, subtítulos markdown
 - Autoguardado silencioso por sección (onBlur) con indicador visual
@@ -149,15 +149,21 @@ El git está en `C:\Proyectos\spoilering\spoilering\`. El `tsconfig.json` excluy
 - Sugerir corrección: botón visible para todos en ficha pública, redirige a /login?redirect=...&mensaje=registro-sugerir si no está logueado, banner informativo en login, vuelve a la ficha tras login
 - Invitar amigos: POST /api/invite con límite 5 invitaciones/mes por usuario, tabla invites con RLS, sección en perfil con contador
 - Visionado y notas: tabla user_content (user_id, work_id, episode_id, watched, watched_at, notes), panel Mi Actividad en ficha pública, sección Mi Actividad en perfil
+- Campo country en works: almacena país de origen en español usando código ISO + tabla de conversión. Columna añadida con ALTER TABLE.
+- original_title mostrado en ficha pública debajo del título principal (solo si difiere del título)
+- Secciones en acordeón en el editor y en la ficha pública (reemplaza sidebar + área única)
+- Fichas sin confirmar (is_committed=false): badge "Sin confirmar" en perfil + link "Continuar →", excluidas del panel de revisión del admin
+- Guardar borrador y Publicar guardan primero todas las secciones pendientes antes de cambiar estado
+- Contenido generado por IA se guarda inmediatamente al servidor (no solo en estado React)
+- Eliminar ficha en panel admin: router.refresh() tras eliminar para actualizar stats y lista
+- Editorial y páginas se rellenan automáticamente desde Google Books al seleccionar libro
+- Reparto y Filmaffinity ocultos en editor para fichas de tipo libro
+- "Marcar como vista" eliminado del formulario de creación y del editor (disponible en ficha pública via Mi Actividad)
 
 ### Pendiente de resolver (próxima sesión)
-- **Letterboxd y Trakt URL — solo manual** — no se pueden auto-rellenar desde Vercel (Letterboxd bloquea peticiones del servidor, Trakt falla también). El flujo actual es: clic en "Buscar en Letterboxd ↗" → copiar URL → pegar. Aceptado así por ahora.
-- **Aviso revisión de IA** — ✅ hecho. Banner aparece tras generar con IA en el editor.
-- **Marcar como vista al crear ficha** — implementado por Claude Code pero pendiente de revisar, no funciona como se espera. Afecta /admin/nueva-obra y ficha-editor.tsx.
-- **Perfiles de usuario con redes sociales** — añadir campos letterboxd_profile, tracktv_profile, goodreads_profile, filmaffinity_profile en tabla profiles. Mostrar en perfil público.
-- **Créditos de colaboración en ficha pública** — mostrar el usuario que creó la ficha y los que han aportado sugerencias aprobadas.
-- **Aviso revisión de IA** — banner en editor al generar contenido indicando que hay que revisarlo antes de publicar.
-- **Búsqueda por ISBN o enlace de Goodreads no funciona** — pendiente de revisar.
+- **Letterboxd y Trakt URL — solo manual** — no se pueden auto-rellenar desde Vercel. Flujo: clic en "Buscar en Letterboxd ↗" → copiar URL → pegar. Aceptado así.
+- **Perfiles de usuario con redes sociales** — añadir letterboxd_profile, tracktv_profile, goodreads_profile, filmaffinity_profile en tabla profiles. Mostrar en perfil público.
+- **Créditos de colaboración en ficha pública** — mostrar el usuario que creó la ficha y contribuidores.
 
 ### Conocido pero no urgente
 - Columna `cast` en PostgreSQL es palabra reservada — usar siempre entre comillas dobles en queries SQL directas (`"cast"`)

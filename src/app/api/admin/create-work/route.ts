@@ -56,9 +56,9 @@ export async function POST(request: NextRequest) {
       const { count } = await (supabase.from('cards') as any)
         .select('*', { count: 'exact', head: true })
         .eq('created_by', user.id)
-      if ((count ?? 0) >= 3) {
+      if ((count ?? 0) >= 5) {
         return NextResponse.json(
-          { error: 'Has alcanzado el límite de 3 fichas. Contacta con nosotros para ampliar tu acceso.' },
+          { error: 'Has alcanzado el límite de 5 fichas. Contacta con nosotros para ampliar tu acceso.' },
           { status: 403 }
         )
       }
