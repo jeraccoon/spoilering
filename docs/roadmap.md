@@ -111,7 +111,13 @@ En producción en www.spoilering.com. Base completa funcionando. Fase actual: me
 - El flujo sería: usuario selecciona archivo → upload a Supabase Storage → se guarda la URL pública en `works.poster_url`.
 - Aplica tanto en la creación de obra (`/admin/nueva-obra`) como en el editor de metadatos (`/admin/ficha/[id]`).
 
-### 4. Ideas potenciales (sin priorizar)
+### 4. Feedback de guardado en el editor de fichas
+- Actualmente el autoguardado (onBlur) funciona pero el usuario no tiene confirmación visual clara de que sus cambios se han guardado.
+- Mejorar el indicador: toast o mensaje visible tipo "Guardado ✓" que aparezca brevemente tras cada guardado exitoso.
+- Considerar también un indicador de "Guardando..." mientras la petición está en vuelo, y "Error al guardar" si falla.
+- Aplica a secciones, metadatos y resumen rápido.
+
+### 5. Ideas potenciales (sin priorizar)
 - "Antes de seguir con T2" — resumen limitado hasta el episodio/capítulo X.
 - "Si te gustó X, también te puede sonar Y" — 3 obras del mismo género al final de cada ficha.
 - Compartir tarjeta visual generada con `next/og` para RR.SS.
