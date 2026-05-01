@@ -31,11 +31,10 @@ export default async function HomePage() {
       {/* Hero */}
       <section className="border-b border-ink/10 px-4 py-16 text-center">
         <h1 className="text-4xl font-black tracking-tight text-ink sm:text-5xl">
-          Recuerda qué pasaba<br className="hidden sm:block" /> sin empezar desde cero
+          El resumen que necesitabas
         </h1>
         <p className="mx-auto mt-4 max-w-xl text-base text-ink/60 sm:text-lg">
-          Resúmenes completos con spoilers de series, películas y libros.
-          Para cuando vuelves a algo y necesitas ponerte al día. Sin críticas, solo los hechos.
+          Para cuando vuelves a algo y necesitas recordar qué pasaba. Spoilers incluidos.
         </p>
         <HeroActions />
       </section>
