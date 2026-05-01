@@ -17,11 +17,10 @@ export default function AvisoLegalPage() {
           <h2 className="mb-2 text-base font-black text-ink">1. Titular del sitio</h2>
           <p>
             El presente sitio web, accesible en <strong className="text-ink">www.spoilering.com</strong>, es un proyecto
-            personal titularidad de <strong className="text-ink">[NOMBRE COMPLETO]</strong>, con DNI{' '}
-            <strong className="text-ink">[DNI]</strong>, en adelante «el titular».
+            personal, en adelante «el titular».
           </p>
           <p className="mt-2">
-            Contacto: <strong className="text-ink">[EMAIL DE CONTACTO]</strong>
+            Contacto: <strong className="text-ink">spoilering@outlook.com</strong>
           </p>
         </div>
 
