@@ -33,3 +33,12 @@ a {
   background: #d84f2a;
   color: #fffaf2;
 }
+
+/* Ocultar scrollbar manteniendo scroll funcional */
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
