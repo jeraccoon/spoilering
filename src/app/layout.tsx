@@ -3,6 +3,7 @@ import "./globals.css";
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
 import { AuthProvider } from "@/components/auth-provider";
+import { BetaBanner } from "@/components/beta-banner";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
@@ -55,6 +56,7 @@ export default function RootLayout({
       <body className="antialiased">
         <AuthProvider>
           <div className="flex min-h-screen flex-col">
+            <BetaBanner />
             <Header />
             <main className="flex-1">{children}</main>
             <Footer />
