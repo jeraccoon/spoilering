@@ -96,22 +96,6 @@ function StripCard({ card }: { card: CardWithWork }) {
 
 /* ── Sección con título y scroll horizontal ──────────────────── */
 
-function SeeAllTile({ href, label }: { href: string; label: string }) {
-  return (
-    <Link
-      href={href}
-      className="group flex w-28 shrink-0 sm:w-32 md:w-36"
-    >
-      <div className="flex aspect-[2/3] w-full flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-ink/20 bg-ink/[0.015] text-ink/55 transition group-hover:border-ember group-hover:bg-ember/5 group-hover:text-ember">
-        <span className="text-2xl transition-transform group-hover:translate-x-0.5">→</span>
-        <span className="px-2 text-center text-[11px] font-semibold uppercase tracking-wider leading-tight">
-          {label}
-        </span>
-      </div>
-    </Link>
-  )
-}
-
 function CardSection({
   title,
   cards,
@@ -126,12 +110,20 @@ function CardSection({
   if (cards.length === 0) return null
   return (
     <div>
-      <h2 className="mb-3 text-xs font-black uppercase tracking-widest text-ink/55">{title}</h2>
+      <div className="mb-3 flex items-center justify-between">
+        <h2 className="text-xs font-black uppercase tracking-widest text-ink/55">{title}</h2>
+        <Link
+          href={seeAllHref}
+          className="group flex items-center gap-1 text-xs font-semibold text-ink/45 transition hover:text-ember"
+        >
+          {seeAllLabel}
+          <span className="transition-transform group-hover:translate-x-0.5">→</span>
+        </Link>
+      </div>
       <div className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-1 scrollbar-none sm:mx-0 sm:flex-wrap sm:gap-4 sm:px-0">
         {cards.map((card) => (
           <StripCard key={card.id} card={card} />
         ))}
-        <SeeAllTile href={seeAllHref} label={seeAllLabel} />
       </div>
     </div>
   )
