@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { SignOutButton } from '@/components/sign-out-button'
 import { AccountModals } from '@/components/account-modals'
 import { PerfilCardsSection } from '@/components/perfil-cards-section'
+import { SocialLinksEditor } from '@/components/social-links-editor'
 import type { CardWithWork } from '@/types/database'
 
 const ROLE_LABELS = { admin: 'Administrador', editor: 'Editor', user: 'Usuario' }
@@ -56,7 +57,7 @@ export default async function PerfilPage() {
   if (!user) redirect('/login')
 
   const { data: profile } = await (supabase.from('profiles') as any)
-    .select('username, role, created_at')
+    .select('username, role, created_at, letterboxd_profile, tracktv_profile, goodreads_profile, filmaffinity_profile')
     .eq('id', user.id)
     .single()
 
@@ -327,6 +328,16 @@ export default async function PerfilPage() {
           </div>
         )}
       </section>
+
+      {/* Perfiles externos */}
+      <SocialLinksEditor
+        initialLinks={{
+          letterboxd_profile: profile?.letterboxd_profile ?? null,
+          tracktv_profile: profile?.tracktv_profile ?? null,
+          goodreads_profile: profile?.goodreads_profile ?? null,
+          filmaffinity_profile: profile?.filmaffinity_profile ?? null,
+        }}
+      />
 
       {/* Mi cuenta */}
       <section>
