@@ -159,6 +159,11 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
     filmaffinity_url: initialCard.work.filmaffinity_url ?? '',
     tracktv_url: initialCard.work.tracktv_url ?? '',
     country: initialCard.work.country ?? '',
+    isbn: (initialCard.work as any).isbn ?? '',
+    publisher: (initialCard.work as any).publisher ?? '',
+    pages: (initialCard.work as any).pages?.toString() ?? '',
+    saga: (initialCard.work as any).saga ?? '',
+    saga_order: (initialCard.work as any).saga_order?.toString() ?? '',
   })
   const [savingMeta, setSavingMeta] = useState(false)
   const [savedMeta, setSavedMeta] = useState(false)
@@ -326,6 +331,11 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
           filmaffinity_url: meta.filmaffinity_url.trim() || null,
           tracktv_url: meta.tracktv_url.trim() || null,
           country: meta.country.trim() || null,
+          isbn: meta.isbn.trim() || null,
+          publisher: meta.publisher.trim() || null,
+          pages: meta.pages ? parseInt(meta.pages) : null,
+          saga: meta.saga.trim() || null,
+          saga_order: meta.saga_order ? parseInt(meta.saga_order) : null,
         }),
       })
       if (!res.ok) {
@@ -707,6 +717,73 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
                 onChange={(e) => setMeta((p) => ({ ...p, goodreads_url: e.target.value }))}
                 onBlur={() => void saveMeta()}
                 placeholder="https://www.goodreads.com/book/show/..."
+                className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder-ink/30 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
+              />
+            </div>
+          )}
+          {card.work.type === 'book' && (
+            <div>
+              <label className="mb-1.5 block text-xs font-semibold text-ink/60">ISBN</label>
+              <input
+                type="text"
+                value={meta.isbn}
+                onChange={(e) => setMeta((p) => ({ ...p, isbn: e.target.value }))}
+                onBlur={() => void saveMeta()}
+                placeholder="9788401021145"
+                className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder-ink/30 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
+              />
+            </div>
+          )}
+          {card.work.type === 'book' && (
+            <div>
+              <label className="mb-1.5 block text-xs font-semibold text-ink/60">Editorial</label>
+              <input
+                type="text"
+                value={meta.publisher}
+                onChange={(e) => setMeta((p) => ({ ...p, publisher: e.target.value }))}
+                onBlur={() => void saveMeta()}
+                placeholder="Ej: Alfaguara"
+                className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder-ink/30 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
+              />
+            </div>
+          )}
+          {card.work.type === 'book' && (
+            <div>
+              <label className="mb-1.5 block text-xs font-semibold text-ink/60">Número de páginas</label>
+              <input
+                type="number"
+                min="0"
+                value={meta.pages}
+                onChange={(e) => setMeta((p) => ({ ...p, pages: e.target.value }))}
+                onBlur={() => void saveMeta()}
+                placeholder="Ej: 384"
+                className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder-ink/30 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
+              />
+            </div>
+          )}
+          {card.work.type === 'book' && (
+            <div>
+              <label className="mb-1.5 block text-xs font-semibold text-ink/60">Saga</label>
+              <input
+                type="text"
+                value={meta.saga}
+                onChange={(e) => setMeta((p) => ({ ...p, saga: e.target.value }))}
+                onBlur={() => void saveMeta()}
+                placeholder="Ej: El señor de los anillos"
+                className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder-ink/30 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
+              />
+            </div>
+          )}
+          {card.work.type === 'book' && (
+            <div>
+              <label className="mb-1.5 block text-xs font-semibold text-ink/60">Orden en la saga</label>
+              <input
+                type="number"
+                min="1"
+                value={meta.saga_order}
+                onChange={(e) => setMeta((p) => ({ ...p, saga_order: e.target.value }))}
+                onBlur={() => void saveMeta()}
+                placeholder="Ej: 1"
                 className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder-ink/30 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
               />
             </div>
