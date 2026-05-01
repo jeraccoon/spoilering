@@ -12,8 +12,11 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     return NextResponse.json({ error: 'Estado inválido' }, { status: 400 })
   }
 
+  const updateData: Record<string, unknown> = { status, is_committed: true }
+  if (status === 'published') updateData.updated_at = new Date().toISOString()
+
   const { error } = await (supabase.from('cards') as any)
-    .update({ status, is_committed: true })
+    .update(updateData)
     .eq('id', id)
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
