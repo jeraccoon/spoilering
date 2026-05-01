@@ -100,14 +100,14 @@ export function SuggestionModal({ sectionId, sectionLabel, originalContent }: Pr
                       required
                       autoFocus
                       placeholder="Escribe aquí el texto correcto para esta sección…"
-                      className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2.5 text-sm text-ink placeholder-ink/30 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
+                      className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2.5 text-sm text-ink placeholder-ink/45 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
                     />
 
                   </div>
 
                   <div>
                     <label className="mb-1.5 block text-sm font-semibold text-ink">
-                      Comentario <span className="font-normal text-ink/40">(opcional)</span>
+                      Comentario <span className="font-normal text-ink/55">(opcional)</span>
                     </label>
                     <input
                       type="text"
@@ -115,7 +115,7 @@ export function SuggestionModal({ sectionId, sectionLabel, originalContent }: Pr
                       onChange={(e) => setComment(e.target.value)}
                       maxLength={200}
                       placeholder="Ej: Falta mencionar el giro del capítulo 5"
-                      className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2.5 text-sm text-ink placeholder-ink/30 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
+                      className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2.5 text-sm text-ink placeholder-ink/45 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
                     />
                   </div>
 

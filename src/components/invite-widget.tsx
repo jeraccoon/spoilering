@@ -47,7 +47,7 @@ export function InviteWidget({ initialCount }: { initialCount: number }) {
         <p className="mb-1 text-sm text-ink/70">
           Invita a un amigo a Spoilering. Puedes enviar hasta {MONTHLY_LIMIT} invitaciones al mes.
         </p>
-        <p className="mb-4 text-xs text-ink/40">
+        <p className="mb-4 text-xs text-ink/55">
           {atLimit ? (
             <span className="text-ember">Has alcanzado el límite de este mes.</span>
           ) : (
@@ -64,7 +64,7 @@ export function InviteWidget({ initialCount }: { initialCount: number }) {
             onChange={(e) => { setEmail(e.target.value); setSuccess(null); setError(null) }}
             placeholder="email@ejemplo.com"
             disabled={atLimit || sending}
-            className="flex-1 rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder:text-ink/30 outline-none transition focus:border-moss/50 focus:ring-1 focus:ring-moss/20 disabled:opacity-40"
+            className="flex-1 rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder:text-ink/45 outline-none transition focus:border-moss/50 focus:ring-1 focus:ring-moss/20 disabled:opacity-40"
           />
           <button
             type="submit"

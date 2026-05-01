@@ -9,7 +9,7 @@ export default function PrivacidadPage() {
   return (
     <div className="mx-auto max-w-2xl px-4 py-16">
       <h1 className="mb-2 text-3xl font-black tracking-tight text-ink">Política de privacidad</h1>
-      <p className="mb-10 text-sm text-ink/40">Última actualización: abril de 2026</p>
+      <p className="mb-10 text-sm text-ink/55">Última actualización: abril de 2026</p>
 
       <section className="space-y-8 text-sm leading-relaxed text-ink/70">
 

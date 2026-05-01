@@ -119,7 +119,7 @@ export default async function PerfilPage() {
           </p>
         </div>
         {atLimit ? (
-          <span className="cursor-not-allowed rounded-lg bg-ink/10 px-5 py-2.5 text-sm font-semibold text-ink/30">
+          <span className="cursor-not-allowed rounded-lg bg-ink/10 px-5 py-2.5 text-sm font-semibold text-ink/45">
             + Añadir obra
           </span>
         ) : (
@@ -145,7 +145,7 @@ export default async function PerfilPage() {
 
       {/* Accesos rápidos */}
       <section className="mb-10">
-        <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-ink/40">Accesos rápidos</h2>
+        <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-ink/55">Accesos rápidos</h2>
         <div className="flex flex-wrap gap-3">
           {role === 'admin' && (
             <>
@@ -182,9 +182,9 @@ export default async function PerfilPage() {
 
       {/* Mi actividad — obras vistas */}
       <section className="mb-10">
-        <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-ink/40">Mi actividad</h2>
+        <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-ink/55">Mi actividad</h2>
         {watchedList.length === 0 ? (
-          <div className="rounded-lg border border-ink/10 bg-ink/5 px-6 py-10 text-center text-sm text-ink/40">
+          <div className="rounded-lg border border-ink/10 bg-ink/5 px-6 py-10 text-center text-sm text-ink/55">
             Todavía no has marcado ninguna obra como vista.{' '}
             <Link href="/buscar" className="font-semibold text-ember hover:underline">
               Explorar fichas →
@@ -211,9 +211,9 @@ export default async function PerfilPage() {
                         {work ? (
                           <Link href={`/ficha/${work.slug}`} className="hover:text-ember hover:underline">
                             {work.title}
-                            {work.year && <span className="ml-1 font-normal text-ink/40">({work.year})</span>}
+                            {work.year && <span className="ml-1 font-normal text-ink/55">({work.year})</span>}
                           </Link>
-                        ) : <span className="text-ink/40">—</span>}
+                        ) : <span className="text-ink/55">—</span>}
                       </td>
                       <td className="px-4 py-3 text-ink/50 hidden sm:table-cell">
                         {TYPE_LABELS[work?.type] ?? '—'}
@@ -221,9 +221,9 @@ export default async function PerfilPage() {
                       <td className="px-4 py-3 text-ink/50 hidden md:table-cell">
                         {item.watched_at
                           ? new Date(item.watched_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })
-                          : <span className="text-ink/30">Sin fecha</span>}
+                          : <span className="text-ink/45">Sin fecha</span>}
                       </td>
-                      <td className="px-4 py-3 text-ink/40 hidden lg:table-cell">
+                      <td className="px-4 py-3 text-ink/55 hidden lg:table-cell">
                         {item.notes
                           ? <span className="line-clamp-1 max-w-xs">{item.notes}</span>
                           : <span className="text-ink/25">—</span>}
@@ -239,9 +239,9 @@ export default async function PerfilPage() {
 
       {/* Mis sugerencias */}
       <section className="mb-10">
-        <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-ink/40">Mis sugerencias</h2>
+        <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-ink/55">Mis sugerencias</h2>
         {suggestionList.length === 0 ? (
-          <div className="rounded-lg border border-ink/10 bg-ink/5 px-6 py-10 text-center text-sm text-ink/40">
+          <div className="rounded-lg border border-ink/10 bg-ink/5 px-6 py-10 text-center text-sm text-ink/55">
             Todavía no has enviado ninguna sugerencia.{' '}
             <Link href="/buscar" className="font-semibold text-ember hover:underline">
               Explorar fichas →
@@ -270,7 +270,7 @@ export default async function PerfilPage() {
                             {work.title}
                           </Link>
                         ) : (
-                          <span className="text-ink/40">—</span>
+                          <span className="text-ink/55">—</span>
                         )}
                       </td>
                       <td className="px-4 py-3 text-ink/50 hidden sm:table-cell">
@@ -295,9 +295,9 @@ export default async function PerfilPage() {
 
       {/* Mis notas */}
       <section className="mb-10">
-        <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-ink/40">Mis notas</h2>
+        <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-ink/55">Mis notas</h2>
         {noteList.length === 0 ? (
-          <div className="rounded-lg border border-ink/10 bg-ink/5 px-6 py-10 text-center text-sm text-ink/40">
+          <div className="rounded-lg border border-ink/10 bg-ink/5 px-6 py-10 text-center text-sm text-ink/55">
             Todavía no has añadido ninguna nota.{' '}
             <Link href="/buscar" className="font-semibold text-ember hover:underline">
               Explorar fichas →
@@ -316,10 +316,10 @@ export default async function PerfilPage() {
                           {work.title}
                         </Link>
                       ) : (
-                        <span className="text-ink/40">—</span>
+                        <span className="text-ink/55">—</span>
                       )}
                     </p>
-                    <span className="shrink-0 text-xs text-ink/40">{formatDate(n.updated_at)}</span>
+                    <span className="shrink-0 text-xs text-ink/55">{formatDate(n.updated_at)}</span>
                   </div>
                   <p className="line-clamp-2 text-sm leading-relaxed text-ink/50">{n.content}</p>
                 </div>
@@ -341,7 +341,7 @@ export default async function PerfilPage() {
 
       {/* Mi cuenta */}
       <section>
-        <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-ink/40">Mi cuenta</h2>
+        <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-ink/55">Mi cuenta</h2>
         <div className="overflow-hidden rounded-lg border border-ink/10 bg-paper shadow-sm">
           {/* Info + acciones */}
           <div className="flex flex-wrap items-center gap-6 px-6 py-5">

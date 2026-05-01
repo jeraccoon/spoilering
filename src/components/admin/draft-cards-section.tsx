@@ -46,7 +46,7 @@ export function DraftCardsSection({ initialCards }: { initialCards: DraftCard[] 
 
   if (cards.length === 0) {
     return (
-      <div className="rounded-lg border border-ink/10 bg-ink/5 px-6 py-10 text-center text-sm text-ink/40">
+      <div className="rounded-lg border border-ink/10 bg-ink/5 px-6 py-10 text-center text-sm text-ink/55">
         No hay fichas en borrador.
       </div>
     )
@@ -96,7 +96,7 @@ export function DraftCardsSection({ initialCards }: { initialCards: DraftCard[] 
                     <button
                       onClick={() => handleDelete(card.id)}
                       disabled={deleting === card.id}
-                      className="text-xs font-semibold text-ink/30 transition hover:text-ember disabled:opacity-40"
+                      className="text-xs font-semibold text-ink/45 transition hover:text-ember disabled:opacity-40"
                     >
                       {deleting === card.id ? '…' : 'Eliminar'}
                     </button>

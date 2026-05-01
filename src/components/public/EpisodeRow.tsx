@@ -107,7 +107,7 @@ export function EpisodeRow({ episode, role, isLoggedIn, isOpen, onToggle, initia
             onClick={onToggle}
             className="flex flex-1 items-start gap-3 text-left"
           >
-            <span className="w-8 shrink-0 pt-0.5 text-right text-xs font-mono text-ink/30">
+            <span className="w-8 shrink-0 pt-0.5 text-right text-xs font-mono text-ink/45">
               {episode.episode_number}
             </span>
             <div className="min-w-0 flex-1">
@@ -115,7 +115,7 @@ export function EpisodeRow({ episode, role, isLoggedIn, isOpen, onToggle, initia
                 {episode.name ?? `Episodio ${episode.episode_number}`}
               </p>
               {episode.air_date && (
-                <p className="mt-0.5 text-xs text-ink/40">{formatAirDate(episode.air_date)}</p>
+                <p className="mt-0.5 text-xs text-ink/55">{formatAirDate(episode.air_date)}</p>
               )}
             </div>
             <span className="shrink-0 rounded-full bg-moss/10 px-2.5 py-0.5 text-[11px] font-semibold text-moss">
@@ -187,11 +187,11 @@ export function EpisodeRow({ episode, role, isLoggedIn, isOpen, onToggle, initia
                     {activeSectionData.content}
                   </ReactMarkdown>
                 ) : (
-                  <p className="text-sm text-ink/30">Esta sección no tiene contenido todavía.</p>
+                  <p className="text-sm text-ink/45">Esta sección no tiene contenido todavía.</p>
                 )}
               </div>
             ) : (
-              <p className="text-sm text-ink/30">Sin contenido disponible.</p>
+              <p className="text-sm text-ink/45">Sin contenido disponible.</p>
             )}
           </div>
         )}
@@ -207,7 +207,7 @@ export function EpisodeRow({ episode, role, isLoggedIn, isOpen, onToggle, initia
           onClick={toggleEpisodeWatched}
           disabled={savingWatched}
           title={watched ? 'Marcar como no visto' : 'Marcar como visto'}
-          className={`mt-0.5 shrink-0 text-sm transition ${watched ? 'text-moss' : 'text-ink/15 hover:text-ink/40'}`}
+          className={`mt-0.5 shrink-0 text-sm transition ${watched ? 'text-moss' : 'text-ink/15 hover:text-ink/55'}`}
         >
           {watched ? '✓' : '○'}
         </button>
@@ -220,7 +220,7 @@ export function EpisodeRow({ episode, role, isLoggedIn, isOpen, onToggle, initia
           {episode.name ?? `Episodio ${episode.episode_number}`}
         </p>
         {episode.air_date && (
-          <p className="mt-0.5 text-xs text-ink/30">{formatAirDate(episode.air_date)}</p>
+          <p className="mt-0.5 text-xs text-ink/45">{formatAirDate(episode.air_date)}</p>
         )}
       </div>
       <div className="shrink-0 text-right">
@@ -229,14 +229,14 @@ export function EpisodeRow({ episode, role, isLoggedIn, isOpen, onToggle, initia
             <button
               onClick={handleCreateCard}
               disabled={creating}
-              className="rounded-md border border-ink/15 px-2.5 py-1 text-[11px] font-semibold text-ink/40 transition hover:border-ember/40 hover:text-ember disabled:opacity-40"
+              className="rounded-md border border-ink/15 px-2.5 py-1 text-[11px] font-semibold text-ink/55 transition hover:border-ember/40 hover:text-ember disabled:opacity-40"
             >
               {creating ? '…' : '+ Crear ficha'}
             </button>
             {createError && <p className="text-[10px] text-ember">{createError}</p>}
           </div>
         ) : isLoggedIn ? (
-          <span className="text-[11px] text-ink/30">
+          <span className="text-[11px] text-ink/45">
             Sin ficha ·{' '}
             <Link href="/perfil" className="underline underline-offset-2 hover:text-ember">
               ¿Contribuir?
@@ -245,7 +245,7 @@ export function EpisodeRow({ episode, role, isLoggedIn, isOpen, onToggle, initia
         ) : (
           <Link
             href="/registro"
-            className="text-[11px] text-ink/30 underline underline-offset-2 hover:text-ember"
+            className="text-[11px] text-ink/45 underline underline-offset-2 hover:text-ember"
           >
             Regístrate para contribuir
           </Link>

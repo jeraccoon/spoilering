@@ -121,7 +121,7 @@ export function AdminUsersTable({
           placeholder="Buscar por username o email…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="min-w-0 flex-1 rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder-ink/30 outline-none transition focus:border-ember focus:ring-2 focus:ring-ember/20"
+          className="min-w-0 flex-1 rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder-ink/45 outline-none transition focus:border-ember focus:ring-2 focus:ring-ember/20"
         />
         <select
           value={roleFilter}
@@ -146,7 +146,7 @@ export function AdminUsersTable({
 
       {/* Tabla */}
       {filtered.length === 0 ? (
-        <div className="rounded-lg border border-ink/10 bg-ink/5 px-6 py-10 text-center text-sm text-ink/40">
+        <div className="rounded-lg border border-ink/10 bg-ink/5 px-6 py-10 text-center text-sm text-ink/55">
           No hay usuarios que coincidan con los filtros.
         </div>
       ) : (
@@ -174,10 +174,10 @@ export function AdminUsersTable({
                         <Avatar name={u.username ?? u.email} />
                         <div className="min-w-0">
                           <p className="truncate font-semibold text-ink">
-                            {u.username ?? <span className="text-ink/40 italic">sin username</span>}
-                            {isSelf && <span className="ml-1.5 text-[10px] font-normal text-ink/30">(tú)</span>}
+                            {u.username ?? <span className="text-ink/55 italic">sin username</span>}
+                            {isSelf && <span className="ml-1.5 text-[10px] font-normal text-ink/45">(tú)</span>}
                           </p>
-                          <p className="truncate text-xs text-ink/40">{u.email}</p>
+                          <p className="truncate text-xs text-ink/55">{u.email}</p>
                         </div>
                       </div>
                     </td>
@@ -214,7 +214,7 @@ export function AdminUsersTable({
 
                     {/* Estado */}
                     <td className="px-4 py-3 hidden md:table-cell">
-                      <span className={`rounded px-2 py-0.5 text-[11px] font-semibold ${u.is_active ? 'bg-moss/10 text-moss' : 'bg-ink/10 text-ink/40'}`}>
+                      <span className={`rounded px-2 py-0.5 text-[11px] font-semibold ${u.is_active ? 'bg-moss/10 text-moss' : 'bg-ink/10 text-ink/55'}`}>
                         {u.is_active ? 'Activo' : 'Desactivado'}
                       </span>
                     </td>

@@ -134,7 +134,7 @@ export function BetaBanner() {
                     </div>
                     <p className="text-sm text-ink/50">Errores, ideas, lo que sea — lo leemos todo.</p>
                   </div>
-                  <button onClick={closeModal} className="shrink-0 text-ink/30 hover:text-ink" aria-label="Cerrar">
+                  <button onClick={closeModal} className="shrink-0 text-ink/45 hover:text-ink" aria-label="Cerrar">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-5 w-5">
                       <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />
                     </svg>
@@ -164,7 +164,7 @@ export function BetaBanner() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="tu@email.com"
-                      className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder-ink/30 outline-none transition focus:border-ember focus:ring-1 focus:ring-ember/20"
+                      className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder-ink/45 outline-none transition focus:border-ember focus:ring-1 focus:ring-ember/20"
                     />
                   </div>
 
@@ -177,7 +177,7 @@ export function BetaBanner() {
                       rows={4}
                       autoFocus
                       placeholder="Cuéntanos qué ocurre o qué mejorarías…"
-                      className="w-full resize-none rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder-ink/30 outline-none transition focus:border-ember focus:ring-1 focus:ring-ember/20"
+                      className="w-full resize-none rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder-ink/45 outline-none transition focus:border-ember focus:ring-1 focus:ring-ember/20"
                     />
                   </div>
 
@@ -191,7 +191,7 @@ export function BetaBanner() {
                     >
                       {sending ? 'Enviando…' : 'Enviar'}
                     </button>
-                    <button type="button" onClick={closeModal} className="text-sm font-semibold text-ink/40 hover:text-ink">
+                    <button type="button" onClick={closeModal} className="text-sm font-semibold text-ink/55 hover:text-ink">
                       Cancelar
                     </button>
                   </div>

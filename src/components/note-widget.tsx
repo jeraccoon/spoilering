@@ -69,7 +69,7 @@ export function NoteWidget({ cardId }: { cardId: string }) {
       <div className="mb-3 flex items-center gap-2">
         <span className="text-base" aria-hidden>🔒</span>
         <h3 className="text-sm font-semibold text-ink/70">Mis notas</h3>
-        <span className="text-xs text-ink/40">(solo tú puedes ver esto)</span>
+        <span className="text-xs text-ink/55">(solo tú puedes ver esto)</span>
       </div>
 
       {editing ? (
@@ -81,7 +81,7 @@ export function NoteWidget({ cardId }: { cardId: string }) {
             placeholder="Añade una nota personal sobre esta obra... ¿Cuándo la viste? ¿Con quién? ¿Qué te pareció?"
             rows={4}
             autoFocus={!note}
-            className="w-full resize-none rounded-md border border-moss/20 bg-paper px-3 py-2.5 text-sm leading-relaxed text-ink/80 placeholder:text-ink/30 focus:border-moss/40 focus:outline-none focus:ring-1 focus:ring-moss/20"
+            className="w-full resize-none rounded-md border border-moss/20 bg-paper px-3 py-2.5 text-sm leading-relaxed text-ink/80 placeholder:text-ink/45 focus:border-moss/40 focus:outline-none focus:ring-1 focus:ring-moss/20"
           />
           <div className="flex items-center gap-3">
             <button
@@ -94,7 +94,7 @@ export function NoteWidget({ cardId }: { cardId: string }) {
             {note && (
               <button
                 onClick={() => setEditing(false)}
-                className="text-xs text-ink/40 transition hover:text-ink/70"
+                className="text-xs text-ink/55 transition hover:text-ink/70"
               >
                 Cancelar
               </button>
@@ -113,7 +113,7 @@ export function NoteWidget({ cardId }: { cardId: string }) {
             </button>
             <button
               onClick={deleteNote}
-              className="text-xs text-ink/30 underline underline-offset-2 transition hover:text-ember"
+              className="text-xs text-ink/45 underline underline-offset-2 transition hover:text-ember"
             >
               Eliminar
             </button>

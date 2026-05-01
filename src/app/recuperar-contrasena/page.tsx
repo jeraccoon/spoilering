@@ -55,7 +55,7 @@ export default function RecuperarContrasenaPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2.5 text-sm text-ink placeholder-ink/30 outline-none transition focus:border-ember focus:ring-2 focus:ring-ember/20"
+                className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2.5 text-sm text-ink placeholder-ink/45 outline-none transition focus:border-ember focus:ring-2 focus:ring-ember/20"
                 placeholder="tu@email.com"
               />
             </div>
@@ -69,7 +69,7 @@ export default function RecuperarContrasenaPage() {
             </button>
 
             <p className="text-center text-sm text-ink/50">
-              <Link href="/login" className="text-ink/40 hover:text-ink hover:underline">
+              <Link href="/login" className="text-ink/55 hover:text-ink hover:underline">
                 Volver al login
               </Link>
             </p>

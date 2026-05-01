@@ -55,7 +55,7 @@ export function PendingCardsSection({ initialCards }: { initialCards: PendingCar
 
   if (cards.length === 0) {
     return (
-      <div className="rounded-lg border border-ink/10 bg-ink/5 px-6 py-10 text-center text-sm text-ink/40">
+      <div className="rounded-lg border border-ink/10 bg-ink/5 px-6 py-10 text-center text-sm text-ink/55">
         No hay fichas pendientes de revisión.
       </div>
     )

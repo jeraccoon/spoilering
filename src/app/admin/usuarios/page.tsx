@@ -63,7 +63,7 @@ export default async function AdminUsuariosPage() {
           <div className="mb-1 flex items-center gap-2">
             <Link
               href="/admin"
-              className="text-sm text-ink/40 hover:text-ink"
+              className="text-sm text-ink/55 hover:text-ink"
             >
               ← Panel
             </Link>

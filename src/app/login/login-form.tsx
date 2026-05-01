@@ -82,7 +82,7 @@ export function LoginForm() {
               required
               value={identifier}
               onChange={(e) => setIdentifier(e.target.value)}
-              className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2.5 text-sm text-ink placeholder-ink/30 outline-none transition focus:border-ember focus:ring-2 focus:ring-ember/20"
+              className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2.5 text-sm text-ink placeholder-ink/45 outline-none transition focus:border-ember focus:ring-2 focus:ring-ember/20"
               placeholder="tu@email.com o tu_nombre"
             />
           </div>
@@ -98,7 +98,7 @@ export function LoginForm() {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2.5 text-sm text-ink placeholder-ink/30 outline-none transition focus:border-ember focus:ring-2 focus:ring-ember/20"
+              className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2.5 text-sm text-ink placeholder-ink/45 outline-none transition focus:border-ember focus:ring-2 focus:ring-ember/20"
               placeholder="••••••••"
             />
           </div>
@@ -119,7 +119,7 @@ export function LoginForm() {
         </form>
 
         <p className="mt-4 text-center text-sm text-ink/50">
-          <Link href="/recuperar-contrasena" className="text-ink/40 hover:text-ink hover:underline">
+          <Link href="/recuperar-contrasena" className="text-ink/55 hover:text-ink hover:underline">
             ¿Olvidaste tu contraseña?
           </Link>
         </p>

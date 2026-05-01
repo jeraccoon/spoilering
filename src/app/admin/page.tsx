@@ -148,20 +148,20 @@ export default async function AdminPage() {
 
       {/* Fichas pendientes de revisión (enviadas por usuarios) */}
       <section className="mb-10">
-        <h2 className="mb-1 text-xs font-semibold uppercase tracking-wider text-ink/40">
+        <h2 className="mb-1 text-xs font-semibold uppercase tracking-wider text-ink/55">
           Fichas pendientes de revisión
         </h2>
-        <p className="mb-4 text-xs text-ink/40">Enviadas por usuarios registrados, esperando aprobación.</p>
+        <p className="mb-4 text-xs text-ink/55">Enviadas por usuarios registrados, esperando aprobación.</p>
         <PendingCardsSection initialCards={pendingCards} />
       </section>
 
       {/* Borradores inactivos */}
       {inactiveDrafts.length > 0 && (
         <section className="mb-10">
-          <h2 className="mb-1 text-xs font-semibold uppercase tracking-wider text-ink/40">
+          <h2 className="mb-1 text-xs font-semibold uppercase tracking-wider text-ink/55">
             Borradores inactivos
           </h2>
-          <p className="mb-4 text-xs text-ink/40">Sin cambios en más de 30 días.</p>
+          <p className="mb-4 text-xs text-ink/55">Sin cambios en más de 30 días.</p>
           <InactiveDraftsSection initialDrafts={inactiveDrafts} />
         </section>
       )}
@@ -169,17 +169,17 @@ export default async function AdminPage() {
       {/* Obras sin ficha */}
       {orphanWorks.length > 0 && (
         <section className="mb-10">
-          <h2 className="mb-1 text-xs font-semibold uppercase tracking-wider text-ink/40">
+          <h2 className="mb-1 text-xs font-semibold uppercase tracking-wider text-ink/55">
             Obras sin ficha
           </h2>
-          <p className="mb-4 text-xs text-ink/40">Obras creadas pero sin borrador guardado todavía.</p>
+          <p className="mb-4 text-xs text-ink/55">Obras creadas pero sin borrador guardado todavía.</p>
           <OrphanWorksSection initialWorks={orphanWorks} />
         </section>
       )}
 
       {/* Revisiones pendientes */}
       <section className="mb-6">
-        <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-ink/40">
+        <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-ink/55">
           Revisiones pendientes
         </h2>
         <div className="flex items-center gap-4 rounded-lg border border-ink/10 bg-paper px-6 py-5 shadow-sm">
@@ -207,10 +207,10 @@ export default async function AdminPage() {
       <section className="mb-10">
         <div className="mb-4 flex items-center justify-between">
           <div>
-            <h2 className="mb-1 text-xs font-semibold uppercase tracking-wider text-ink/40">
+            <h2 className="mb-1 text-xs font-semibold uppercase tracking-wider text-ink/55">
               Mensajes de contacto
             </h2>
-            <p className="text-xs text-ink/40">Enviados desde el footer por cualquier visitante.</p>
+            <p className="text-xs text-ink/55">Enviados desde el footer por cualquier visitante.</p>
           </div>
           <a
             href="/admin/contacto"
@@ -220,7 +220,7 @@ export default async function AdminPage() {
           </a>
         </div>
         {contactMessages.length === 0 ? (
-          <div className="rounded-lg border border-ink/10 bg-ink/[0.02] px-6 py-8 text-center text-sm text-ink/30">
+          <div className="rounded-lg border border-ink/10 bg-ink/[0.02] px-6 py-8 text-center text-sm text-ink/45">
             No hay mensajes todavía.
           </div>
         ) : (
@@ -237,7 +237,7 @@ export default async function AdminPage() {
               <tbody className="divide-y divide-ink/10">
                 {contactMessages.map((m: any) => (
                   <tr key={m.id} className="align-top transition hover:bg-ink/5">
-                    <td className="px-4 py-3 text-xs text-ink/40 whitespace-nowrap">
+                    <td className="px-4 py-3 text-xs text-ink/55 whitespace-nowrap">
                       {new Date(m.created_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}
                     </td>
                     <td className="px-4 py-3">
@@ -248,7 +248,7 @@ export default async function AdminPage() {
                     <td className="px-4 py-3 text-xs text-ink/50 hidden sm:table-cell">
                       <div className="flex flex-col gap-0.5">
                         {m.name && <span className="font-medium text-ink">{m.name}</span>}
-                        {m.email && <span className="text-ink/40">{m.email}</span>}
+                        {m.email && <span className="text-ink/55">{m.email}</span>}
                         {!m.name && !m.email && <span className="text-ink/25">Anónimo</span>}
                       </div>
                     </td>
@@ -265,7 +265,7 @@ export default async function AdminPage() {
 
       {/* Sugerencias pendientes */}
       <section>
-        <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-ink/40">
+        <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-ink/55">
           Sugerencias de corrección
         </h2>
         <div className="flex items-center gap-4 rounded-lg border border-ink/10 bg-paper px-6 py-5 shadow-sm">

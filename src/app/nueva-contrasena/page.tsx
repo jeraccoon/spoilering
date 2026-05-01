@@ -51,7 +51,7 @@ export default function NuevaContrasenaPage() {
   if (ready === null) {
     return (
       <div className="flex min-h-[calc(100vh-8rem)] items-center justify-center px-4 py-12">
-        <p className="text-sm text-ink/40">Verificando enlace…</p>
+        <p className="text-sm text-ink/55">Verificando enlace…</p>
       </div>
     )
   }
@@ -103,7 +103,7 @@ export default function NuevaContrasenaPage() {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2.5 text-sm text-ink placeholder-ink/30 outline-none transition focus:border-ember focus:ring-2 focus:ring-ember/20"
+              className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2.5 text-sm text-ink placeholder-ink/45 outline-none transition focus:border-ember focus:ring-2 focus:ring-ember/20"
               placeholder="Mínimo 8 caracteres"
               minLength={8}
             />
@@ -120,7 +120,7 @@ export default function NuevaContrasenaPage() {
               required
               value={confirm}
               onChange={(e) => setConfirm(e.target.value)}
-              className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2.5 text-sm text-ink placeholder-ink/30 outline-none transition focus:border-ember focus:ring-2 focus:ring-ember/20"
+              className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2.5 text-sm text-ink placeholder-ink/45 outline-none transition focus:border-ember focus:ring-2 focus:ring-ember/20"
               placeholder="Repite la contraseña"
             />
           </div>

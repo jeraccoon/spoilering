@@ -369,7 +369,7 @@ export default function NuevaObraPage() {
 
       {/* Selector de tipo */}
       <div className="mb-4">
-        <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-ink/40">¿Qué tipo de obra es?</p>
+        <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-ink/55">¿Qué tipo de obra es?</p>
         <div className="flex gap-2">
           {(['all', 'movie', 'series', 'book'] as SearchType[]).map((t) => (
             <button key={t} type="button" onClick={() => setSearchType(t)}
@@ -387,13 +387,13 @@ export default function NuevaObraPage() {
         <label className="mb-1.5 block text-sm font-semibold text-ink">{searchLabel}</label>
         <input type="text" value={query} onChange={(e) => setQuery(e.target.value)}
           placeholder="Busca por título, autor, director, actor..."
-          className="w-full rounded-lg border border-ink/20 bg-paper px-4 py-3 text-sm text-ink placeholder-ink/30 outline-none transition focus:border-ember focus:ring-2 focus:ring-ember/20" />
-        <p className="mt-1.5 text-xs text-ink/40">
+          className="w-full rounded-lg border border-ink/20 bg-paper px-4 py-3 text-sm text-ink placeholder-ink/45 outline-none transition focus:border-ember focus:ring-2 focus:ring-ember/20" />
+        <p className="mt-1.5 text-xs text-ink/55">
           {searchType === 'book'
             ? 'Puedes buscar por título o autor. Ejemplo: "autor:tolkien" para buscar por autor.'
             : 'Puedes buscar por título, director o actor.'}
         </p>
-        {searching && <p className="mt-1 text-xs text-ink/40">Buscando…</p>}
+        {searching && <p className="mt-1 text-xs text-ink/55">Buscando…</p>}
 
         {results.length > 0 && (
           <div className="absolute left-0 right-0 top-full z-10 mt-1 overflow-hidden rounded-lg border border-ink/10 bg-paper shadow-lg">
@@ -409,7 +409,7 @@ export default function NuevaObraPage() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-semibold text-ink">{result.title}</p>
-                  <p className="text-xs text-ink/40">
+                  <p className="text-xs text-ink/55">
                     {result.year ?? '—'} · {TYPE_LABELS[result.type]}
                     {result.authors.length > 0 && ` · ${result.authors[0]}`}
                   </p>
@@ -428,7 +428,7 @@ export default function NuevaObraPage() {
         <div className="mb-8">
           <label className="mb-1.5 block text-sm font-semibold text-ink">
             ISBN o enlace de Goodreads{' '}
-            <span className="font-normal text-ink/40">(opcional)</span>
+            <span className="font-normal text-ink/55">(opcional)</span>
           </label>
           <div className="flex gap-2">
             <input
@@ -437,7 +437,7 @@ export default function NuevaObraPage() {
               onChange={(e) => { setIsbnQuery(e.target.value); setIsbnError(null) }}
               onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); lookupByIsbnOrGoodreads(isbnQuery) } }}
               placeholder="9780618640157  o  https://www.goodreads.com/book/show/…"
-              className="flex-1 rounded-lg border border-ink/20 bg-paper px-4 py-3 text-sm text-ink placeholder-ink/30 outline-none transition focus:border-ember focus:ring-2 focus:ring-ember/20"
+              className="flex-1 rounded-lg border border-ink/20 bg-paper px-4 py-3 text-sm text-ink placeholder-ink/45 outline-none transition focus:border-ember focus:ring-2 focus:ring-ember/20"
             />
             <button
               type="button"
@@ -461,7 +461,7 @@ export default function NuevaObraPage() {
             {selected.year && <span className="text-ink/50"> ({selected.year})</span>}
           </p>
           <button type="button" onClick={() => { setSelected(null); setForm(EMPTY_FORM); setExistingCard(null) }}
-            className="ml-auto text-xs text-ink/40 hover:text-ink">
+            className="ml-auto text-xs text-ink/55 hover:text-ink">
             Limpiar
           </button>
         </div>
@@ -495,7 +495,7 @@ export default function NuevaObraPage() {
         </div>
 
         {form.title && (
-          <p className="text-xs text-ink/40">URL generada automáticamente a partir del título.</p>
+          <p className="text-xs text-ink/55">URL generada automáticamente a partir del título.</p>
         )}
 
         {/* Póster */}
@@ -519,13 +519,13 @@ export default function NuevaObraPage() {
           {posterMode === 'url' ? (
             <input type="url" value={form.poster_url} onChange={(e) => updateField('poster_url', e.target.value)}
               placeholder="https://…"
-              className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2.5 text-sm text-ink placeholder-ink/30 outline-none transition focus:border-ember focus:ring-2 focus:ring-ember/20" />
+              className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2.5 text-sm text-ink placeholder-ink/45 outline-none transition focus:border-ember focus:ring-2 focus:ring-ember/20" />
           ) : (
             <div className="flex flex-col gap-2">
               <label className={`flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-ink/20 px-4 py-6 text-sm text-ink/50 transition hover:border-ink/40 hover:text-ink/70 ${uploading ? 'opacity-60 pointer-events-none' : ''}`}>
                 <span className="text-2xl">📁</span>
                 <span>{uploading ? 'Subiendo…' : 'Haz clic para seleccionar una imagen'}</span>
-                <span className="text-xs text-ink/30">JPG, PNG o WEBP</span>
+                <span className="text-xs text-ink/45">JPG, PNG o WEBP</span>
                 <input type="file" accept="image/jpeg,image/png,image/webp" className="hidden"
                   onChange={(e) => { const f = e.target.files?.[0]; if (f) handlePosterUpload(f) }} />
               </label>
@@ -545,7 +545,7 @@ export default function NuevaObraPage() {
         <div>
           <label className="mb-1.5 block text-sm font-semibold text-ink">Sinopsis</label>
           <textarea value={form.overview} onChange={(e) => updateField('overview', e.target.value)} rows={3}
-            className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2.5 text-sm text-ink placeholder-ink/30 outline-none transition focus:border-ember focus:ring-2 focus:ring-ember/20"
+            className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2.5 text-sm text-ink placeholder-ink/45 outline-none transition focus:border-ember focus:ring-2 focus:ring-ember/20"
             placeholder="Descripción breve de la obra…" />
         </div>
 
@@ -615,7 +615,7 @@ export default function NuevaObraPage() {
 
         <div className="flex items-center gap-3 pt-2">
           {checkingDuplicate ? (
-            <span className="text-sm text-ink/40">Verificando…</span>
+            <span className="text-sm text-ink/55">Verificando…</span>
           ) : existingCard || duplicateSlug !== null ? null : (
             <button type="submit" disabled={submitting || !form.title}
               className="rounded-lg bg-ember px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-ember/90 disabled:cursor-not-allowed disabled:opacity-50">
@@ -641,8 +641,8 @@ function Field({ label, value, onChange, required, type = 'text', placeholder, h
       <label className="mb-1.5 block text-sm font-semibold text-ink">{label}</label>
       <input type={type} value={value} onChange={(e) => onChange(e.target.value)} required={required}
         placeholder={placeholder}
-        className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2.5 text-sm text-ink placeholder-ink/30 outline-none transition focus:border-ember focus:ring-2 focus:ring-ember/20" />
-      {hint && <p className="mt-1 text-[11px] text-ink/40">{hint}</p>}
+        className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2.5 text-sm text-ink placeholder-ink/45 outline-none transition focus:border-ember focus:ring-2 focus:ring-ember/20" />
+      {hint && <p className="mt-1 text-[11px] text-ink/55">{hint}</p>}
     </div>
   )
 }

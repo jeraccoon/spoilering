@@ -84,8 +84,8 @@ export function UserContentPanel({ workId, workType, initialRecord }: Props) {
     <div className="mt-5 rounded-xl border border-ink/10 bg-ink/[0.025] p-4">
       <div className="mb-3 flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold uppercase tracking-wider text-ink/40">Mi actividad</span>
-          <span className="flex items-center gap-1 rounded-full border border-ink/15 px-2 py-0.5 text-[10px] text-ink/40">
+          <span className="text-xs font-semibold uppercase tracking-wider text-ink/55">Mi actividad</span>
+          <span className="flex items-center gap-1 rounded-full border border-ink/15 px-2 py-0.5 text-[10px] text-ink/55">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="h-3 w-3 text-moss/70">
               <path fillRule="evenodd" d="M8 1a3.5 3.5 0 0 0-3.5 3.5V6H4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-.5V4.5A3.5 3.5 0 0 0 8 1Zm2 5V4.5a2 2 0 1 0-4 0V6h4Z" clipRule="evenodd" />
             </svg>

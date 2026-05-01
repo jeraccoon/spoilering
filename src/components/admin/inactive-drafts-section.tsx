@@ -84,7 +84,7 @@ export function InactiveDraftsSection({ initialDrafts }: { initialDrafts: Inacti
                     <button
                       onClick={() => handleDelete(draft.id)}
                       disabled={deleting === draft.id}
-                      className="text-xs font-semibold text-ink/30 transition hover:text-ember disabled:opacity-40"
+                      className="text-xs font-semibold text-ink/45 transition hover:text-ember disabled:opacity-40"
                     >
                       {deleting === draft.id ? '…' : 'Eliminar'}
                     </button>

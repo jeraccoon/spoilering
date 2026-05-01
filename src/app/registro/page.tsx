@@ -9,11 +9,11 @@ const USERNAME_REGEX = /^[a-z0-9_]+$/
 type UsernameState = 'idle' | 'checking' | 'available' | 'taken' | 'invalid'
 
 function UsernameHint({ state }: { state: UsernameState }) {
-  if (state === 'checking') return <span className="text-ink/40">Comprobando…</span>
+  if (state === 'checking') return <span className="text-ink/55">Comprobando…</span>
   if (state === 'available') return <span className="font-semibold text-moss">✓ Disponible</span>
   if (state === 'taken') return <span className="font-semibold text-ember">✗ Ya está en uso</span>
   if (state === 'invalid') return <span className="text-ember">Mínimo 3, máximo 20. Solo letras minúsculas, números y guiones bajos.</span>
-  return <span className="text-ink/40">Solo letras, números y guiones bajos. Sin espacios.</span>
+  return <span className="text-ink/55">Solo letras, números y guiones bajos. Sin espacios.</span>
 }
 
 export default function RegistroPage() {
@@ -141,7 +141,7 @@ export default function RegistroPage() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2.5 text-sm text-ink placeholder-ink/30 outline-none transition focus:border-ember focus:ring-2 focus:ring-ember/20"
+              className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2.5 text-sm text-ink placeholder-ink/45 outline-none transition focus:border-ember focus:ring-2 focus:ring-ember/20"
               placeholder="tu@email.com"
             />
           </div>
@@ -157,7 +157,7 @@ export default function RegistroPage() {
               required
               value={username}
               onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
-              className={`w-full rounded-lg border bg-paper px-3 py-2.5 text-sm text-ink placeholder-ink/30 outline-none transition focus:ring-2 ${borderClass(usernameState)}`}
+              className={`w-full rounded-lg border bg-paper px-3 py-2.5 text-sm text-ink placeholder-ink/45 outline-none transition focus:ring-2 ${borderClass(usernameState)}`}
               placeholder="ej: juanperez"
               maxLength={20}
             />
@@ -177,7 +177,7 @@ export default function RegistroPage() {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2.5 text-sm text-ink placeholder-ink/30 outline-none transition focus:border-ember focus:ring-2 focus:ring-ember/20"
+              className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2.5 text-sm text-ink placeholder-ink/45 outline-none transition focus:border-ember focus:ring-2 focus:ring-ember/20"
               placeholder="Mínimo 6 caracteres"
               minLength={6}
             />

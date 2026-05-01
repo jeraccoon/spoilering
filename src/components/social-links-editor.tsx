@@ -76,9 +76,9 @@ export function SocialLinksEditor({ initialLinks }: Props) {
   return (
     <section className="mb-10">
       <div className="mb-4 flex items-center justify-between gap-3">
-        <h2 className="text-xs font-semibold uppercase tracking-wider text-ink/40">Mis perfiles externos</h2>
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-ink/55">Mis perfiles externos</h2>
         <div className="flex items-center gap-2 text-xs">
-          {saving && <span className="text-ink/40">Guardando…</span>}
+          {saving && <span className="text-ink/55">Guardando…</span>}
           {saved && !saving && <span className="text-moss">Guardado ✓</span>}
           {error && <span className="text-ember">{error}</span>}
         </div>
@@ -111,7 +111,7 @@ export function SocialLinksEditor({ initialLinks }: Props) {
                   onChange={(e) => setLinks((p) => ({ ...p, [net.key]: e.target.value }))}
                   onBlur={(e) => void saveField(net.key, e.target.value)}
                   placeholder={net.placeholder}
-                  className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder-ink/30 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
+                  className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder-ink/45 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
                 />
               </div>
             )

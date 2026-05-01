@@ -43,7 +43,7 @@ export function SeasonsAccordion({ seasons, role, isLoggedIn, watchedEpisodeIds 
   return (
     <section className="border-t border-ink/10">
       <div className="mx-auto max-w-5xl px-4 py-10">
-        <h2 className="mb-6 text-xs font-semibold uppercase tracking-wider text-ink/40">
+        <h2 className="mb-6 text-xs font-semibold uppercase tracking-wider text-ink/55">
           Temporadas y episodios
         </h2>
         <div className="flex flex-col gap-2">
@@ -57,7 +57,7 @@ export function SeasonsAccordion({ seasons, role, isLoggedIn, watchedEpisodeIds 
                 >
                   <div className="flex items-center gap-3">
                     <span
-                      className={`text-xs text-ink/40 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
+                      className={`text-xs text-ink/55 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
                       aria-hidden
                     >
                       ▼
@@ -66,7 +66,7 @@ export function SeasonsAccordion({ seasons, role, isLoggedIn, watchedEpisodeIds 
                       {season.name ?? `Temporada ${season.season_number}`}
                     </span>
                   </div>
-                  <span className="shrink-0 text-xs text-ink/40">
+                  <span className="shrink-0 text-xs text-ink/55">
                     {season.episodes.length} episodio{season.episodes.length !== 1 ? 's' : ''}
                   </span>
                 </button>
@@ -74,7 +74,7 @@ export function SeasonsAccordion({ seasons, role, isLoggedIn, watchedEpisodeIds 
                 {isOpen && (
                   <div className="divide-y divide-ink/5 border-t border-ink/10">
                     {season.episodes.length === 0 ? (
-                      <p className="px-4 py-3 text-sm text-ink/40">Sin episodios</p>
+                      <p className="px-4 py-3 text-sm text-ink/55">Sin episodios</p>
                     ) : (
                       season.episodes.map((ep) => (
                         <EpisodeRow

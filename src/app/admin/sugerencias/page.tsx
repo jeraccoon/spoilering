@@ -22,7 +22,7 @@ export default async function SugerenciasPage() {
     <div className="mx-auto max-w-4xl px-4 py-10">
 
       <div className="mb-8 flex flex-wrap items-center gap-3">
-        <Link href="/admin" className="text-sm font-semibold text-ink/40 transition hover:text-ink">
+        <Link href="/admin" className="text-sm font-semibold text-ink/55 transition hover:text-ink">
           ← Admin
         </Link>
         <h1 className="text-2xl font-black tracking-tight text-ink">Sugerencias pendientes</h1>
@@ -34,7 +34,7 @@ export default async function SugerenciasPage() {
       </div>
 
       {suggestions.length === 0 ? (
-        <div className="rounded-lg border border-ink/10 bg-ink/5 px-6 py-16 text-center text-ink/40">
+        <div className="rounded-lg border border-ink/10 bg-ink/5 px-6 py-16 text-center text-ink/55">
           No hay sugerencias pendientes.
         </div>
       ) : (
@@ -62,7 +62,7 @@ export default async function SugerenciasPage() {
                     )}
                     <p className="mt-0.5 text-sm text-ink/50">
                       Sección: <span className="font-semibold text-ink/70">{sectionLabel}</span>
-                      <span className="mx-1.5 text-ink/30">·</span>
+                      <span className="mx-1.5 text-ink/45">·</span>
                       {formatDate(s.created_at)}
                     </p>
                   </div>
@@ -78,7 +78,7 @@ export default async function SugerenciasPage() {
                 <div className={`grid gap-3 ${s.original_content ? 'sm:grid-cols-2' : ''}`}>
                   {s.original_content && (
                     <div>
-                      <p className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-ink/40">
+                      <p className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-ink/55">
                         Texto actual
                       </p>
                       <div className="max-h-48 overflow-y-auto rounded-lg bg-ink/5 p-3 text-xs leading-relaxed text-ink/60 whitespace-pre-wrap">

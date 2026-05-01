@@ -68,7 +68,7 @@ export function NuevaFichaEditor({ work }: { work: Work }) {
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-10">
-      <div className="mb-2 text-sm text-ink/40">
+      <div className="mb-2 text-sm text-ink/55">
         <a href="/admin" className="hover:text-ink">Admin</a>
         <span className="mx-1.5">/</span>
         <a href="/admin/nueva-obra" className="hover:text-ink">Nueva obra</a>
@@ -90,7 +90,7 @@ export function NuevaFichaEditor({ work }: { work: Work }) {
               {TYPE_LABELS[work.type] ?? work.type}
             </span>
             {work.year && (
-              <span className="text-xs text-ink/40">{work.year}</span>
+              <span className="text-xs text-ink/55">{work.year}</span>
             )}
           </div>
           <h2 className="text-xl font-bold text-ink">{work.title}</h2>
@@ -129,12 +129,12 @@ export function NuevaFichaEditor({ work }: { work: Work }) {
         </button>
         <a
           href="/admin/nueva-obra"
-          className="text-sm font-semibold text-ink/40 hover:text-ink"
+          className="text-sm font-semibold text-ink/55 hover:text-ink"
         >
           Cancelar
         </a>
       </div>
-      <p className="mt-3 text-xs text-ink/30">
+      <p className="mt-3 text-xs text-ink/45">
         &quot;Descartar obra&quot; elimina permanentemente la obra recién creada sin guardar ninguna ficha.
       </p>
     </div>

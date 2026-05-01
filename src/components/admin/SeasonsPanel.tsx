@@ -102,7 +102,7 @@ export function SeasonsPanel({ workId, workType }: Props) {
   return (
     <div className="mt-10">
       <div className="mb-4 flex items-center justify-between gap-4">
-        <h2 className="text-xs font-semibold uppercase tracking-wider text-ink/40">
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-ink/55">
           Temporadas y episodios
         </h2>
         {seasons.length > 0 && (
@@ -128,7 +128,7 @@ export function SeasonsPanel({ workId, workType }: Props) {
       )}
 
       {loading ? (
-        <div className="flex items-center gap-2 py-8 text-sm text-ink/40">
+        <div className="flex items-center gap-2 py-8 text-sm text-ink/55">
           <span className="inline-block h-3 w-3 animate-pulse rounded-full bg-ink/20" />
           Cargando temporadas…
         </div>
@@ -159,7 +159,7 @@ export function SeasonsPanel({ workId, workType }: Props) {
                 >
                   <div className="flex items-center gap-3">
                     <span
-                      className={`text-xs text-ink/40 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
+                      className={`text-xs text-ink/55 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
                       aria-hidden
                     >
                       ▼
@@ -168,7 +168,7 @@ export function SeasonsPanel({ workId, workType }: Props) {
                       {season.name ?? `Temporada ${season.season_number}`}
                     </span>
                   </div>
-                  <span className="shrink-0 text-xs text-ink/40">
+                  <span className="shrink-0 text-xs text-ink/55">
                     {season.episodes.length} episodio{season.episodes.length !== 1 ? 's' : ''}
                   </span>
                 </button>
@@ -177,13 +177,13 @@ export function SeasonsPanel({ workId, workType }: Props) {
                 {isOpen && (
                   <div className="border-t border-ink/10">
                     {season.episodes.length === 0 ? (
-                      <p className="px-4 py-3 text-sm text-ink/40">Sin episodios</p>
+                      <p className="px-4 py-3 text-sm text-ink/55">Sin episodios</p>
                     ) : (
                       <table className="w-full text-sm">
                         <tbody className="divide-y divide-ink/5">
                           {season.episodes.map((ep) => (
                             <tr key={ep.id} className="transition hover:bg-ink/[0.03]">
-                              <td className="w-12 px-4 py-2.5 text-right text-xs font-mono text-ink/30">
+                              <td className="w-12 px-4 py-2.5 text-right text-xs font-mono text-ink/45">
                                 {ep.episode_number}
                               </td>
                               <td className="px-3 py-2.5">
@@ -191,7 +191,7 @@ export function SeasonsPanel({ workId, workType }: Props) {
                                   {ep.name ?? `Episodio ${ep.episode_number}`}
                                 </p>
                                 {ep.air_date && (
-                                  <p className="mt-0.5 text-xs text-ink/40">
+                                  <p className="mt-0.5 text-xs text-ink/55">
                                     {new Date(ep.air_date).toLocaleDateString('es-ES', {
                                       day: 'numeric', month: 'short', year: 'numeric',
                                     })}

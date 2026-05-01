@@ -37,7 +37,7 @@ export function ContactMessagesList({
 
   if (messages.length === 0) {
     return (
-      <div className="rounded-lg border border-ink/10 bg-ink/5 px-6 py-16 text-center text-sm text-ink/40">
+      <div className="rounded-lg border border-ink/10 bg-ink/5 px-6 py-16 text-center text-sm text-ink/55">
         No hay mensajes de contacto todavía.
       </div>
     )
@@ -78,10 +78,10 @@ export function ContactMessagesList({
                       </span>
                     )}
                   </div>
-                  <p className="mt-0.5 text-xs text-ink/40">{formatDate(msg.created_at)}</p>
+                  <p className="mt-0.5 text-xs text-ink/55">{formatDate(msg.created_at)}</p>
                 </div>
               </div>
-              <span className={`mt-1 shrink-0 text-xs text-ink/30 transition-transform ${isExpanded ? 'rotate-180' : ''}`}>▼</span>
+              <span className={`mt-1 shrink-0 text-xs text-ink/45 transition-transform ${isExpanded ? 'rotate-180' : ''}`}>▼</span>
             </button>
 
             {/* Contenido expandido */}
@@ -99,7 +99,7 @@ export function ContactMessagesList({
                   {msg.message}
                 </p>
                 <div className="mt-4 flex items-center justify-between gap-4">
-                  <p className="text-xs text-ink/30">
+                  <p className="text-xs text-ink/45">
                     {msg.read_at ? `Leído el ${formatDate(msg.read_at)}` : 'Sin leer'}
                   </p>
                   {isUnread && (
