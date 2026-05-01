@@ -86,7 +86,7 @@ const SECTIONS: Section[] = [
       },
       {
         q: '¿Puedo añadir mis perfiles de Letterboxd, Goodreads u otras plataformas?',
-        a: 'Sí. En tu perfil encontrarás una sección "Mis perfiles externos" donde puedes añadir enlaces a tu perfil de Letterboxd, Trakt.tv, Goodreads y Filmaffinity.',
+        a: 'Próximamente. Estamos trabajando en añadir enlaces a perfiles externos como Letterboxd, Trakt.tv, Goodreads y Filmaffinity desde tu perfil de Spoilering.',
       },
       {
         q: '¿Cómo cambio mi contraseña?',
