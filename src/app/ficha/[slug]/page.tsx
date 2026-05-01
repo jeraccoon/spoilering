@@ -86,6 +86,50 @@ async function getSeasons(workId: string): Promise<Season[]> {
   }))
 }
 
+async function getCredits(cardId: string, createdBy: string | null): Promise<{ creator: string | null; contributors: string[] }> {
+  try {
+    const supabase = process.env.SUPABASE_SERVICE_ROLE_KEY ? createAdminClient() : await createClient()
+
+    // Fetch section IDs for this card + creator profile in parallel
+    const [sectionsRes, creatorRes] = await Promise.all([
+      (supabase.from('sections') as any).select('id').eq('card_id', cardId),
+      createdBy
+        ? (supabase.from('profiles') as any).select('username').eq('id', createdBy).single()
+        : Promise.resolve({ data: null }),
+    ])
+
+    const creator: string | null = creatorRes.data?.username ?? null
+    const sectionIds: string[] = ((sectionsRes.data ?? []) as any[]).map((s: any) => s.id)
+
+    let contributors: string[] = []
+    if (sectionIds.length > 0) {
+      const { data: approvedSuggestions } = await (supabase.from('suggestions') as any)
+        .select('user_id')
+        .in('section_id', sectionIds)
+        .eq('status', 'approved')
+
+      const contributorIds: string[] = [
+        ...new Set(
+          ((approvedSuggestions ?? []) as any[])
+            .map((s: any) => s.user_id)
+            .filter((id: string) => id && id !== createdBy)
+        ),
+      ]
+
+      if (contributorIds.length > 0) {
+        const { data: profiles } = await (supabase.from('profiles') as any)
+          .select('username')
+          .in('id', contributorIds)
+        contributors = (profiles ?? []).map((p: any) => p.username).filter(Boolean)
+      }
+    }
+
+    return { creator, contributors }
+  } catch {
+    return { creator: null, contributors: [] }
+  }
+}
+
 async function getAuthInfo(): Promise<{ role: string | null; isLoggedIn: boolean; userId: string | null }> {
   try {
     const supabase = await createClient()
@@ -162,7 +206,10 @@ export default async function CardPage({ params }: Props) {
 
   const [card, { role, isLoggedIn, userId }] = await Promise.all([getCard(slug), getAuthInfo()])
   if (!card) notFound()
-  const seasons = card.work.type === 'series' ? await getSeasons(card.work.id) : []
+  const [seasons, credits] = await Promise.all([
+    card.work.type === 'series' ? getSeasons(card.work.id) : Promise.resolve([]),
+    getCredits(card.id, (card as any).created_by ?? null),
+  ])
 
   let workUserContent: { id: string; watched: boolean; watched_at: string | null; notes: string | null } | null = null
   let watchedEpisodeIds: string[] = []
@@ -365,6 +412,26 @@ export default async function CardPage({ params }: Props) {
           isLoggedIn={isLoggedIn}
           watchedEpisodeIds={watchedEpisodeIds}
         />
+      )}
+
+      {/* Créditos */}
+      {(credits.creator || credits.contributors.length > 0) && (
+        <div className="border-t border-ink/10 bg-paper/60">
+          <div className="mx-auto flex max-w-5xl flex-wrap gap-x-6 gap-y-1 px-4 py-4 text-xs text-ink/40">
+            {credits.creator && (
+              <span>
+                Ficha creada por{' '}
+                <span className="font-semibold text-ink/60">{credits.creator}</span>
+              </span>
+            )}
+            {credits.contributors.length > 0 && (
+              <span>
+                Contribuidores:{' '}
+                <span className="font-semibold text-ink/60">{credits.contributors.join(', ')}</span>
+              </span>
+            )}
+          </div>
+        </div>
       )}
     </div>
   )

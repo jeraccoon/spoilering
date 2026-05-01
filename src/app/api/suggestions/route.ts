@@ -11,11 +11,7 @@ export async function POST(request: NextRequest) {
   if (!section_id || !suggested_content) {
     return NextResponse.json({ error: 'Faltan campos requeridos' }, { status: 400 })
   }
-  if (suggested_content.trim().length < 50) {
-    return NextResponse.json({ error: 'La sugerencia debe tener al menos 50 caracteres' }, { status: 400 })
-  }
-
-  const { error } = await (supabase.from('suggestions') as any).insert({
+const { error } = await (supabase.from('suggestions') as any).insert({
     section_id,
     user_id: user.id,
     original_content: original_content ?? null,
