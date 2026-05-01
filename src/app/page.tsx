@@ -14,8 +14,9 @@ async function getData() {
     .limit(60) as any)
 
   const cards = (data ?? []) as CardWithWork[]
-  const featured = cards[0] ?? null
-  const recent = cards.slice(1, 7)
+  const featuredIndex = cards.length > 0 ? Math.floor(Math.random() * Math.min(cards.length, 20)) : 0
+  const featured = cards[featuredIndex] ?? null
+  const recent = cards.filter((_, i) => i !== featuredIndex).slice(0, 6)
   const movies = cards.filter((c) => c.work.type === 'movie').slice(0, 6)
   const series = cards.filter((c) => c.work.type === 'series').slice(0, 6)
   const books = cards.filter((c) => c.work.type === 'book').slice(0, 6)
