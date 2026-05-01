@@ -44,15 +44,51 @@ async function getUnreadMessagesCount(): Promise<number> {
   }
 }
 
+async function getPendingCardsCount(): Promise<number> {
+  try {
+    const admin = createAdminClient()
+    const { data: userProfiles } = await (admin.from('profiles') as any)
+      .select('id')
+      .eq('role', 'user')
+    const userIds: string[] = (userProfiles ?? []).map((p: any) => p.id)
+    if (userIds.length === 0) return 0
+    const { count } = await (admin.from('cards') as any)
+      .select('id', { count: 'exact', head: true })
+      .eq('status', 'draft')
+      .eq('is_committed', true)
+      .in('created_by', userIds)
+    return count ?? 0
+  } catch {
+    return 0
+  }
+}
+
 export async function Header() {
   const auth = await getUser()
   const isPrivileged = auth?.role === 'admin' || auth?.role === 'editor'
   const isAdmin = auth?.role === 'admin'
   const addHref = isPrivileged ? '/admin/nueva-obra' : '/nueva-obra'
-  const unreadMessages = isAdmin ? await getUnreadMessagesCount() : 0
+  const [unreadMessages, pendingCards] = await Promise.all([
+    isAdmin ? getUnreadMessagesCount() : Promise.resolve(0),
+    isPrivileged ? getPendingCardsCount() : Promise.resolve(0),
+  ])
 
   return (
     <header className="sticky top-0 z-20 border-b border-ink/10 bg-paper/90 backdrop-blur">
+      {pendingCards > 0 && (
+        <Link
+          href="/admin"
+          className="flex w-full items-center justify-center gap-2 bg-plum/90 px-4 py-2 text-xs font-semibold text-white transition hover:bg-plum"
+        >
+          <span className="flex size-4 items-center justify-center rounded-full bg-white/20 text-[10px] font-black">
+            {pendingCards}
+          </span>
+          {pendingCards === 1
+            ? 'Hay 1 ficha pendiente de revisión'
+            : `Hay ${pendingCards} fichas pendientes de revisión`}
+          <span>→</span>
+        </Link>
+      )}
       {isAdmin && unreadMessages > 0 && (
         <Link
           href="/admin/contacto"
