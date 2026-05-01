@@ -105,7 +105,13 @@ En producción en www.spoilering.com. Base completa funcionando. Fase actual: me
 - Centralizar TYPE_LABELS en componentes admin usando `@/lib/work-types`.
 - Valorar si el Resumen rápido debería ser visible SIN pasar el SpoilerGate.
 
-### 3. Ideas potenciales (sin priorizar)
+### 3. Subida de imagen de portada
+- Actualmente el póster se añade pegando una URL externa. Añadir opción de subir un archivo desde el dispositivo.
+- Requiere almacenamiento: Supabase Storage es la opción natural (ya en el stack). Crear un bucket `posters` con acceso público.
+- El flujo sería: usuario selecciona archivo → upload a Supabase Storage → se guarda la URL pública en `works.poster_url`.
+- Aplica tanto en la creación de obra (`/admin/nueva-obra`) como en el editor de metadatos (`/admin/ficha/[id]`).
+
+### 4. Ideas potenciales (sin priorizar)
 - "Antes de seguir con T2" — resumen limitado hasta el episodio/capítulo X.
 - "Si te gustó X, también te puede sonar Y" — 3 obras del mismo género al final de cada ficha.
 - Compartir tarjeta visual generada con `next/og` para RR.SS.
