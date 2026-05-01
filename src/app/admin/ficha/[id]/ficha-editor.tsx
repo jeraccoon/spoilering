@@ -525,9 +525,9 @@ export function FichaEditor({ card: initialCard, initialUserContent }: { card: C
 
       {/* Cabecera */}
       <div className="mb-6 flex flex-wrap items-start gap-5">
-        {card.work.poster_url && (
+        {meta.poster_url && (
           <div className="relative hidden h-28 w-20 shrink-0 overflow-hidden rounded-lg border border-ink/10 sm:block">
-            <Image src={card.work.poster_url} alt={card.work.title} fill className="object-cover" unoptimized />
+            <Image src={meta.poster_url} alt={card.work.title} fill className="object-cover" unoptimized />
           </div>
         )}
         <div className="flex min-w-0 flex-1 flex-col justify-center gap-1">
