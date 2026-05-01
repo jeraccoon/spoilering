@@ -31,10 +31,10 @@ export default async function HomePage() {
       {/* Hero */}
       <section className="border-b border-ink/10 px-4 py-16 text-center">
         <h1 className="font-serif text-[34px] font-black leading-[1.05] tracking-tight text-ink sm:text-5xl md:text-[56px]">
-          Recuerda cualquier historia<br className="hidden sm:inline" /> sin volver al principio
+          Recuerda cualquier historia<br className="hidden sm:inline" /> sin volver a verla
         </h1>
         <p className="mx-auto mt-5 max-w-2xl text-base text-ink/65 sm:text-lg">
-          Resúmenes completos con spoilers de películas, series y libros. Para retomar una saga, recordar un final o entender qué pasó sin rodeos.
+          Spoilers incluidos. Resúmenes completos de películas, series y libros para retomar una saga, recordar un final o entender qué pasó sin rodeos.
         </p>
         <HeroActions />
       </section>
