@@ -44,9 +44,13 @@ export async function Header() {
           href="/"
           className="flex items-center gap-3 font-black tracking-tight text-ink"
         >
-          <span className="flex size-9 items-center justify-center rounded-lg bg-ink text-sm font-black text-paper">
-            S
-          </span>
+          <svg width="36" height="36" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <rect width="36" height="36" rx="7" fill="#18181b"/>
+            <ellipse cx="18" cy="18" rx="13" ry="8" fill="#fbfaf7"/>
+            <circle cx="18" cy="18" r="6.5" fill="#d84f2a"/>
+            <circle cx="18" cy="18" r="3.2" fill="#18181b"/>
+            <circle cx="20.8" cy="15.5" r="1.6" fill="white" opacity="0.65"/>
+          </svg>
           <span className="text-xl">Spoilering</span>
         </Link>
 
