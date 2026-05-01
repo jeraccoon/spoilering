@@ -57,13 +57,6 @@ export function UserMenu({ username }: Props) {
           >
             Mi perfil
           </Link>
-          <Link
-            href="/perfil#fichas"
-            onClick={() => setOpen(false)}
-            className="flex items-center px-4 py-2.5 text-sm text-ink/70 transition hover:bg-ink/5 hover:text-ink"
-          >
-            Mis fichas
-          </Link>
           <div className="mx-3 border-t border-ink/10" />
           <button
             onClick={handleSignOut}
