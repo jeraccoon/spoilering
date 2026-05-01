@@ -15,10 +15,10 @@ async function getData() {
 
   const cards = (data ?? []) as CardWithWork[]
   const featured = cards[0] ?? null
-  const recent = cards.slice(1, 11)
-  const movies = cards.filter((c) => c.work.type === 'movie').slice(0, 10)
-  const series = cards.filter((c) => c.work.type === 'series').slice(0, 10)
-  const books = cards.filter((c) => c.work.type === 'book').slice(0, 10)
+  const recent = cards.slice(1, 7)
+  const movies = cards.filter((c) => c.work.type === 'movie').slice(0, 6)
+  const series = cards.filter((c) => c.work.type === 'series').slice(0, 6)
+  const books = cards.filter((c) => c.work.type === 'book').slice(0, 6)
 
   return { featured, recent, movies, series, books, total: cards.length }
 }
