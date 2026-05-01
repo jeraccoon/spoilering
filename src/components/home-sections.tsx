@@ -74,7 +74,7 @@ function FeaturedCard({ card }: { card: CardWithWork }) {
 function StripCard({ card }: { card: CardWithWork }) {
   const w = card.work
   return (
-    <Link href={`/ficha/${w.slug}`} className="group w-28 shrink-0 sm:w-32 md:w-36">
+    <Link href={`/ficha/${w.slug}`} className="group w-28 shrink-0 sm:w-36 md:w-44">
       <div className="relative aspect-[2/3] w-full overflow-hidden rounded-lg border border-ink/10 transition group-hover:border-ink/25 group-hover:shadow-md">
         {w.poster_url ? (
           <Image
