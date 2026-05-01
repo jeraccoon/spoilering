@@ -4,6 +4,8 @@ import { HomeSections } from '@/components/home-sections'
 import { HeroActions } from '@/components/HeroActions'
 import type { CardWithWork } from '@/types/database'
 
+export const dynamic = 'force-dynamic'
+
 async function getData() {
   const supabase = await createClient()
   const { data } = await (supabase
