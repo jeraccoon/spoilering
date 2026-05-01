@@ -5,7 +5,8 @@ import { UserMenu } from '@/components/user-menu'
 import { NavSearch } from '@/components/NavSearch'
 
 const navItems = [
-  { href: '/', label: 'Inicio' },
+  { href: '/buscar', label: 'Catálogo' },
+  { href: '/faq', label: 'Cómo funciona' },
 ]
 
 async function getUser() {
@@ -134,7 +135,7 @@ export async function Header() {
             <>
               <Link
                 href={addHref}
-                className="hidden rounded-lg border border-ink/20 px-3 py-1.5 text-sm font-semibold text-ink/70 transition hover:border-ink/40 hover:text-ink sm:block"
+                className="hidden rounded-lg border border-ember/50 px-3 py-1.5 text-sm font-semibold text-ember transition hover:border-ember hover:bg-ember/5 sm:block"
               >
                 + Añadir obra
               </Link>

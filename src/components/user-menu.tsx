@@ -53,14 +53,21 @@ export function UserMenu({ username }: Props) {
           <Link
             href="/perfil"
             onClick={() => setOpen(false)}
-            className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-ink/70 transition hover:bg-ink/5 hover:text-ink"
+            className="flex items-center px-4 py-2.5 text-sm text-ink/70 transition hover:bg-ink/5 hover:text-ink"
           >
             Mi perfil
           </Link>
-          <div className="mx-3 border-t border-ink/8" />
+          <Link
+            href="/perfil#fichas"
+            onClick={() => setOpen(false)}
+            className="flex items-center px-4 py-2.5 text-sm text-ink/70 transition hover:bg-ink/5 hover:text-ink"
+          >
+            Mis fichas
+          </Link>
+          <div className="mx-3 border-t border-ink/10" />
           <button
             onClick={handleSignOut}
-            className="flex w-full items-center gap-2.5 px-4 py-2.5 text-sm text-ink/60 transition hover:bg-ink/5 hover:text-ember"
+            className="flex w-full items-center px-4 py-2.5 text-sm text-ink/60 transition hover:bg-ink/5 hover:text-ember"
           >
             Cerrar sesión
           </button>
