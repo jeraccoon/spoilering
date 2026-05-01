@@ -11,10 +11,11 @@ interface UserContentRecord {
 
 interface Props {
   workId: string
+  workType?: string
   initialRecord: UserContentRecord | null
 }
 
-export function UserContentPanel({ workId, initialRecord }: Props) {
+export function UserContentPanel({ workId, workType, initialRecord }: Props) {
   const [watched, setWatched] = useState(initialRecord?.watched ?? false)
   const [watchedAt, setWatchedAt] = useState(initialRecord?.watched_at ?? '')
   const [notes, setNotes] = useState(initialRecord?.notes ?? '')
@@ -71,6 +72,14 @@ export function UserContentPanel({ workId, initialRecord }: Props) {
     notesTimer.current = setTimeout(() => save({ notes: value }), 1200)
   }
 
+  const isBook = workType === 'book'
+  const watchedLabel = isBook ? 'Leído' : 'Visto'
+  const markLabel = isBook ? 'Marcar como leído' : 'Marcar como visto'
+  const whenLabel = isBook ? '¿Cuándo lo leíste?' : '¿Cuándo?'
+  const notesPlaceholder = isBook
+    ? 'Notas personales... ¿qué te pareció? ¿lo recomendarías?'
+    : 'Notas personales... ¿con quién lo viste? ¿qué te pareció?'
+
   return (
     <div className="mt-5 rounded-xl border border-ink/10 bg-ink/[0.025] p-4">
       <div className="mb-3 flex items-center justify-between gap-2">
@@ -101,12 +110,12 @@ export function UserContentPanel({ workId, initialRecord }: Props) {
           }`}
         >
           <span className="text-base leading-none">{watched ? '✓' : '○'}</span>
-          {watched ? 'Visto' : 'Marcar como visto'}
+          {watched ? watchedLabel : markLabel}
         </button>
 
         {watched && (
           <div className="flex items-center gap-2">
-            <label className="text-xs text-ink/45">¿Cuándo?</label>
+            <label className="text-xs text-ink/45">{whenLabel}</label>
             <input
               type="date"
               value={watchedAt}
@@ -122,7 +131,7 @@ export function UserContentPanel({ workId, initialRecord }: Props) {
         <textarea
           value={notes}
           onChange={(e) => handleNotesChange(e.target.value)}
-          placeholder="Notas personales... ¿con quién lo viste? ¿qué te pareció?"
+          placeholder={notesPlaceholder}
           rows={2}
           className="w-full resize-none bg-transparent px-1 py-1 text-sm leading-relaxed text-ink/75 placeholder:text-ink/25 outline-none"
         />

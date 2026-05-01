@@ -381,7 +381,7 @@ export default async function CardPage({ params }: Props) {
             })()}
 
             {isLoggedIn && (
-              <UserContentPanel workId={card.work.id} initialRecord={workUserContent} />
+              <UserContentPanel workId={card.work.id} workType={card.work.type} initialRecord={workUserContent} />
             )}
           </div>
         </div>

@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { SeasonsPanel } from '@/components/admin/SeasonsPanel'
+import { UserContentPanel } from '@/components/public/UserContentPanel'
 
 interface Section {
   id: string
@@ -126,7 +127,14 @@ function AddSectionModal({ cardId, parentId, parentLabel, onClose, onCreated }: 
   )
 }
 
-export function FichaEditor({ card: initialCard }: { card: Card }) {
+interface UserContentRecord {
+  id: string
+  watched: boolean
+  watched_at: string | null
+  notes: string | null
+}
+
+export function FichaEditor({ card: initialCard, initialUserContent }: { card: Card; initialUserContent: UserContentRecord | null }) {
   const router = useRouter()
   const [card, setCard] = useState(initialCard)
   const [openIds, setOpenIds] = useState<Set<string>>(
@@ -849,6 +857,13 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
           )}
         </div>
       </section>
+
+      {/* Mi actividad */}
+      <UserContentPanel
+        workId={card.work.id}
+        workType={card.work.type}
+        initialRecord={initialUserContent}
+      />
 
       {/* Zona de peligro */}
       <div className="mt-12 border-t border-ink/10 pt-6">

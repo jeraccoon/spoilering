@@ -33,8 +33,24 @@ async function getCard(id: string) {
 
 export default async function FichaPage({ params }: Props) {
   const { id } = await params
-  const card = await getCard(id)
+  const supabase = await createClient()
+
+  const [card, { data: { user } }] = await Promise.all([
+    getCard(id),
+    supabase.auth.getUser(),
+  ])
   if (!card) notFound()
 
-  return <FichaEditor card={card} />
+  let userContent: { id: string; watched: boolean; watched_at: string | null; notes: string | null } | null = null
+  if (user) {
+    const { data: uc } = await (supabase
+      .from('user_content')
+      .select('id, watched, watched_at, notes')
+      .eq('user_id', user.id)
+      .eq('work_id', card.work.id)
+      .maybeSingle() as any)
+    userContent = uc ?? null
+  }
+
+  return <FichaEditor card={card} initialUserContent={userContent} />
 }
