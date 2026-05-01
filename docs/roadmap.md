@@ -1,5 +1,5 @@
 # Roadmap — Spoilering
-_Última actualización: 1 mayo 2026 — noche_
+_Última actualización: 1 mayo 2026 — noche (sesión 2)_
 
 ## Estado del proyecto
 En producción en www.spoilering.com. Base completa funcionando. Fase actual: mejoras de UX, comunidad y calidad de datos.
@@ -52,63 +52,86 @@ En producción en www.spoilering.com. Base completa funcionando. Fase actual: me
 - Límite de 5 fichas por usuario normal
 
 ### Home editorial
-- Headline: "El resumen que necesitabas" / subtítulo con spoilers incluidos
-- Ficha destacada grande (la más reciente) con póster, título, descripción y botón
-- Strip "Recién añadidas" con las siguientes 6
-- Secciones separadas: Películas, Series, Libros (6 más recientes de cada tipo)
-- Links "Ver todas →" filtrados: /buscar?tipo=movie, /buscar?tipo=series, /buscar?tipo=book
-- Botón "Ver catálogo completo →" al final
+- H1 "Recuerda cualquier historia sin volver a verla" + subtítulo con spoilers
+- Trust bar compacta: "📖 Spoilers completos · 🚫 Sin opiniones · ✏️ Fichas colaborativas"
+- Ficha destacada grande (FeaturedCard) con póster, título, descripción y CTA "Ver el resumen"
+- Strip "Recién añadidas" + secciones Películas, Series, Libros (6 más recientes de cada tipo)
+- Carrusel horizontal en todas las pantallas (sin flex-wrap)
+- Links "Ver todas →" en cabecera de cada sección, filtrados por tipo
+- Botón "Explorar catálogo completo →" al final
+- Sección de características eliminada como bloque independiente
 
 ### Catálogo /buscar
 - Acepta ?tipo= en la URL para inicializar el filtro
 - Browse mode: muestra catálogo sin necesidad de escribir query
 - Al llegar filtrado desde la home, carga directamente ese tipo
 
-### Consistencia visual
-- Badges de tipo uniformes en toda la app: blue-600/90 (películas), plum/90 (series), moss/90 (libros)
-- NavSearch y /buscar usan la misma paleta que la home
-- Badge "Pendiente" en sugerencias usa paleta propia (bg-ink/8) en lugar de amber-100
-- Copy de las 3 características de la home reescrito con más personalidad
-- Placeholder del login corregido: "tu@email.com o tu_nombre"
-- USER_CARD_LIMIT corregido a 5 en perfil/page.tsx
+### Header y navegación
+- Nav: logo → Catálogo (/buscar) → Cómo funciona (/faq) → buscador → + Añadir obra → usuario
+- "Inicio" eliminado del nav (el logo ya lleva a home)
+- "Buscar" eliminado del nav (redundante con la caja de búsqueda)
+- "+ Añadir obra" con estilo ember (border + text)
+- UserMenu como dropdown: `juanes ▾` → Mi perfil · Cerrar sesión
+- scrollbar-none funcional en globals.css para todos los navegadores
+- Página /faq creada con preguntas frecuentes en acordeón por secciones
+
+### Ficha pública
+- Texto de secciones a ancho completo (eliminado max-w-2xl interno)
+- Tamaño de letra del contenido bajado a 15px (coherente con overview)
+- Créditos al pie: creador de la ficha + contribuidores con sugerencias aprobadas
 
 ### Lifting visual + SEO + UX (1 mayo, noche)
-- **Tipografía editorial**: Inter (cuerpo) + Fraunces (titulares serif) cargadas con `next/font/google`. Aplicada a H1 hero, H1 ficha, FAQ, /buscar y FeaturedCard.
-- **Paleta unificada**: nuevo `src/lib/work-types.ts` con TYPE_LABELS, TYPE_BADGE, TYPE_BADGE_SOLID, TYPE_HEX. Color `tide` (#3a6fb0) sustituye al `bg-blue-600` antiguo. Cero ocurrencias de Tailwind colors fuera de paleta en el árbol src/.
-- **Contraste WCAG AA**: sweep global subiendo `text-ink/30→/45`, `/40→/55`, `text-paper/40→/65`, placeholders `/30→/45` (~50 ficheros).
-- **/buscar pasa a Server Component**: page.tsx (SSR con catálogo según `?tipo=`) + buscar-client.tsx (interactividad). Ahora indexable por Google. Metadata dinámica por tipo.
-- **FeaturedCard arreglada**: pretítulo "Ficha destacada", `justify-between` (CTA abajo), sin `max-w-lg/xl`, gradiente ember/moss, CTA "Ver el resumen". Resuelve el problema de texto descuadrado.
-- **Header móvil**: cabe en 360px+. Paddings y gaps responsive, logo más pequeño en móvil, "Iniciar sesión" hidden en móvil. "Registrarse" ya no se sale.
-- **"Ver todas" como tarjeta fantasma** al final de cada strip (en vez de fila de cabecera con espacio en blanco).
-- **Copy del hero rehecho**: H1 "Recuerda cualquier historia sin volver al principio" + nuevo subtítulo. Beneficios reescritos. CTAs grandes ("Buscar una obra"). Banner beta intacto.
-- **Footer rediseñado**: dos filas, tagline "No es un agregador de reseñas...", CTA "Únete". Mucho más legible.
-- **Resumen rápido (TL;DR) en ficha**: nueva columna `cards.summary` (requiere SQL `ALTER TABLE cards ADD COLUMN IF NOT EXISTS summary text;`). Editor con textarea autoguardable. Render arriba de la ficha pública dentro del SpoilerGate.
+- **Tipografía editorial**: Inter (cuerpo) + Fraunces (titulares serif)
+- **Paleta unificada**: `src/lib/work-types.ts` con TYPE_LABELS, TYPE_BADGE, TYPE_BADGE_SOLID, TYPE_HEX. Color `tide` (#3a6fb0) para películas.
+- **Contraste WCAG AA**: sweep global de opacidades de texto
+- **/buscar Server Component**: SSR + buscar-client.tsx para interactividad
+- **Footer rediseñado**: tagline + CTA "Únete" + enlaces legales
+- **Resumen rápido (TL;DR)**: columna `cards.summary`, editor con autoguardado, render en ficha pública
 
 ---
 
 ## 🔧 Pendiente — próxima sesión (por prioridad)
 
-### 0. Migración SQL (manual)
-- Ejecutar en Supabase: `ALTER TABLE cards ADD COLUMN IF NOT EXISTS summary text;` (script en `scripts/migration-summary.sql`).
+### 0. Migración SQL (manual, si no ejecutada)
+- Ejecutar en Supabase: `ALTER TABLE cards ADD COLUMN IF NOT EXISTS summary text;`
 - Sin esto, el guardado del Resumen rápido devuelve 500.
 
 ### 1. Perfiles con redes sociales
 - Añadir letterboxd_profile, tracktv_profile, goodreads_profile, filmaffinity_profile en tabla profiles
 - Mostrar en perfil público con enlaces
 
-### 2. Créditos de colaboración en ficha pública
-- Mostrar quién creó la ficha y quién ha contribuido con sugerencias aprobadas
+### 2. Cleanup técnico
+- `src/components/home-cards.tsx` parece huérfano. Confirmar y borrar.
+- Centralizar TYPE_LABELS en componentes admin usando `@/lib/work-types`.
+- Valorar si el Resumen rápido debería ser visible SIN pasar el SpoilerGate.
 
-### 3. Cleanup (técnico)
-- `src/components/home-cards.tsx` parece huérfano (no se importa en ninguna ruta). Confirmar y borrar o documentar uso.
-- Centralizar TYPE_LABELS también en componentes admin (admin/nueva-obra, admin/ficha/[id]/ficha-editor, draft-cards-section, etc.) usando `@/lib/work-types`.
-- Algún refactor más fino del CardContent: el SpoilerGate envuelve la sección + summary; valorar si Resumen rápido debería ser visible SIN pasar el gate (porque algunos usuarios solo querrán el TL;DR rápido sin ver el resto).
+### 3. Ideas potenciales (sin priorizar)
+- "Antes de seguir con T2" — resumen limitado hasta el episodio/capítulo X.
+- "Si te gustó X, también te puede sonar Y" — 3 obras del mismo género al final de cada ficha.
+- Compartir tarjeta visual generada con `next/og` para RR.SS.
+- "Continuar leyendo" en home para usuarios logueados.
 
-### 4. Ideas potenciales (sin priorizar)
-- "Antes de seguir con T2" — variante del Resumen rápido limitado a hasta el episodio/capítulo X (idea de ChatGPT, particularmente útil para series y sagas).
-- "Si te gustó X, también te puede sonar Y" al final de cada ficha (3 obras del mismo género).
-- Compartir tarjeta visual generada con `next/og` (poster + título + frase) para RR.SS.
-- "Continuar leyendo" en home para usuarios logueados (últimas fichas vistas sin marcar como completadas).
+---
+
+## 🌍 Multidioma — ítem estratégico importante
+
+El objetivo es que Spoilering funcione en varios idiomas sin duplicar obras. Una misma obra (ej. "El Principito") debe tener una sola entrada en `works`, pero poder tener fichas (`cards`) en distintos idiomas escritas por comunidades diferentes.
+
+**Modelo propuesto:**
+- Añadir columna `language` (código ISO: 'es', 'en', 'fr'...) a la tabla `cards`.
+- Una obra puede tener múltiples cards, una por idioma.
+- El usuario ve la ficha en su idioma (detectado por navegador o seleccionado manualmente).
+- Si no existe ficha en su idioma, se muestra la disponible con aviso.
+- Las URLs podrían ser `/ficha/[slug]` con header `Accept-Language`, o `/ficha/[slug]/en`.
+
+**Implicaciones técnicas a resolver:**
+- Gestión de slugs: ¿slug por obra o por card+idioma?
+- Búsqueda y catálogo filtrados por idioma del usuario.
+- Panel admin: crear/editar fichas por idioma.
+- La IA genera el contenido en el idioma de la ficha.
+- Sitemap con `hreflang` por idioma.
+
+**Prioridad:** alta a medio plazo. Bloquear decisiones de arquitectura de `cards` teniendo esto en mente antes de escalar el catálogo.
 
 ---
 
@@ -121,4 +144,3 @@ En producción en www.spoilering.com. Base completa funcionando. Fase actual: me
 - Open Graph con imagen de póster por ficha
 - JSON-LD estructurado para SEO
 - Sistema de reputación por contribuciones
-- Multidioma
