@@ -207,10 +207,20 @@ export default async function AdminPage() {
 
       {/* Mensajes de contacto */}
       <section className="mb-10">
-        <h2 className="mb-1 text-xs font-semibold uppercase tracking-wider text-ink/40">
-          Mensajes de contacto
-        </h2>
-        <p className="mb-4 text-xs text-ink/40">Enviados desde el footer por cualquier visitante.</p>
+        <div className="mb-4 flex items-center justify-between">
+          <div>
+            <h2 className="mb-1 text-xs font-semibold uppercase tracking-wider text-ink/40">
+              Mensajes de contacto
+            </h2>
+            <p className="text-xs text-ink/40">Enviados desde el footer por cualquier visitante.</p>
+          </div>
+          <a
+            href="/admin/contacto"
+            className="rounded-lg border border-ink/20 px-3 py-1.5 text-xs font-semibold text-ink/60 transition hover:border-ink/40 hover:text-ink"
+          >
+            Ver todos →
+          </a>
+        </div>
         {contactMessages.length === 0 ? (
           <div className="rounded-lg border border-ink/10 bg-ink/[0.02] px-6 py-8 text-center text-sm text-ink/30">
             No hay mensajes todavía.

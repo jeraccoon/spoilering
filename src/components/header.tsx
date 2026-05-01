@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { UserMenu } from '@/components/user-menu'
 import { NavSearch } from '@/components/NavSearch'
 
@@ -31,13 +32,39 @@ async function getUser() {
   }
 }
 
+async function getUnreadMessagesCount(): Promise<number> {
+  try {
+    const admin = createAdminClient()
+    const { count } = await (admin.from('contact_messages') as any)
+      .select('id', { count: 'exact', head: true })
+      .is('read_at', null)
+    return count ?? 0
+  } catch {
+    return 0
+  }
+}
+
 export async function Header() {
   const auth = await getUser()
   const isPrivileged = auth?.role === 'admin' || auth?.role === 'editor'
+  const isAdmin = auth?.role === 'admin'
   const addHref = isPrivileged ? '/admin/nueva-obra' : '/nueva-obra'
+  const unreadMessages = isAdmin ? await getUnreadMessagesCount() : 0
 
   return (
     <header className="sticky top-0 z-20 border-b border-ink/10 bg-paper/90 backdrop-blur">
+      {isAdmin && unreadMessages > 0 && (
+        <Link
+          href="/admin/contacto"
+          className="flex w-full items-center justify-center gap-2 bg-ember px-4 py-2 text-xs font-semibold text-white transition hover:bg-ember/90"
+        >
+          <span className="flex size-4 items-center justify-center rounded-full bg-white/20 text-[10px] font-black">
+            {unreadMessages}
+          </span>
+          {unreadMessages === 1 ? 'Tienes 1 mensaje de contacto sin leer' : `Tienes ${unreadMessages} mensajes de contacto sin leer`}
+          <span>→</span>
+        </Link>
+      )}
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-6 px-6 py-4">
 
         <Link
