@@ -17,7 +17,7 @@ interface Props {
 
 const mdComponents = {
   p: ({ children }: any) => (
-    <p className="mb-4 text-[17px] leading-8 text-ink/80 sm:text-justify" style={{ hyphens: 'auto', WebkitHyphens: 'auto' }}>
+    <p className="mb-4 text-[15px] leading-7 text-ink/80 sm:text-justify" style={{ hyphens: 'auto', WebkitHyphens: 'auto' }}>
       {children}
     </p>
   ),
@@ -26,7 +26,7 @@ const mdComponents = {
   h3: ({ children }: any) => <h3 className="mb-2 mt-5 text-base font-semibold text-ink">{children}</h3>,
   ul: ({ children }: any) => <ul className="mb-4 space-y-1.5 pl-5 text-ink/80 [list-style:disc]">{children}</ul>,
   ol: ({ children }: any) => <ol className="mb-4 space-y-1.5 pl-5 text-ink/80 [list-style:decimal]">{children}</ol>,
-  li: ({ children }: any) => <li className="text-[17px] leading-8">{children}</li>,
+  li: ({ children }: any) => <li className="text-[15px] leading-7">{children}</li>,
   strong: ({ children }: any) => <strong className="font-semibold text-ink">{children}</strong>,
   em: ({ children }: any) => <em className="italic text-ink/70">{children}</em>,
   a: ({ href, children }: any) => (

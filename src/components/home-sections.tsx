@@ -120,7 +120,7 @@ function CardSection({
           <span className="transition-transform group-hover:translate-x-0.5">→</span>
         </Link>
       </div>
-      <div className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-1 scrollbar-none sm:mx-0 sm:flex-wrap sm:gap-4 sm:px-0">
+      <div className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-2 scrollbar-none sm:mx-0 sm:gap-4 sm:px-0">
         {cards.map((card) => (
           <StripCard key={card.id} card={card} />
         ))}
