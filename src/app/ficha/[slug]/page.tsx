@@ -345,7 +345,7 @@ export default async function CardPage({ params }: Props) {
             </div>
 
             {work.overview && (
-              <p className="max-w-2xl text-sm leading-relaxed text-ink/60">{work.overview}</p>
+              <p className="max-w-2xl text-[15px] leading-relaxed text-ink/60">{work.overview}</p>
             )}
 
             {/* Badge spoilers */}

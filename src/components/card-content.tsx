@@ -99,7 +99,7 @@ export function CardContent({ sections, summary, isLoggedIn, slug }: Props) {
                   {isOpen && (
                     <div className="px-5 pb-6 pt-2">
                       {section.content ? (
-                        <div className="max-w-2xl">
+                        <div>
                           <ReactMarkdown remarkPlugins={[remarkGfm]} components={mdComponents}>
                             {section.content}
                           </ReactMarkdown>
