@@ -32,7 +32,10 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
   const prompt = `Eres un experto redactor de resúmenes con spoilers completos para la web Spoilering.
 
-Escribe el contenido de ${context} para la ficha de "${workTitle}"${workYear ? ` (${workYear})` : ''}, una ${typeLabel}.
+**REGLA IMPORTANTE:** Si no tienes información fiable y detallada sobre la trama de "${workTitle}"${workYear ? ` (${workYear})` : ''}, responde ÚNICAMENTE con el texto: NO_CONOCIDA
+No inventes ni supongas nada. Solo escribe contenido si conoces bien la obra.
+
+Si conoces la obra, escribe el contenido de ${context} para la ficha de "${workTitle}"${workYear ? ` (${workYear})` : ''}, una ${typeLabel}.
 
 **Instrucciones específicas para esta sección:**
 ${guide}
@@ -69,6 +72,10 @@ ${existingContent ? `\nContenido previo (mejora, amplía o corrige esto):\n${exi
 
   const data = await res.json()
   const content = data.content?.[0]?.text ?? ''
+
+  if (content.trim() === 'NO_CONOCIDA') {
+    return NextResponse.json({ error: 'La IA no tiene información suficiente sobre esta obra para generar contenido.' }, { status: 422 })
+  }
 
   await (supabase.from('sections') as any).update({ content }).eq('id', id)
 

@@ -151,6 +151,7 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
   const [modal, setModal] = useState<{ parentId: string | null; parentLabel?: string } | null>(null)
 
   const [meta, setMeta] = useState({
+    poster_url: initialCard.work.poster_url ?? '',
     cast: (initialCard.work.cast ?? []).join(', '),
     runtime: initialCard.work.runtime?.toString() ?? '',
     imdb_id: initialCard.work.imdb_id ?? '',
@@ -323,6 +324,7 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          poster_url: meta.poster_url.trim() || null,
           cast: castArr,
           runtime: meta.runtime ? parseInt(meta.runtime) : null,
           imdb_id: meta.imdb_id.trim() || null,
@@ -620,6 +622,17 @@ export function FichaEditor({ card: initialCard }: { card: Card }) {
           </div>
         </div>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="sm:col-span-2">
+            <label className="mb-1.5 block text-xs font-semibold text-ink/60">URL del póster</label>
+            <input
+              type="url"
+              value={meta.poster_url}
+              onChange={(e) => setMeta((p) => ({ ...p, poster_url: e.target.value }))}
+              onBlur={() => void saveMeta()}
+              placeholder="https://image.tmdb.org/t/p/w500/…"
+              className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder-ink/30 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
+            />
+          </div>
           {card.work.type !== 'book' && (
             <div className="sm:col-span-2">
               <label className="mb-1.5 block text-xs font-semibold text-ink/60">Reparto principal (separado por comas)</label>

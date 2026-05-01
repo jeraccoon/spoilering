@@ -33,7 +33,10 @@ async function generateSection(
 
   const prompt = `Eres un experto redactor de resúmenes con spoilers completos para la web Spoilering.
 
-Escribe el contenido de la sección "${section.label}" para la ficha de "${workTitle}"${workYear ? ` (${workYear})` : ''}, una ${typeLabel}.
+**REGLA IMPORTANTE:** Si no tienes información fiable y detallada sobre la trama de "${workTitle}"${workYear ? ` (${workYear})` : ''}, responde ÚNICAMENTE con el texto: NO_CONOCIDA
+No inventes ni supongas nada. Solo escribe contenido si conoces bien la obra.
+
+Si conoces la obra, escribe el contenido de la sección "${section.label}" para la ficha de "${workTitle}"${workYear ? ` (${workYear})` : ''}, una ${typeLabel}.
 
 **Instrucciones específicas para esta sección:**
 ${guide}
@@ -68,6 +71,10 @@ ${guide}
 
   const data = await res.json()
   const content: string = data.content?.[0]?.text ?? ''
+
+  if (content.trim() === 'NO_CONOCIDA') {
+    return { id: section.id, content: '', error: `Obra no reconocida por la IA: "${workTitle}"` }
+  }
 
   await (supabase.from('sections') as any).update({ content }).eq('id', section.id)
 
