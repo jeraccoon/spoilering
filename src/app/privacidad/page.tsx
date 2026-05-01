@@ -16,11 +16,11 @@ export default function PrivacidadPage() {
         <div>
           <h2 className="mb-2 text-base font-black text-ink">1. Responsable del tratamiento</h2>
           <p>
-            <strong className="text-ink">[NOMBRE COMPLETO]</strong>, titular del sitio web{' '}
-            <strong className="text-ink">www.spoilering.com</strong>.
+            Titular del sitio web <strong className="text-ink">www.spoilering.com</strong>.
           </p>
           <p className="mt-2">
-            Contacto para cuestiones de privacidad: <strong className="text-ink">[EMAIL DE CONTACTO]</strong>
+            Contacto para cuestiones de privacidad:{' '}
+            <strong className="text-ink">spoilering@outlook.com</strong>
           </p>
         </div>
 
@@ -32,8 +32,17 @@ export default function PrivacidadPage() {
             <li><strong className="text-ink">Nombre de usuario</strong> — elegido por el usuario durante el registro, visible en su perfil público.</li>
           </ul>
           <p className="mt-2">
-            No se recogen datos de navegación, dirección IP con carácter identificativo ni ningún otro dato personal más
-            allá de los indicados.
+            De forma opcional, el usuario puede añadir en su perfil enlaces a sus perfiles externos (Letterboxd,
+            Trakt.tv, Goodreads, Filmaffinity). Estos datos son introducidos voluntariamente y pueden eliminarse
+            en cualquier momento desde el propio perfil.
+          </p>
+          <p className="mt-2">
+            También se almacenan los contenidos que el usuario genere o aporte: fichas, sugerencias de corrección,
+            notas personales y el registro de obras marcadas como vistas. Estos datos son necesarios para el
+            funcionamiento de las funcionalidades de la plataforma.
+          </p>
+          <p className="mt-2">
+            No se recogen datos de navegación ni dirección IP con carácter identificativo.
           </p>
         </div>
 
@@ -44,6 +53,7 @@ export default function PrivacidadPage() {
             <li>Gestionar el acceso a la cuenta de usuario (autenticación).</li>
             <li>Identificar al usuario en las contribuciones que realice en la plataforma.</li>
             <li>Enviar el correo de confirmación de cuenta y, en su caso, de recuperación de contraseña.</li>
+            <li>Mostrar el historial personal de obras vistas y notas asociadas.</li>
           </ul>
           <p className="mt-2">No se utilizan los datos para enviar comunicaciones comerciales ni boletines.</p>
         </div>
@@ -87,11 +97,11 @@ export default function PrivacidadPage() {
           </ul>
           <p className="mt-2">
             Para ejercer estos derechos, el usuario puede contactar en:{' '}
-            <strong className="text-ink">[EMAIL DE CONTACTO]</strong>
+            <strong className="text-ink">spoilering@outlook.com</strong>
           </p>
           <p className="mt-2">
-            También puede eliminar su cuenta directamente desde la sección de perfil de la plataforma, en cuanto
-            dicha funcionalidad esté disponible.
+            El usuario también puede eliminar su cuenta directamente desde la sección "Mi cuenta" de su perfil,
+            lo que borrará todos sus datos de forma inmediata e irreversible.
           </p>
         </div>
 
