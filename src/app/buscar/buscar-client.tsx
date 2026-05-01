@@ -5,8 +5,10 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
+import { TYPE_LABELS, TYPE_BADGE as TYPE_COLORS } from '@/lib/work-types'
+import type { WorkType } from '@/types/database'
 
-export type WorkType = 'movie' | 'series' | 'book'
+export type { WorkType }
 export type Filter = 'all' | WorkType
 
 export interface Result {
@@ -18,13 +20,6 @@ export interface Result {
 }
 
 const supabase = createClient()
-
-const TYPE_LABELS: Record<WorkType, string> = { movie: 'Película', series: 'Serie', book: 'Libro' }
-const TYPE_COLORS: Record<WorkType, string> = {
-  movie: 'bg-blue-600/90 text-white',
-  series: 'bg-plum/90 text-white',
-  book: 'bg-moss/90 text-white',
-}
 const FILTERS: { value: Filter; label: string }[] = [
   { value: 'all', label: 'Todos' },
   { value: 'movie', label: 'Películas' },
@@ -134,7 +129,7 @@ export function BuscarClient({ initialFilter, initialQuery, initialResults, page
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Busca una película, serie o libro..."
-          className="w-full rounded-xl border border-ink/20 bg-paper px-5 py-4 text-base text-ink placeholder-ink/40 shadow-sm outline-none transition focus:border-ember focus:ring-2 focus:ring-ember/20"
+          className="w-full rounded-xl border border-ink/20 bg-paper px-5 py-4 text-base text-ink placeholder-ink/55 shadow-sm outline-none transition focus:border-ember focus:ring-2 focus:ring-ember/20"
         />
         {loading && (
           <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-ink/45">

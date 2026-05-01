@@ -47,6 +47,7 @@ export interface Work {
 }
 
 export interface Card {
+  summary: string | null
   id: string
   work_id: string
   status: CardStatus

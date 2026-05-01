@@ -113,7 +113,7 @@ function AccordionItem({ q, a, isOpen, onToggle }: { q: string; a: string; isOpe
       >
         <span className="font-semibold text-ink">{q}</span>
         <span
-          className={`flex-shrink-0 text-ink/40 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
+          className={`flex-shrink-0 text-ink/55 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
           aria-hidden
         >
           ▼
@@ -147,7 +147,7 @@ export default function FaqPage() {
       <div className="flex flex-col gap-10">
         {SECTIONS.map((section) => (
           <div key={section.title}>
-            <h2 className="mb-1 text-xs font-semibold uppercase tracking-wider text-ink/40">
+            <h2 className="mb-1 text-xs font-semibold uppercase tracking-wider text-ink/55">
               {section.title}
             </h2>
             <div className="rounded-lg border border-ink/10 bg-paper px-5 shadow-sm">

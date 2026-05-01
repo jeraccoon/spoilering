@@ -15,16 +15,16 @@ export function HeroActions() {
   }, [])
 
   return (
-    <div className="mt-8 flex flex-wrap justify-center gap-3">
+    <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-3">
       <Link
         href="/buscar"
-        className="rounded-lg bg-ember px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-ember/90"
+        className="w-full rounded-lg bg-ember px-6 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-ember/90 hover:shadow-md sm:w-auto"
       >
-        Explorar fichas
+        Buscar una obra
       </Link>
       <Link
         href={isLoggedIn ? '/nueva-obra' : '/login?redirect=/nueva-obra'}
-        className="rounded-lg border border-ember/40 px-5 py-2.5 text-sm font-semibold text-ember transition hover:border-ember hover:bg-ember/5"
+        className="w-full rounded-lg border border-ember/40 px-6 py-3 text-base font-semibold text-ember transition hover:border-ember hover:bg-ember/5 sm:w-auto"
       >
         + Añadir obra
       </Link>

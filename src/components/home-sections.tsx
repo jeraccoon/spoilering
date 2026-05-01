@@ -1,13 +1,8 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import type { CardWithWork } from '@/types/database'
+import { TYPE_LABELS, TYPE_BADGE } from '@/lib/work-types'
 
-const TYPE_LABELS: Record<string, string> = { movie: 'Película', series: 'Serie', book: 'Libro' }
-const TYPE_BADGE: Record<string, string> = {
-  movie: 'bg-blue-600/90 text-white',
-  series: 'bg-plum/90 text-white',
-  book: 'bg-moss/90 text-white',
-}
 
 /* ── Ficha destacada ─────────────────────────────────────────── */
 
@@ -94,12 +89,28 @@ function StripCard({ card }: { card: CardWithWork }) {
         )}
       </div>
       <p className="mt-2 line-clamp-2 text-xs font-semibold leading-tight text-ink">{w.title}</p>
-      {w.year && <p className="mt-0.5 text-[11px] text-ink/40">{w.year}</p>}
+      {w.year && <p className="mt-0.5 text-[11px] text-ink/55">{w.year}</p>}
     </Link>
   )
 }
 
 /* ── Sección con título y scroll horizontal ──────────────────── */
+
+function SeeAllTile({ href, label }: { href: string; label: string }) {
+  return (
+    <Link
+      href={href}
+      className="group flex w-28 shrink-0 sm:w-32 md:w-36"
+    >
+      <div className="flex aspect-[2/3] w-full flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-ink/20 bg-ink/[0.015] text-ink/55 transition group-hover:border-ember group-hover:bg-ember/5 group-hover:text-ember">
+        <span className="text-2xl transition-transform group-hover:translate-x-0.5">→</span>
+        <span className="px-2 text-center text-[11px] font-semibold uppercase tracking-wider leading-tight">
+          {label}
+        </span>
+      </div>
+    </Link>
+  )
+}
 
 function CardSection({
   title,
@@ -115,19 +126,12 @@ function CardSection({
   if (cards.length === 0) return null
   return (
     <div>
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-xs font-black uppercase tracking-widest text-ink/55">{title}</h2>
-        <Link
-          href={seeAllHref}
-          className="text-xs font-semibold text-ember/70 transition hover:text-ember"
-        >
-          {seeAllLabel} →
-        </Link>
-      </div>
+      <h2 className="mb-3 text-xs font-black uppercase tracking-widest text-ink/55">{title}</h2>
       <div className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-1 scrollbar-none sm:mx-0 sm:flex-wrap sm:gap-4 sm:px-0">
         {cards.map((card) => (
           <StripCard key={card.id} card={card} />
         ))}
+        <SeeAllTile href={seeAllHref} label={seeAllLabel} />
       </div>
     </div>
   )
@@ -156,12 +160,12 @@ export function HomeSections({ featured, recent, movies, series, books }: HomeSe
       <CardSection title="Series" cards={series} seeAllHref="/buscar?tipo=series" seeAllLabel="Ver todas" />
       <CardSection title="Libros" cards={books} seeAllHref="/buscar?tipo=book" seeAllLabel="Ver todos" />
 
-      <div className="border-t border-ink/10 pt-6 text-center">
+      <div className="border-t border-ink/10 pt-8 text-center">
         <Link
           href="/buscar"
-          className="inline-flex items-center gap-2 rounded-lg border border-ink/20 px-5 py-2.5 text-sm font-semibold text-ink/60 transition hover:border-ink/40 hover:text-ink"
+          className="inline-flex items-center gap-2 rounded-lg border border-ink/20 px-5 py-2.5 text-sm font-semibold text-ink/65 transition hover:border-ink/40 hover:text-ink"
         >
-          Ver catálogo completo →
+          Explorar catálogo completo →
         </Link>
       </div>
     </div>

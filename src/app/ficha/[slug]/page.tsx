@@ -287,7 +287,7 @@ export default async function CardPage({ params }: Props) {
             <h1 className="font-serif text-3xl font-black leading-[1.1] tracking-tight text-ink sm:text-4xl md:text-5xl">{work.title}</h1>
 
             {work.original_title && work.original_title !== work.title && (
-              <p className="text-sm text-ink/40 italic">{work.original_title}</p>
+              <p className="text-sm text-ink/55 italic">{work.original_title}</p>
             )}
 
             {/* Géneros */}
@@ -393,7 +393,7 @@ export default async function CardPage({ params }: Props) {
         firstSection={sections[0] ? { id: sections[0].id, label: sections[0].label, content: sections[0].content ?? '' } : null}
       />
 
-      <CardContent sections={sections} isLoggedIn={isLoggedIn} slug={slug} cardId={card.id} />
+      <CardContent sections={sections} summary={(card as any).summary ?? null} isLoggedIn={isLoggedIn} slug={slug} cardId={card.id} />
 
       {seasons.length > 0 && (
         <SeasonsAccordion
@@ -407,7 +407,7 @@ export default async function CardPage({ params }: Props) {
       {/* Créditos */}
       {(credits.creator || credits.contributors.length > 0) && (
         <div className="border-t border-ink/10 bg-paper/60">
-          <div className="mx-auto flex max-w-5xl flex-wrap gap-x-6 gap-y-1 px-4 py-4 text-xs text-ink/40">
+          <div className="mx-auto flex max-w-5xl flex-wrap gap-x-6 gap-y-1 px-4 py-4 text-xs text-ink/55">
             {credits.creator && (
               <span>
                 Ficha creada por{' '}

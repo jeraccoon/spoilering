@@ -4,13 +4,9 @@ import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import type { CardWithWork } from '@/types/database'
+import { TYPE_LABELS, TYPE_BADGE_SOLID as TYPE_COLORS } from '@/lib/work-types'
 
-const TYPE_LABELS = { movie: 'Película', series: 'Serie', book: 'Libro' }
-const TYPE_COLORS = {
-  movie: 'bg-blue-600 text-white',
-  series: 'bg-purple-600 text-white',
-  book: 'bg-amber-600 text-white',
-}
+
 
 type ViewMode = 'grid' | 'list'
 type TypeFilter = 'all' | 'movie' | 'series' | 'book'
@@ -77,7 +73,7 @@ function GridView({ cards }: { cards: CardWithWork[] }) {
           </div>
           <div className="flex flex-col gap-0.5 p-2">
             <p className="line-clamp-2 text-xs font-semibold leading-tight text-ink">{card.work.title}</p>
-            {card.work.year && <p className="text-[11px] text-ink/40">{card.work.year}</p>}
+            {card.work.year && <p className="text-[11px] text-ink/55">{card.work.year}</p>}
           </div>
         </Link>
       ))}
@@ -113,7 +109,7 @@ function ListView({ cards }: { cards: CardWithWork[] }) {
               <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${TYPE_COLORS[card.work.type as keyof typeof TYPE_COLORS]}`}>
                 {TYPE_LABELS[card.work.type as keyof typeof TYPE_LABELS]}
               </span>
-              {card.work.year && <span className="text-xs text-ink/40">{card.work.year}</span>}
+              {card.work.year && <span className="text-xs text-ink/55">{card.work.year}</span>}
             </div>
             {card.work.overview && (
               <p className="mt-1 line-clamp-1 text-xs text-ink/50">{card.work.overview}</p>
@@ -210,7 +206,7 @@ export function HomeCards({ cards, totalCount }: { cards: CardWithWork[]; totalC
 
       {/* Resultados */}
       {filtered.length === 0 ? (
-        <div className="py-16 text-center text-sm text-ink/40">
+        <div className="py-16 text-center text-sm text-ink/55">
           No hay fichas de este tipo todavía.{' '}
           <Link href="/nueva-obra" className="font-semibold text-ember hover:underline">
             ¿La conoces? Añade la primera.

@@ -5,24 +5,17 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
+import { TYPE_LABELS, TYPE_BADGE as TYPE_COLORS } from '@/lib/work-types'
+import type { WorkType } from '@/types/database'
 
 const supabase = createClient()
 
-const TYPE_LABELS: Record<string, string> = {
-  movie: 'Película',
-  series: 'Serie',
-  book: 'Libro',
-}
-const TYPE_COLORS: Record<string, string> = {
-  movie: 'bg-blue-600/90 text-white',
-  series: 'bg-plum/90 text-white',
-  book: 'bg-moss/90 text-white',
-}
+
 
 interface SearchResult {
   slug: string
   title: string
-  type: string
+  type: WorkType
   year: number | null
   poster_url: string | null
 }
@@ -120,7 +113,7 @@ export function NavSearch() {
         <button
           onClick={() => setOpen(true)}
           aria-label="Buscar"
-          className="flex items-center gap-2 rounded-full border border-ink/15 bg-ink/5 px-3 py-1.5 text-sm text-ink/40 transition hover:border-ink/25 hover:bg-ink/10 hover:text-ink/60 sm:w-40"
+          className="flex items-center gap-2 rounded-full border border-ink/15 bg-ink/5 px-3 py-1.5 text-sm text-ink/55 transition hover:border-ink/25 hover:bg-ink/10 hover:text-ink/60 sm:w-40"
         >
           <SearchIcon />
           <span className="hidden sm:block">Buscar...</span>
@@ -128,7 +121,7 @@ export function NavSearch() {
       ) : (
         <div className="flex items-center gap-2">
           <div className="relative sm:w-72 w-[calc(100vw-5rem)]">
-            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink/40">
+            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink/55">
               <SearchIcon />
             </span>
             <input
@@ -138,16 +131,16 @@ export function NavSearch() {
               onChange={e => setQuery(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="Buscar series, películas, libros..."
-              className="w-full rounded-lg border border-ink/20 bg-paper py-1.5 pl-9 pr-8 text-sm text-ink placeholder-ink/30 outline-none transition focus:border-ember focus:ring-2 focus:ring-ember/20"
+              className="w-full rounded-lg border border-ink/20 bg-paper py-1.5 pl-9 pr-8 text-sm text-ink placeholder-ink/45 outline-none transition focus:border-ember focus:ring-2 focus:ring-ember/20"
             />
             {loading && (
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-ink/30">…</span>
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-ink/45">…</span>
             )}
           </div>
           <button
             onClick={() => setOpen(false)}
             aria-label="Cerrar búsqueda"
-            className="shrink-0 rounded-lg p-1.5 text-sm text-ink/40 transition hover:text-ink"
+            className="shrink-0 rounded-lg p-1.5 text-sm text-ink/55 transition hover:text-ink"
           >
             ✕
           </button>
@@ -181,7 +174,7 @@ export function NavSearch() {
               </div>
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-semibold text-ink">{result.title}</p>
-                {result.year && <p className="text-xs text-ink/40">{result.year}</p>}
+                {result.year && <p className="text-xs text-ink/55">{result.year}</p>}
               </div>
               <span className={`shrink-0 rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${TYPE_COLORS[result.type] ?? ''}`}>
                 {TYPE_LABELS[result.type] ?? result.type}

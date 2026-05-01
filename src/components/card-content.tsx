@@ -9,6 +9,7 @@ import type { SectionWithChildren } from '@/types/database'
 
 interface Props {
   sections: SectionWithChildren[]
+  summary: string | null
   isLoggedIn: boolean
   slug: string
   cardId: string
@@ -46,7 +47,7 @@ const mdComponents = {
   hr: () => <hr className="my-6 border-ink/10" />,
 }
 
-export function CardContent({ sections, isLoggedIn, slug }: Props) {
+export function CardContent({ sections, summary, isLoggedIn, slug }: Props) {
   const [openIds, setOpenIds] = useState<Set<string>>(
     () => new Set(sections[0] ? [sections[0].id] : [])
   )
@@ -62,8 +63,18 @@ export function CardContent({ sections, isLoggedIn, slug }: Props) {
   return (
     <SpoilerGate slug={slug}>
       <div className="mx-auto max-w-5xl px-4 py-8">
+        {summary && (
+          <div className="mb-8 rounded-2xl border border-ember/20 bg-ember/[0.04] p-5 sm:p-6">
+            <p className="mb-2 text-xs font-black uppercase tracking-widest text-ember/80">
+              Resumen rápido
+            </p>
+            <p className="text-[16px] leading-relaxed text-ink/85 sm:text-[17px]">
+              {summary}
+            </p>
+          </div>
+        )}
         {sections.length === 0 ? (
-          <p className="text-ink/30">Esta ficha todavía no tiene contenido.</p>
+          <p className="text-ink/45">Esta ficha todavía no tiene contenido.</p>
         ) : (
           <div className="space-y-2">
             {sections.map((section) => {
@@ -76,7 +87,7 @@ export function CardContent({ sections, isLoggedIn, slug }: Props) {
                     className="flex w-full items-center gap-3 bg-ink/[0.03] px-5 py-4 text-left transition hover:bg-ink/[0.06]"
                   >
                     <span
-                      className="shrink-0 text-[10px] text-ink/40 transition-transform duration-150"
+                      className="shrink-0 text-[10px] text-ink/55 transition-transform duration-150"
                       style={{ display: 'inline-block', transform: isOpen ? 'rotate(90deg)' : 'none' }}
                     >
                       ▶
@@ -94,7 +105,7 @@ export function CardContent({ sections, isLoggedIn, slug }: Props) {
                           </ReactMarkdown>
                         </div>
                       ) : (
-                        <p className="text-ink/30">Esta sección todavía no tiene contenido.</p>
+                        <p className="text-ink/45">Esta sección todavía no tiene contenido.</p>
                       )}
 
                       {isLoggedIn && (

@@ -4,13 +4,9 @@ import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { InviteWidget } from '@/components/invite-widget'
+import { TYPE_LABELS, TYPE_BADGE_SOLID as TYPE_COLORS } from '@/lib/work-types'
 
-const TYPE_LABELS = { movie: 'Película', series: 'Serie', book: 'Libro' }
-const TYPE_COLORS = {
-  movie: 'bg-blue-600 text-white',
-  series: 'bg-purple-600 text-white',
-  book: 'bg-amber-600 text-white',
-}
+
 const USER_CARD_LIMIT = 3
 
 type FilterKey = 'all' | 'published' | 'pending'
@@ -112,7 +108,7 @@ export function PerfilCardsSection({
     <>
       {/* Stats */}
       <section className="mb-10">
-        <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-ink/40">Resumen</h2>
+        <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-ink/55">Resumen</h2>
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
           <StatCard
             value={isUser ? `${cards.length}/${USER_CARD_LIMIT}` : cards.length}
@@ -152,22 +148,22 @@ export function PerfilCardsSection({
 
       {/* Invita a alguien */}
       <section className="mb-10">
-        <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-ink/40">Invita a alguien</h2>
+        <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-ink/55">Invita a alguien</h2>
         <InviteWidget initialCount={inviteCount} />
       </section>
 
       {/* Card table */}
       <section className="mb-10">
-        <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-ink/40">Mis fichas</h2>
+        <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-ink/55">Mis fichas</h2>
         {cards.length === 0 ? (
-          <div className="rounded-lg border border-ink/10 bg-ink/5 px-6 py-10 text-center text-sm text-ink/40">
+          <div className="rounded-lg border border-ink/10 bg-ink/5 px-6 py-10 text-center text-sm text-ink/55">
             Todavía no has creado ninguna ficha.{' '}
             <Link href={addHref} className="font-semibold text-ember hover:underline">
               Añadir una obra →
             </Link>
           </div>
         ) : filtered.length === 0 ? (
-          <div className="rounded-lg border border-ink/10 bg-ink/5 px-6 py-10 text-center text-sm text-ink/40">
+          <div className="rounded-lg border border-ink/10 bg-ink/5 px-6 py-10 text-center text-sm text-ink/55">
             No hay fichas en esta categoría.
           </div>
         ) : (
@@ -243,7 +239,7 @@ export function PerfilCardsSection({
                         <button
                           onClick={() => handleDelete(card.id)}
                           disabled={deleting === card.id}
-                          className="text-xs font-semibold text-ink/30 transition hover:text-ember disabled:opacity-40"
+                          className="text-xs font-semibold text-ink/45 transition hover:text-ember disabled:opacity-40"
                         >
                           {deleting === card.id ? '…' : 'Eliminar'}
                         </button>

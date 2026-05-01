@@ -38,6 +38,7 @@ interface Card {
   id: string
   status: string
   is_committed: boolean
+  summary: string | null
   work: Work
   sections: Section[]
 }
@@ -96,7 +97,7 @@ function AddSectionModal({ cardId, parentId, parentLabel, onClose, onCreated }: 
               value={label}
               onChange={(e) => setLabel(e.target.value)}
               required
-              className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2.5 text-sm text-ink placeholder-ink/30 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
+              className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2.5 text-sm text-ink placeholder-ink/45 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
               placeholder="Ej: Temporada 1"
             />
           </div>
@@ -106,7 +107,7 @@ function AddSectionModal({ cardId, parentId, parentLabel, onClose, onCreated }: 
               type="text"
               value={shortLabel}
               onChange={(e) => setShortLabel(e.target.value)}
-              className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2.5 text-sm text-ink placeholder-ink/30 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
+              className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2.5 text-sm text-ink placeholder-ink/45 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
               placeholder="Ej: T1 (opcional)"
             />
           </div>
@@ -179,6 +180,35 @@ export function FichaEditor({ card: initialCard, initialUserContent }: { card: C
   const [metaError, setMetaError] = useState<string | null>(null)
 
   const [committed, setCommitted] = useState(initialCard.is_committed)
+
+  const [summary, setSummary] = useState(initialCard.summary ?? '')
+  const [savingSummary, setSavingSummary] = useState(false)
+  const [savedSummary, setSavedSummary] = useState(false)
+  const [summaryError, setSummaryError] = useState<string | null>(null)
+
+  async function saveSummary() {
+    setSavingSummary(true)
+    setSavedSummary(false)
+    setSummaryError(null)
+    try {
+      const res = await fetch(`/api/admin/cards/${card.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ summary: summary.trim() || null }),
+      })
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}))
+        setSummaryError(d.error ?? 'Error al guardar')
+      } else {
+        setSavedSummary(true)
+        setTimeout(() => setSavedSummary(false), 2000)
+      }
+    } catch {
+      setSummaryError('Error de red')
+    } finally {
+      setSavingSummary(false)
+    }
+  }
 
   function toggleOpen(id: string) {
     setOpenIds((prev) => {
@@ -425,7 +455,7 @@ export function FichaEditor({ card: initialCard, initialUserContent }: { card: C
               className="flex flex-1 items-center gap-3 px-4 py-3 text-left transition hover:bg-ink/5"
             >
               <span
-                className="shrink-0 text-[10px] text-ink/40 transition-transform duration-150"
+                className="shrink-0 text-[10px] text-ink/55 transition-transform duration-150"
                 style={{ display: 'inline-block', transform: isOpen ? 'rotate(90deg)' : 'none' }}
               >
                 ▶
@@ -434,7 +464,7 @@ export function FichaEditor({ card: initialCard, initialUserContent }: { card: C
               {isGenerating ? (
                 <span className="mr-1 h-2 w-2 animate-pulse rounded-full bg-plum/60" />
               ) : wordCount > 0 ? (
-                <span className="mr-1 text-xs text-ink/40">{wordCount} palabras</span>
+                <span className="mr-1 text-xs text-ink/55">{wordCount} palabras</span>
               ) : null}
             </button>
             <div className="flex items-center gap-0.5 pr-3">
@@ -449,7 +479,7 @@ export function FichaEditor({ card: initialCard, initialUserContent }: { card: C
               <button
                 onClick={() => setModal({ parentId: section.id, parentLabel: section.label })}
                 title="Añadir subsección"
-                className="rounded px-1.5 py-1 text-sm font-semibold text-ink/30 transition hover:bg-ink/5 hover:text-ink/60"
+                className="rounded px-1.5 py-1 text-sm font-semibold text-ink/45 transition hover:bg-ink/5 hover:text-ink/60"
               >
                 +
               </button>
@@ -468,10 +498,10 @@ export function FichaEditor({ card: initialCard, initialUserContent }: { card: C
                 placeholder="Escribe el contenido de esta sección o usa ✦ para generarlo con IA…"
                 className="w-full resize-y rounded-xl border border-ink/10 bg-paper px-4 py-3 text-sm leading-relaxed text-ink placeholder-ink/25 outline-none transition focus:border-ember focus:ring-2 focus:ring-ember/20"
               />
-              <div className="mt-1.5 flex items-center justify-between text-xs text-ink/30">
+              <div className="mt-1.5 flex items-center justify-between text-xs text-ink/45">
                 <span>{content.length} caracteres</span>
                 <span>
-                  {saving === section.id && <span className="text-ink/40">Guardando…</span>}
+                  {saving === section.id && <span className="text-ink/55">Guardando…</span>}
                   {savedId === section.id && saving !== section.id && <span className="text-moss">Guardado ✓</span>}
                   {saveError === section.id && saving !== section.id && <span className="text-ember">Error al guardar</span>}
                 </span>
@@ -508,7 +538,7 @@ export function FichaEditor({ card: initialCard, initialUserContent }: { card: C
             </span>
             <button
               onClick={() => router.push('/admin')}
-              className="shrink-0 text-sm font-semibold text-ink/40 hover:text-ink"
+              className="shrink-0 text-sm font-semibold text-ink/55 hover:text-ink"
             >
               ← Admin
             </button>
@@ -533,7 +563,7 @@ export function FichaEditor({ card: initialCard, initialUserContent }: { card: C
               Publicada
             </span>
           ) : (
-            <span className="flex items-center gap-1.5 text-sm font-semibold text-ink/40">
+            <span className="flex items-center gap-1.5 text-sm font-semibold text-ink/55">
               <span className="h-2 w-2 rounded-full bg-ink/30" />
               Borrador
             </span>
@@ -600,17 +630,40 @@ export function FichaEditor({ card: initialCard, initialUserContent }: { card: C
         </div>
       )}
 
+      {/* Resumen rápido — TL;DR de toda la ficha */}
+      <section className="mb-8">
+        <div className="mb-2 flex items-center justify-between gap-3">
+          <div>
+            <h2 className="text-sm font-bold text-ink">Resumen rápido</h2>
+            <p className="text-xs text-ink/55">3-7 frases con lo esencial. Aparece arriba de la ficha pública, dentro del aviso de spoilers.</p>
+          </div>
+          <div className="flex items-center gap-2 text-xs">
+            {savingSummary && <span className="text-ink/45">Guardando…</span>}
+            {savedSummary && <span className="text-moss">✓ Guardado</span>}
+            {summaryError && <span className="text-ember">{summaryError}</span>}
+          </div>
+        </div>
+        <textarea
+          value={summary}
+          onChange={(e) => setSummary(e.target.value)}
+          onBlur={() => void saveSummary()}
+          rows={4}
+          placeholder="Lo esencial de la trama en pocas frases. Para quien solo quiere refrescar la memoria sin leer la ficha entera."
+          className="w-full resize-y rounded-xl border border-ink/10 bg-paper px-4 py-3 text-sm leading-relaxed text-ink placeholder-ink/35 outline-none transition focus:border-ember focus:ring-2 focus:ring-ember/20"
+        />
+      </section>
+
       {/* Acordeón de secciones */}
       <div className="space-y-2">
         {card.sections.length === 0 && (
-          <div className="flex h-32 items-center justify-center rounded-xl border border-ink/10 bg-ink/5 text-ink/30">
+          <div className="flex h-32 items-center justify-center rounded-xl border border-ink/10 bg-ink/5 text-ink/45">
             <p className="text-sm">Sin secciones. Crea la primera.</p>
           </div>
         )}
         {card.sections.map((section) => renderSection(section))}
         <button
           onClick={() => setModal({ parentId: null })}
-          className="w-full rounded-xl border border-dashed border-ink/20 py-2.5 text-sm font-semibold text-ink/40 transition hover:border-ink/40 hover:text-ink/60"
+          className="w-full rounded-xl border border-dashed border-ink/20 py-2.5 text-sm font-semibold text-ink/55 transition hover:border-ink/40 hover:text-ink/60"
         >
           + Añadir sección
         </button>
@@ -622,9 +675,9 @@ export function FichaEditor({ card: initialCard, initialUserContent }: { card: C
       {/* Metadatos y enlaces */}
       <section className="mt-10 border-t border-ink/10 pt-8">
         <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-ink/40">Metadatos y enlaces</h2>
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-ink/55">Metadatos y enlaces</h2>
           <div className="flex items-center gap-3">
-            {savingMeta && <span className="text-xs text-ink/40">Guardando…</span>}
+            {savingMeta && <span className="text-xs text-ink/55">Guardando…</span>}
             {savedMeta && !savingMeta && <span className="text-xs text-moss">Guardado ✓</span>}
             {metaError && <span className="text-xs text-ember">{metaError}</span>}
           </div>
@@ -638,7 +691,7 @@ export function FichaEditor({ card: initialCard, initialUserContent }: { card: C
               onChange={(e) => setMeta((p) => ({ ...p, poster_url: e.target.value }))}
               onBlur={() => void saveMeta()}
               placeholder="https://image.tmdb.org/t/p/w500/…"
-              className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder-ink/30 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
+              className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder-ink/45 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
             />
           </div>
           {card.work.type !== 'book' && (
@@ -650,7 +703,7 @@ export function FichaEditor({ card: initialCard, initialUserContent }: { card: C
                 onChange={(e) => setMeta((p) => ({ ...p, cast: e.target.value }))}
                 onBlur={() => void saveMeta()}
                 placeholder="Actor 1, Actor 2, Actor 3…"
-                className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder-ink/30 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
+                className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder-ink/45 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
               />
             </div>
           )}
@@ -662,7 +715,7 @@ export function FichaEditor({ card: initialCard, initialUserContent }: { card: C
               onChange={(e) => setMeta((p) => ({ ...p, country: e.target.value }))}
               onBlur={() => void saveMeta()}
               placeholder="Ej: Estados Unidos"
-              className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder-ink/30 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
+              className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder-ink/45 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
             />
           </div>
           {card.work.type !== 'book' && (
@@ -675,7 +728,7 @@ export function FichaEditor({ card: initialCard, initialUserContent }: { card: C
                 onChange={(e) => setMeta((p) => ({ ...p, runtime: e.target.value }))}
                 onBlur={() => void saveMeta()}
                 placeholder="Ej: 120"
-                className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder-ink/30 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
+                className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder-ink/45 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
               />
             </div>
           )}
@@ -700,7 +753,7 @@ export function FichaEditor({ card: initialCard, initialUserContent }: { card: C
                 onChange={(e) => setMeta((p) => ({ ...p, imdb_id: e.target.value }))}
                 onBlur={() => void saveMeta()}
                 placeholder="tt1234567"
-                className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder-ink/30 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
+                className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder-ink/45 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
               />
             </div>
           )}
@@ -725,7 +778,7 @@ export function FichaEditor({ card: initialCard, initialUserContent }: { card: C
                 onChange={(e) => setMeta((p) => ({ ...p, letterboxd_url: e.target.value }))}
                 onBlur={() => void saveMeta()}
                 placeholder="https://letterboxd.com/film/..."
-                className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder-ink/30 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
+                className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder-ink/45 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
               />
             </div>
           )}
@@ -738,7 +791,7 @@ export function FichaEditor({ card: initialCard, initialUserContent }: { card: C
                 onChange={(e) => setMeta((p) => ({ ...p, goodreads_url: e.target.value }))}
                 onBlur={() => void saveMeta()}
                 placeholder="https://www.goodreads.com/book/show/..."
-                className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder-ink/30 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
+                className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder-ink/45 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
               />
             </div>
           )}
@@ -751,7 +804,7 @@ export function FichaEditor({ card: initialCard, initialUserContent }: { card: C
                 onChange={(e) => setMeta((p) => ({ ...p, isbn: e.target.value }))}
                 onBlur={() => void saveMeta()}
                 placeholder="9788401021145"
-                className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder-ink/30 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
+                className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder-ink/45 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
               />
             </div>
           )}
@@ -764,7 +817,7 @@ export function FichaEditor({ card: initialCard, initialUserContent }: { card: C
                 onChange={(e) => setMeta((p) => ({ ...p, publisher: e.target.value }))}
                 onBlur={() => void saveMeta()}
                 placeholder="Ej: Alfaguara"
-                className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder-ink/30 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
+                className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder-ink/45 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
               />
             </div>
           )}
@@ -778,7 +831,7 @@ export function FichaEditor({ card: initialCard, initialUserContent }: { card: C
                 onChange={(e) => setMeta((p) => ({ ...p, pages: e.target.value }))}
                 onBlur={() => void saveMeta()}
                 placeholder="Ej: 384"
-                className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder-ink/30 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
+                className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder-ink/45 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
               />
             </div>
           )}
@@ -791,7 +844,7 @@ export function FichaEditor({ card: initialCard, initialUserContent }: { card: C
                 onChange={(e) => setMeta((p) => ({ ...p, saga: e.target.value }))}
                 onBlur={() => void saveMeta()}
                 placeholder="Ej: El señor de los anillos"
-                className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder-ink/30 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
+                className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder-ink/45 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
               />
             </div>
           )}
@@ -805,7 +858,7 @@ export function FichaEditor({ card: initialCard, initialUserContent }: { card: C
                 onChange={(e) => setMeta((p) => ({ ...p, saga_order: e.target.value }))}
                 onBlur={() => void saveMeta()}
                 placeholder="Ej: 1"
-                className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder-ink/30 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
+                className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder-ink/45 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
               />
             </div>
           )}
@@ -828,7 +881,7 @@ export function FichaEditor({ card: initialCard, initialUserContent }: { card: C
                 onChange={(e) => setMeta((p) => ({ ...p, filmaffinity_url: e.target.value }))}
                 onBlur={() => void saveMeta()}
                 placeholder="https://www.filmaffinity.com/es/film..."
-                className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder-ink/30 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
+                className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder-ink/45 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
               />
             </div>
           )}
@@ -851,7 +904,7 @@ export function FichaEditor({ card: initialCard, initialUserContent }: { card: C
                 onChange={(e) => setMeta((p) => ({ ...p, tracktv_url: e.target.value }))}
                 onBlur={() => void saveMeta()}
                 placeholder={card.work.type === 'series' ? 'https://trakt.tv/shows/...' : 'https://trakt.tv/movies/...'}
-                className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder-ink/30 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
+                className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder-ink/45 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
               />
             </div>
           )}
@@ -869,7 +922,7 @@ export function FichaEditor({ card: initialCard, initialUserContent }: { card: C
       <div className="mt-12 border-t border-ink/10 pt-6">
         <button
           onClick={deleteCard}
-          className="text-xs font-semibold text-ink/30 transition hover:text-ember"
+          className="text-xs font-semibold text-ink/45 transition hover:text-ember"
         >
           Eliminar ficha
         </button>

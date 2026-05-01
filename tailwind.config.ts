@@ -13,6 +13,7 @@ const config: Config = {
         ember: "#d84f2a",
         moss: "#52715a",
         plum: "#6d4f72",
+        tide: "#3a6fb0",
       },
       fontFamily: {
         sans: ["var(--font-sans)", "system-ui", "Helvetica", "Arial", "sans-serif"],

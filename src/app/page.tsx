@@ -31,10 +31,10 @@ export default async function HomePage() {
       {/* Hero */}
       <section className="border-b border-ink/10 px-4 py-16 text-center">
         <h1 className="font-serif text-[34px] font-black leading-[1.05] tracking-tight text-ink sm:text-5xl md:text-[56px]">
-          El resumen que necesitabas
+          Recuerda cualquier historia<br className="hidden sm:inline" /> sin volver al principio
         </h1>
-        <p className="mx-auto mt-4 max-w-xl text-base text-ink/60 sm:text-lg">
-          Para cuando vuelves a algo y necesitas recordar qué pasaba. Spoilers incluidos.
+        <p className="mx-auto mt-5 max-w-2xl text-base text-ink/65 sm:text-lg">
+          Resúmenes completos con spoilers de películas, series y libros. Para retomar una saga, recordar un final o entender qué pasó sin rodeos.
         </p>
         <HeroActions />
       </section>
@@ -44,25 +44,25 @@ export default async function HomePage() {
         <div className="mx-auto grid max-w-3xl grid-cols-1 gap-8 sm:grid-cols-3">
           <div className="text-center">
             <div className="mb-3 text-3xl">📖</div>
-            <h3 className="font-semibold text-ink">Todo contado, sin filtros</h3>
-            <p className="mt-1.5 text-sm text-ink/50">Giros, finales y revelaciones. Nada omitido.</p>
+            <h3 className="font-semibold text-ink">Todo el argumento</h3>
+            <p className="mt-1.5 text-sm text-ink/60">Giros, finales, revelaciones y escenas clave. Sin rodeos.</p>
+          </div>
+          <div className="text-center">
+            <div className="mb-3 text-3xl">🚫</div>
+            <h3 className="font-semibold text-ink">Sin opiniones ni notas</h3>
+            <p className="mt-1.5 text-sm text-ink/60">No valoramos la obra: te contamos qué pasa y tú decides.</p>
           </div>
           <div className="text-center">
             <div className="mb-3 text-3xl">✏️</div>
             <h3 className="font-semibold text-ink">Hecho por la comunidad</h3>
-            <p className="mt-1.5 text-sm text-ink/50">Cualquiera puede añadir fichas y corregir errores.</p>
-          </div>
-          <div className="text-center">
-            <div className="mb-3 text-3xl">🎯</div>
-            <h3 className="font-semibold text-ink">Hechos, no opiniones</h3>
-            <p className="mt-1.5 text-sm text-ink/50">Sin notas ni valoraciones. Tú decides si lo ves.</p>
+            <p className="mt-1.5 text-sm text-ink/60">Añade fichas, sugiere cambios y ayuda a mejorar los resúmenes.</p>
           </div>
         </div>
       </section>
 
       {/* Contenido editorial */}
       {total === 0 ? (
-        <div className="py-24 text-center text-ink/40">
+        <div className="py-24 text-center text-ink/55">
           <p className="text-lg">Todavía no hay fichas publicadas.</p>
           <Link
             href="/nueva-obra"
