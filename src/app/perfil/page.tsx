@@ -14,12 +14,12 @@ const ROLE_COLORS = {
   user: 'bg-ink/10 text-ink/60',
 }
 const SUGGESTION_STATUS: Record<string, { label: string; className: string }> = {
-  pending:  { label: 'Pendiente',  className: 'bg-amber-100 text-amber-700' },
+  pending:  { label: 'Pendiente',  className: 'bg-ink/8 text-ink/50' },
   approved: { label: 'Aprobada',   className: 'bg-moss/10 text-moss' },
   rejected: { label: 'Rechazada',  className: 'bg-ember/10 text-ember' },
 }
 
-const USER_CARD_LIMIT = 3
+const USER_CARD_LIMIT = 5
 
 const COLOR_STYLES = {
   plum:  { card: 'bg-plum/10 border-plum/20 hover:bg-plum/15',  icon: 'text-plum',  text: 'text-plum' },

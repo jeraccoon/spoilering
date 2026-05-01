@@ -14,9 +14,9 @@ const TYPE_LABELS: Record<string, string> = {
   book: 'Libro',
 }
 const TYPE_COLORS: Record<string, string> = {
-  movie: 'bg-blue-600 text-white',
-  series: 'bg-purple-600 text-white',
-  book: 'bg-amber-600 text-white',
+  movie: 'bg-blue-600/90 text-white',
+  series: 'bg-plum/90 text-white',
+  book: 'bg-moss/90 text-white',
 }
 
 interface SearchResult {

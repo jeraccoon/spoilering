@@ -21,9 +21,9 @@ const supabase = createClient()
 
 const TYPE_LABELS: Record<WorkType, string> = { movie: 'Película', series: 'Serie', book: 'Libro' }
 const TYPE_COLORS: Record<WorkType, string> = {
-  movie: 'bg-blue-600 text-white',
-  series: 'bg-purple-600 text-white',
-  book: 'bg-amber-600 text-white',
+  movie: 'bg-blue-600/90 text-white',
+  series: 'bg-plum/90 text-white',
+  book: 'bg-moss/90 text-white',
 }
 const FILTERS: { value: Filter; label: string }[] = [
   { value: 'all', label: 'Todos' },

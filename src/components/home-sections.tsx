@@ -48,7 +48,7 @@ function FeaturedCard({ card }: { card: CardWithWork }) {
         </h2>
 
         {w.overview && (
-          <p className="line-clamp-3 max-w-xl text-sm leading-relaxed text-ink/55 sm:text-base">
+          <p className="line-clamp-2 max-w-lg text-sm leading-relaxed text-ink/55 sm:line-clamp-3 sm:max-w-xl sm:text-base">
             {w.overview}
           </p>
         )}
