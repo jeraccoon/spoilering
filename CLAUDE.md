@@ -112,7 +112,7 @@ Requiere las variables de entorno en `.env.local`.
 - Actualizar **CLAUDE.md** y **docs/roadmap.md** al final de cada sesión de trabajo.
 - Al iniciar una nueva sesión, revisar siempre CLAUDE.md y docs/roadmap.md para recuperar contexto.
 
-## Estado actual (1 mayo 2026 — noche, sesión 2)
+## Estado actual (4 mayo 2026 — sesión 3)
 
 ### Funcionando correctamente
 - Autenticación completa con confirmación por email apuntando a www.spoilering.com
@@ -198,6 +198,14 @@ Requiere las variables de entorno en `.env.local`.
 - **Dominios Next.js Image**: añadidos `m.media-amazon.com`, `*.media-amazon.com`, `i.gr-assets.com`, `*.goodreads.com` a `remotePatterns` en `next.config.ts`.
 - **Home force-dynamic**: `export const dynamic = 'force-dynamic'` en `src/app/page.tsx` para evitar caché de Vercel y mostrar siempre datos frescos.
 - **destripando.com**: redirige a spoilering.com vía Cloudflare Page Rule (301 permanente) con registro DNS A proxy a 192.0.2.1.
+
+### Sesión 4 mayo — empuje colaborativo
+**Motivación**: feedback de usuarios reales — entran, buscan una obra, no la encuentran y se van. No entienden que es una web colaborativa donde el catálogo lo construye la propia comunidad. Se refuerza ese mensaje en los puntos de fuga clave.
+
+- **Empty state de `/buscar` para todos los usuarios** (antes solo aparecía CTA si eras admin). Cuando una búsqueda no devuelve resultados, se muestra un bloque grande con borde ember: «{query}» todavía no está en Spoilering, explicación del modelo colaborativo y botón **+ Añadir esta obra** (va a `/nueva-obra` o `/login?redirect=/nueva-obra` según auth). Texto pequeño con fallback "¿O prefieres probar con otro título?".
+- **Empty state en el dropdown de NavSearch**: antes el dropdown se ocultaba si no había coincidencias. Ahora aparece un panel inline con fondo ember y botón **+ Añade tú la ficha**. Si hay resultados, se mantiene el "Ver todos los resultados →".
+- **Hero más comunitario**: subtítulo cambiado a "Una comunidad escribiendo resúmenes…" en lugar del genérico "Resúmenes completos…". Añadida una línea de prueba social entre los botones y la trust bar: **"X fichas escritas por la comunidad · ¿No está la tuya? Añádela."** El contador es el `count` exacto de Supabase (head:true count:'exact'), no el `length` del array limitado a 60.
+- **CommunityCallout dismissible** (`src/components/community-callout.tsx`): bloque plum entre el hero y el contenido editorial, solo en home. Explica el modelo colaborativo en 2 frases ("No es un catálogo terminado, es un proyecto comunitario...") y enlaza a `/faq`. Dismissible con `localStorage` (`spoilering_community_callout_dismissed`). Una vez cerrado, no vuelve a aparecer en ese navegador.
 
 ### Pendiente de resolver (próxima sesión)
 - **Migración SQL** (si no ejecutada): `ALTER TABLE cards ADD COLUMN IF NOT EXISTS summary text;` en Supabase.

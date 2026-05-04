@@ -1,5 +1,5 @@
 # Roadmap — Spoilering
-_Última actualización: 1 mayo 2026 — noche (sesión 2)_
+_Última actualización: 4 mayo 2026 (sesión 3)_
 
 ## Estado del proyecto
 En producción en www.spoilering.com. Base completa funcionando. Fase actual: mejoras de UX, comunidad y calidad de datos.
@@ -87,6 +87,13 @@ En producción en www.spoilering.com. Base completa funcionando. Fase actual: me
 - **/buscar Server Component**: SSR + buscar-client.tsx para interactividad
 - **Footer rediseñado**: tagline + CTA "Únete" + enlaces legales
 - **Resumen rápido (TL;DR)**: columna `cards.summary`, editor con autoguardado, render en ficha pública
+
+### Empuje colaborativo (4 mayo, sesión 3)
+Los nuevos visitantes no entendían que es una web colaborativa: buscaban una obra, no la encontraban y se iban. Se refuerza la idea en los puntos de fuga.
+- **Empty state de `/buscar` visible para todos**: antes solo el admin veía el CTA. Ahora un bloque grande explica el modelo y ofrece **+ Añadir esta obra** (va a /nueva-obra o /login según auth).
+- **Empty state en el dropdown de NavSearch**: panel inline con CTA **+ Añade tú la ficha** cuando la búsqueda del navbar no devuelve resultados.
+- **Hero más comunitario**: subtítulo "Una comunidad escribiendo resúmenes…" + línea de prueba social con contador real "X fichas escritas por la comunidad · ¿No está la tuya? Añádela.".
+- **CommunityCallout dismissible**: bloque plum solo en home, entre hero y contenido editorial. Explica que el catálogo lo escribe la comunidad. Dismissible con localStorage.
 
 ---
 
