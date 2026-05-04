@@ -40,7 +40,7 @@ export function BuscarClient({ initialFilter, initialQuery, initialResults, page
   const [results, setResults] = useState<Result[]>(initialResults)
   const [loading, setLoading] = useState(false)
   const [searched, setSearched] = useState(initialQuery.trim().length >= 2)
-  const [isAdmin, setIsAdmin] = useState(false)
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Si cambia la prop initialResults (navegación de filtro server-side), refrescamos resultados
@@ -53,13 +53,9 @@ export function BuscarClient({ initialFilter, initialQuery, initialResults, page
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialResults])
 
-  // Comprueba rol admin (CTA "+ Crear ficha nueva" en estado vacío)
   useEffect(() => {
-    supabase.auth.getUser().then(async ({ data: { user } }) => {
-      if (!user) return
-      const { data: profile } = await (supabase.from('profiles') as any)
-        .select('role').eq('id', user.id).single()
-      setIsAdmin(profile?.role === 'admin')
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setIsLoggedIn(!!user)
     })
   }, [])
 
@@ -192,19 +188,27 @@ export function BuscarClient({ initialFilter, initialQuery, initialResults, page
 
       {/* Sin resultados al buscar */}
       {isEmpty && (
-        <div className="py-20 text-center">
-          <p className="text-lg font-semibold text-ink/50">
-            No encontramos ninguna ficha para &ldquo;{query}&rdquo;
+        <div className="mx-auto mt-4 max-w-xl rounded-2xl border border-ember/25 bg-ember/[0.04] p-8 text-center">
+          <p className="text-3xl">📖</p>
+          <h2 className="mt-3 font-serif text-2xl font-black leading-tight text-ink sm:text-3xl">
+            «{query.length > 60 ? query.slice(0, 60) + '…' : query}» todavía no está en Spoilering
+          </h2>
+          <p className="mx-auto mt-3 max-w-md text-[15px] leading-relaxed text-ink/70">
+            Spoilering es una web colaborativa: el catálogo lo escribe la propia comunidad.
+            Si la obra no está, puedes añadirla tú — la IA prepara un borrador y luego se mejora entre todos.
           </p>
-          <p className="mt-1 text-sm text-ink/45">Prueba con otro título o cambia el filtro de tipo</p>
-          {isAdmin && (
-            <Link
-              href="/admin/nueva-obra"
-              className="mt-6 inline-block rounded-lg bg-ember px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-ember/90"
-            >
-              + Crear ficha nueva
-            </Link>
-          )}
+          <Link
+            href={isLoggedIn ? '/nueva-obra' : `/login?redirect=${encodeURIComponent('/nueva-obra')}`}
+            className="mt-6 inline-block rounded-lg bg-ember px-6 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-ember/90 hover:shadow"
+          >
+            + Añadir esta obra
+          </Link>
+          <p className="mt-3 text-xs text-ink/50">
+            Tarda unos 2 minutos.{!isLoggedIn && ' Necesitas una cuenta gratuita.'}
+          </p>
+          <p className="mt-5 border-t border-ink/10 pt-4 text-xs text-ink/45">
+            ¿O prefieres probar con otro título o cambiar el filtro?
+          </p>
         </div>
       )}
     </div>

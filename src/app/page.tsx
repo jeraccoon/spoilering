@@ -2,18 +2,25 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { HomeSections } from '@/components/home-sections'
 import { HeroActions } from '@/components/HeroActions'
+import { CommunityCallout } from '@/components/community-callout'
 import type { CardWithWork } from '@/types/database'
 
 export const dynamic = 'force-dynamic'
 
 async function getData() {
   const supabase = await createClient()
-  const { data } = await (supabase
-    .from('cards')
-    .select('*, work:works(*)')
-    .eq('status', 'published')
-    .order('updated_at', { ascending: false })
-    .limit(60) as any)
+  const [{ data }, { count }] = await Promise.all([
+    (supabase
+      .from('cards')
+      .select('*, work:works(*)')
+      .eq('status', 'published')
+      .order('updated_at', { ascending: false })
+      .limit(60) as any),
+    (supabase
+      .from('cards')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'published') as any),
+  ])
 
   const cards = (data ?? []) as CardWithWork[]
   const featuredIndex = cards.length > 0 ? Math.floor(Math.random() * Math.min(cards.length, 20)) : 0
@@ -23,7 +30,7 @@ async function getData() {
   const series = cards.filter((c) => c.work.type === 'series').slice(0, 6)
   const books = cards.filter((c) => c.work.type === 'book').slice(0, 6)
 
-  return { featured, recent, movies, series, books, total: cards.length }
+  return { featured, recent, movies, series, books, total: (count as number | null) ?? cards.length }
 }
 
 export default async function HomePage() {
@@ -37,9 +44,15 @@ export default async function HomePage() {
           Recuerda cualquier historia<br className="hidden sm:inline" /> sin volver a verla
         </h1>
         <p className="mx-auto mt-5 max-w-2xl text-base text-ink/65 sm:text-lg">
-          Spoilers incluidos. Resúmenes completos de películas, series y libros para retomar una saga, recordar un final o entender qué pasó sin rodeos.
+          Spoilers incluidos. Una comunidad escribiendo resúmenes de películas, series y libros para retomar una saga, recordar un final o entender qué pasó sin rodeos.
         </p>
         <HeroActions />
+        {total > 0 && (
+          <p className="mt-5 text-sm text-ink/55">
+            <span className="font-bold text-ink/80">{total} {total === 1 ? 'ficha' : 'fichas'}</span> escritas por la comunidad ·{' '}
+            <span className="text-ink/65">¿No está la tuya? Añádela.</span>
+          </p>
+        )}
         <div className="mt-6 inline-flex items-center gap-3 rounded-full border border-ink/15 bg-ink/[0.03] px-6 py-2.5 text-[15px] font-medium text-ink/65">
           <span>📖 Spoilers completos</span>
           <span className="text-ink/25">·</span>
@@ -48,6 +61,8 @@ export default async function HomePage() {
           <span>✏️ Fichas colaborativas</span>
         </div>
       </section>
+
+      <CommunityCallout />
 
       {/* Contenido editorial */}
       {total === 0 ? (

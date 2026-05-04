@@ -35,10 +35,17 @@ export function NavSearch() {
   const [results, setResults] = useState<SearchResult[]>([])
   const [loading, setLoading] = useState(false)
   const [highlighted, setHighlighted] = useState(-1)
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
   const router = useRouter()
   const inputRef = useRef<HTMLInputElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setIsLoggedIn(!!user)
+    })
+  }, [])
 
   useEffect(() => {
     if (open) {
@@ -105,7 +112,9 @@ export function NavSearch() {
     }
   }
 
-  const showDropdown = open && (results.length > 0 || (loading && query.trim().length >= 2))
+  const hasNoResults = !loading && query.trim().length >= 2 && results.length === 0
+  const showDropdown = open && (results.length > 0 || (loading && query.trim().length >= 2) || hasNoResults)
+  const addHref = isLoggedIn ? '/nueva-obra' : `/login?redirect=${encodeURIComponent('/nueva-obra')}`
 
   return (
     <div ref={containerRef} className="relative flex items-center">
@@ -181,7 +190,21 @@ export function NavSearch() {
               </span>
             </Link>
           ))}
-          {query.trim().length >= 2 && (
+          {hasNoResults && (
+            <div className="border-t border-ink/10 bg-ember/[0.04] px-4 py-3.5 text-center">
+              <p className="text-xs text-ink/65">
+                «{query.length > 30 ? query.slice(0, 30) + '…' : query}» todavía no está en Spoilering.
+              </p>
+              <Link
+                href={addHref}
+                onClick={() => setOpen(false)}
+                className="mt-1.5 inline-block rounded-md bg-ember px-3 py-1.5 text-xs font-bold text-white transition hover:bg-ember/90"
+              >
+                + Añade tú la ficha
+              </Link>
+            </div>
+          )}
+          {!hasNoResults && query.trim().length >= 2 && (
             <Link
               href={`/buscar?q=${encodeURIComponent(query.trim())}`}
               onClick={() => setOpen(false)}
