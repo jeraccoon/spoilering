@@ -1,0 +1,314 @@
+{
+  "WorkType": {
+    "movie": "Película",
+    "series": "Serie",
+    "book": "Libro",
+    "moviePlural": "Películas",
+    "seriesPlural": "Series",
+    "bookPlural": "Libros"
+  },
+  "Common": {
+    "loading": "Cargando…",
+    "error": "Algo ha ido mal",
+    "close": "Cerrar",
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "send": "Enviar",
+    "sending": "Enviando…",
+    "networkError": "Error de red",
+    "sendError": "Error al enviar"
+  },
+  "Header": {
+    "nav": {
+      "catalog": "Catálogo",
+      "howItWorks": "Cómo funciona",
+      "primaryAria": "Navegación principal"
+    },
+    "addWork": "+ Añadir obra",
+    "login": "Iniciar sesión",
+    "register": "Registrarse",
+    "myProfile": "Mi perfil",
+    "pendingCards": "Hay {count, plural, =1 {1 ficha pendiente} other {# fichas pendientes}} de revisión",
+    "unreadMessages": "{count, plural, =1 {Tienes 1 mensaje} other {Tienes # mensajes}} de contacto sin leer"
+  },
+  "Footer": {
+    "tagline": "No es un agregador de reseñas ni un sustituto de la obra. Es un archivo de resúmenes escrito por la comunidad.",
+    "join": "Únete",
+    "faq": "FAQ",
+    "legal": "Aviso legal",
+    "privacy": "Privacidad",
+    "cookies": "Cookies",
+    "copyright": "© 2026 Spoilering"
+  },
+  "UserMenu": {
+    "myProfile": "Mi perfil",
+    "signOut": "Cerrar sesión"
+  },
+  "NavSearch": {
+    "openAria": "Buscar",
+    "closeAria": "Cerrar búsqueda",
+    "trigger": "Buscar...",
+    "placeholder": "Buscar series, películas, libros...",
+    "notFoundQuery": "«{query}» todavía no está en Spoilering.",
+    "addItYourself": "+ Añade tú la ficha",
+    "viewAllResults": "Ver todos los resultados →"
+  },
+  "BetaBanner": {
+    "tag": "Beta",
+    "intro": "Spoilering está en desarrollo activo.",
+    "askExtra": "¿Encuentras algo raro o tienes ideas?",
+    "cta": "¡Cuéntanos, gracias! →",
+    "dismissAria": "Cerrar aviso beta",
+    "modal": {
+      "title": "Enviar comentarios",
+      "subtitle": "Errores, ideas, lo que sea — lo leemos todo.",
+      "typeLabel": "Tipo",
+      "emailLabel": "Email",
+      "emailHint": "(opcional, para que podamos responderte)",
+      "emailPlaceholder": "tu@email.com",
+      "messageLabel": "Mensaje",
+      "messagePlaceholder": "Cuéntanos qué ocurre o qué mejorarías…",
+      "successTitle": "¡Gracias!",
+      "successBody": "Tu mensaje nos ayuda a mejorar Spoilering.",
+      "closeAria": "Cerrar"
+    },
+    "types": {
+      "suggestion": "Sugerencia",
+      "bug": "Error o bug",
+      "other": "Otro"
+    }
+  },
+  "HeroActions": {
+    "search": "Buscar una obra",
+    "addWork": "+ Añadir obra"
+  },
+  "CommunityCallout": {
+    "title": "Spoilering crece contigo",
+    "body": "No es un catálogo terminado, es un proyecto comunitario. Si buscas una obra y no está,",
+    "addItYourself": "añádela tú",
+    "bodyTail": ": la IA escribe un primer borrador y la comunidad lo mejora con sugerencias.",
+    "howItWorks": "Cómo funciona →",
+    "dismissAria": "Cerrar aviso"
+  },
+  "ContactModal": {
+    "trigger": "Contacto",
+    "title": "¿Tienes alguna sugerencia o problema?",
+    "subtitle": "Cuéntanos, lo leemos todo.",
+    "closeAria": "Cerrar",
+    "successTitle": "Mensaje enviado",
+    "successBody": "Gracias por escribirnos. Lo leeremos pronto.",
+    "nameLabel": "Nombre",
+    "nameOptional": "(opcional)",
+    "namePlaceholder": "Tu nombre",
+    "emailLabel": "Email",
+    "emailOptional": "(opcional)",
+    "emailPlaceholder": "tu@email.com",
+    "typeLabel": "Tipo",
+    "messageLabel": "Mensaje",
+    "messagePlaceholder": "Cuéntanos qué ocurre o qué mejorarías…"
+  },
+  "Home": {
+    "hero": {
+      "title": "Recuerda cualquier historia sin volver a verla",
+      "titleBreak": "sin volver a verla",
+      "titleStart": "Recuerda cualquier historia",
+      "subtitle": "Spoilers incluidos. Una comunidad escribiendo resúmenes de películas, series y libros para retomar una saga, recordar un final o entender qué pasó sin rodeos.",
+      "communityCount": "{count, plural, =1 {<bold>1 ficha</bold> escrita} other {<bold># fichas</bold> escritas}} por la comunidad ·",
+      "communityCta": "¿No está la tuya? Añádela.",
+      "trustSpoilers": "📖 Spoilers completos",
+      "trustNoOpinions": "🚫 Sin opiniones",
+      "trustCollab": "✏️ Fichas colaborativas"
+    },
+    "empty": {
+      "noCards": "Todavía no hay fichas publicadas.",
+      "beFirst": "Sé el primero en crear una"
+    }
+  },
+  "HomeSections": {
+    "featured": "Ficha destacada",
+    "viewSummary": "Ver el resumen",
+    "recent": "Recién añadidas",
+    "movies": "Películas",
+    "series": "Series",
+    "books": "Libros",
+    "viewCatalog": "Ver catálogo",
+    "viewAll": "Ver todas",
+    "viewAllBooks": "Ver todos",
+    "explore": "Explorar catálogo completo →"
+  },
+  "BuscarPage": {
+    "titleAll": "Catálogo completo",
+    "titleMovie": "Películas",
+    "titleSeries": "Series",
+    "titleBook": "Libros",
+    "descriptionAll": "Explora el catálogo completo de fichas con resúmenes y spoilers de películas, series y libros publicadas en Spoilering.",
+    "descriptionMovie": "Películas con resumen completo y spoilers en Spoilering.",
+    "descriptionSeries": "Series con resumen completo y spoilers en Spoilering.",
+    "descriptionBook": "Libros con resumen completo y spoilers en Spoilering.",
+    "subtitleBrowse": "Fichas publicadas en Spoilering",
+    "subtitleSearch": "Solo obras que ya tienen ficha publicada en Spoilering",
+    "placeholder": "Busca una película, serie o libro...",
+    "loading": "Cargando…",
+    "filters": {
+      "all": "Todos",
+      "movie": "Películas",
+      "series": "Series",
+      "book": "Libros"
+    },
+    "empty": {
+      "title": "«{query}» todavía no está en Spoilering",
+      "body": "Spoilering es una web colaborativa: el catálogo lo escribe la propia comunidad. Si la obra no está, puedes añadirla tú — la IA prepara un borrador y luego se mejora entre todos.",
+      "addCta": "+ Añadir esta obra",
+      "timeNote": "Tarda unos 2 minutos.",
+      "needsAccount": "Necesitas una cuenta gratuita.",
+      "tryOther": "¿O prefieres probar con otro título o cambiar el filtro?"
+    }
+  },
+  "LoginPage": {
+    "banners": {
+      "registroSugerir": "Inicia sesión para sugerir cambios en esta ficha."
+    },
+    "title": "Inicia sesión",
+    "subtitle": "Bienvenido de nuevo a Spoilering",
+    "identifierLabel": "Email o nombre de usuario",
+    "identifierPlaceholder": "tu@email.com o tu_nombre",
+    "passwordLabel": "Contraseña",
+    "passwordPlaceholder": "••••••••",
+    "submit": "Iniciar sesión",
+    "submitting": "Iniciando sesión…",
+    "forgot": "¿Olvidaste tu contraseña?",
+    "noAccount": "¿No tienes cuenta?",
+    "register": "Regístrate",
+    "errors": {
+      "userNotFound": "Usuario no encontrado.",
+      "invalidCredentials": "Email o contraseña incorrectos."
+    }
+  },
+  "RegistroPage": {
+    "title": "Crea tu cuenta",
+    "subtitle": "Únete a Spoilering",
+    "emailLabel": "Email",
+    "emailPlaceholder": "tu@email.com",
+    "usernameLabel": "Nombre de usuario",
+    "usernamePlaceholder": "ej: juanperez",
+    "passwordLabel": "Contraseña",
+    "passwordPlaceholder": "Mínimo 6 caracteres",
+    "submit": "Crear cuenta",
+    "submitting": "Creando cuenta…",
+    "haveAccount": "¿Ya tienes cuenta?",
+    "login": "Inicia sesión",
+    "username": {
+      "checking": "Comprobando…",
+      "available": "✓ Disponible",
+      "taken": "✗ Ya está en uso",
+      "invalid": "Mínimo 3, máximo 20. Solo letras minúsculas, números y guiones bajos.",
+      "default": "Solo letras, números y guiones bajos. Sin espacios."
+    },
+    "success": {
+      "title": "Revisa tu email",
+      "body": "Te hemos enviado un enlace de confirmación a <bold>{email}</bold>. Haz clic en él para activar tu cuenta.",
+      "back": "Volver al login"
+    },
+    "errors": {
+      "invalidUsername": "Elige un nombre de usuario válido y disponible.",
+      "shortPassword": "La contraseña debe tener al menos 6 caracteres.",
+      "alreadyRegistered": "Ya existe una cuenta con ese email."
+    }
+  },
+  "FaqPage": {
+    "title": "Preguntas frecuentes",
+    "subtitle": "Todo lo que necesitas saber sobre Spoilering",
+    "moreQuestions": "¿Tienes más preguntas?",
+    "writeUs": "Escríbenos a spoilering@outlook.com",
+    "sections": [
+      {
+        "title": "Sobre Spoilering",
+        "questions": [
+          {
+            "q": "¿Qué es Spoilering?",
+            "a": "Spoilering es una biblioteca colaborativa de resúmenes completos con spoilers de series, películas y libros. Está pensada para cuando vuelves a algo después de un tiempo y necesitas recordar qué pasaba antes de continuar. No encontrarás valoraciones ni críticas — solo los hechos de la historia."
+          },
+          {
+            "q": "¿Es gratis?",
+            "a": "Sí, Spoilering es completamente gratuito. Crear una cuenta no tiene ningún coste."
+          },
+          {
+            "q": "¿Necesito registrarme para leer las fichas?",
+            "a": "No. Puedes leer todas las fichas publicadas sin necesidad de crear una cuenta. El registro solo es necesario si quieres contribuir creando fichas, sugerir correcciones o llevar un registro de lo que has visto o leído."
+          }
+        ]
+      },
+      {
+        "title": "Las fichas",
+        "questions": [
+          {
+            "q": "¿Qué es una ficha?",
+            "a": "Una ficha es el resumen completo de una obra. Está dividida en secciones en acordeón: Inicio, Nudo, Desenlace y Subtramas. Cada sección cubre una parte de la historia con todos los detalles y spoilers importantes. También incluye metadatos como reparto, director, duración, géneros y enlaces a plataformas externas."
+          },
+          {
+            "q": "¿Las fichas tienen spoilers?",
+            "a": "Sí, todas las fichas contienen spoilers completos. Esa es precisamente su utilidad: poder refrescar la memoria sin tener que volver a ver o leer la obra entera. Te avisamos antes de mostrar el contenido para que puedas decidir."
+          },
+          {
+            "q": "¿Quién escribe las fichas?",
+            "a": "Las fichas las escribe la comunidad. Cualquier usuario registrado puede crear una ficha nueva o proponer correcciones a las existentes. También usamos inteligencia artificial como punto de partida, pero el contenido siempre es revisado y mejorado por personas."
+          },
+          {
+            "q": "¿Puedo confiar en que la información es correcta?",
+            "a": "Hacemos todo lo posible para que el contenido sea preciso, pero al ser una web colaborativa pueden existir errores. Si encuentras algo incorrecto, puedes sugerir una corrección directamente desde la ficha usando el botón \"Sugerir corrección\" en cada sección."
+          },
+          {
+            "q": "¿Puedo marcar obras como vistas?",
+            "a": "Sí. Si tienes cuenta, en cada ficha encontrarás el panel \"Mi actividad\" donde puedes marcar la obra como vista, añadir la fecha y escribir notas personales. Tu historial completo está disponible en tu perfil."
+          }
+        ]
+      },
+      {
+        "title": "Contribuir",
+        "questions": [
+          {
+            "q": "¿Cómo puedo añadir una ficha?",
+            "a": "Inicia sesión y usa el botón \"+ Añadir obra\" en la barra superior o en la página de inicio. Busca la obra en nuestra base de datos (conectada a TMDb y Google Books) o introduce los datos manualmente. Los nuevos usuarios pueden crear hasta 5 fichas, que quedan pendientes de revisión antes de publicarse."
+          },
+          {
+            "q": "¿Cómo puedo corregir un error en una ficha?",
+            "a": "En cada sección de la ficha encontrarás un botón \"Sugerir corrección\". Escribe cómo debería quedar el texto y lo revisaremos. No necesitas ser el autor original de la ficha para sugerir cambios."
+          },
+          {
+            "q": "¿Qué pasa con mis fichas tras enviarlas?",
+            "a": "Las fichas nuevas quedan en estado \"Pendiente de revisión\" hasta que un editor o administrador las aprueba y publica. Puedes ver el estado de tus fichas en tu perfil."
+          },
+          {
+            "q": "¿Puedo invitar a otras personas?",
+            "a": "Sí. Desde tu perfil puedes enviar hasta 5 invitaciones por mes. La persona invitada recibe un email para crear su cuenta directamente."
+          }
+        ]
+      },
+      {
+        "title": "Cuenta",
+        "questions": [
+          {
+            "q": "¿Puedo iniciar sesión con mi nombre de usuario?",
+            "a": "Sí. En el login puedes usar tanto tu email como tu nombre de usuario. Ambos funcionan igual."
+          },
+          {
+            "q": "¿Puedo añadir mis perfiles de Letterboxd, Goodreads u otras plataformas?",
+            "a": "Próximamente. Estamos trabajando en añadir enlaces a perfiles externos como Letterboxd, Trakt.tv, Goodreads y Filmaffinity desde tu perfil de Spoilering."
+          },
+          {
+            "q": "¿Cómo cambio mi contraseña?",
+            "a": "Ve a tu perfil y en la sección \"Mi cuenta\" encontrarás la opción de cambiar tu contraseña."
+          },
+          {
+            "q": "¿Puedo eliminar mi cuenta?",
+            "a": "Sí. En tu perfil, sección \"Mi cuenta\", encontrarás la opción de eliminar tu cuenta. Esta acción es irreversible y eliminará todos tus datos."
+          },
+          {
+            "q": "¿Qué hacéis con mis datos?",
+            "a": "Solo guardamos tu email y nombre de usuario para gestionar tu cuenta. No vendemos ni cedemos tus datos a terceros. Puedes consultar nuestra política de privacidad para más detalles."
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import type { ContactMessage } from '@/app/admin/contacto/page'
+import type { ContactMessage } from '@/app/[locale]/admin/contacto/page'
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('es-ES', {

@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
+import { Link, useRouter } from '@/i18n/navigation'
 import { createClient } from '@/lib/supabase/client'
 
 interface Props {
@@ -10,6 +10,7 @@ interface Props {
 }
 
 export function UserMenu({ username }: Props) {
+  const t = useTranslations('UserMenu')
   const router = useRouter()
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
@@ -55,14 +56,14 @@ export function UserMenu({ username }: Props) {
             onClick={() => setOpen(false)}
             className="flex items-center px-4 py-2.5 text-sm text-ink/70 transition hover:bg-ink/5 hover:text-ink"
           >
-            Mi perfil
+            {t('myProfile')}
           </Link>
           <div className="mx-3 border-t border-ink/10" />
           <button
             onClick={handleSignOut}
             className="flex w-full items-center px-4 py-2.5 text-sm text-ink/60 transition hover:bg-ink/5 hover:text-ember"
           >
-            Cerrar sesión
+            {t('signOut')}
           </button>
         </div>
       )}

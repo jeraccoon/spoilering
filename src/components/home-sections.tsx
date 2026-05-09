@@ -1,12 +1,20 @@
-import Link from 'next/link'
+import { getTranslations } from 'next-intl/server'
 import Image from 'next/image'
+import { Link } from '@/i18n/navigation'
 import type { CardWithWork } from '@/types/database'
-import { TYPE_LABELS, TYPE_BADGE } from '@/lib/work-types'
+import { TYPE_BADGE } from '@/lib/work-types'
+import type { WorkType } from '@/types/database'
 
 
 /* ── Ficha destacada ─────────────────────────────────────────── */
 
-function FeaturedCard({ card }: { card: CardWithWork }) {
+function FeaturedCard({
+  card,
+  labels,
+}: {
+  card: CardWithWork
+  labels: { featured: string; viewSummary: string; typeLabels: Record<WorkType, string> }
+}) {
   const w = card.work
   return (
     <section aria-labelledby="ficha-destacada">
@@ -14,7 +22,7 @@ function FeaturedCard({ card }: { card: CardWithWork }) {
         id="ficha-destacada"
         className="mb-3 text-xs font-black uppercase tracking-widest text-ink/55"
       >
-        Ficha destacada
+        {labels.featured}
       </h2>
       <Link
         href={`/ficha/${w.slug}`}
@@ -41,7 +49,7 @@ function FeaturedCard({ card }: { card: CardWithWork }) {
           <div className="flex flex-col gap-3">
             <div className="flex items-center gap-2">
               <span className={`rounded px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide ${TYPE_BADGE[w.type] ?? 'bg-ink/10 text-ink'}`}>
-                {TYPE_LABELS[w.type] ?? w.type}
+                {labels.typeLabels[w.type] ?? w.type}
               </span>
               {w.year && <span className="text-sm text-ink/45">{w.year}</span>}
             </div>
@@ -58,7 +66,7 @@ function FeaturedCard({ card }: { card: CardWithWork }) {
           </div>
 
           <span className="inline-flex w-fit items-center gap-1.5 rounded-lg bg-ember px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition group-hover:bg-ember/90 group-hover:shadow-md">
-            Ver el resumen
+            {labels.viewSummary}
             <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4 transition-transform group-hover:translate-x-0.5">
               <path fillRule="evenodd" d="M3 10a.75.75 0 0 1 .75-.75h10.638L10.23 5.29a.75.75 0 1 1 1.04-1.08l5.5 5.25a.75.75 0 0 1 0 1.08l-5.5 5.25a.75.75 0 1 1-1.04-1.08l4.158-3.96H3.75A.75.75 0 0 1 3 10Z" clipRule="evenodd" />
             </svg>
@@ -99,13 +107,15 @@ function StripCard({ card }: { card: CardWithWork }) {
 function CardSection({
   title,
   cards,
-  seeAllHref = '/buscar',
-  seeAllLabel = 'Ver todas',
+  seeAllHref,
+  seeAllQuery,
+  seeAllLabel,
 }: {
   title: string
   cards: CardWithWork[]
-  seeAllHref?: string
-  seeAllLabel?: string
+  seeAllHref: '/buscar'
+  seeAllQuery?: { tipo: 'movie' | 'series' | 'book' }
+  seeAllLabel: string
 }) {
   if (cards.length === 0) return null
   return (
@@ -113,7 +123,7 @@ function CardSection({
       <div className="mb-3 flex items-center justify-between">
         <h2 className="text-xs font-black uppercase tracking-widest text-ink/55">{title}</h2>
         <Link
-          href={seeAllHref}
+          href={seeAllQuery ? { pathname: seeAllHref, query: seeAllQuery } : seeAllHref}
           className="group flex items-center gap-1 text-xs font-semibold text-ink/45 transition hover:text-ember"
         >
           {seeAllLabel}
@@ -139,25 +149,30 @@ export interface HomeSectionsProps {
   books: CardWithWork[]
 }
 
-export function HomeSections({ featured, recent, movies, series, books }: HomeSectionsProps) {
+export async function HomeSections({ featured, recent, movies, series, books }: HomeSectionsProps) {
+  const t = await getTranslations('HomeSections')
+  const tw = await getTranslations('WorkType')
+  const typeLabels: Record<WorkType, string> = { movie: tw('movie'), series: tw('series'), book: tw('book') }
+  const featuredLabels = { featured: t('featured'), viewSummary: t('viewSummary'), typeLabels }
+
   return (
     <div className="mx-auto max-w-6xl space-y-12 px-4 py-10">
-      {featured && <FeaturedCard card={featured} />}
+      {featured && <FeaturedCard card={featured} labels={featuredLabels} />}
 
       {recent.length > 0 && (
-        <CardSection title="Recién añadidas" cards={recent} seeAllHref="/buscar" seeAllLabel="Ver catálogo" />
+        <CardSection title={t('recent')} cards={recent} seeAllHref="/buscar" seeAllLabel={t('viewCatalog')} />
       )}
 
-      <CardSection title="Películas" cards={movies} seeAllHref="/buscar?tipo=movie" seeAllLabel="Ver todas" />
-      <CardSection title="Series" cards={series} seeAllHref="/buscar?tipo=series" seeAllLabel="Ver todas" />
-      <CardSection title="Libros" cards={books} seeAllHref="/buscar?tipo=book" seeAllLabel="Ver todos" />
+      <CardSection title={t('movies')} cards={movies} seeAllHref="/buscar" seeAllQuery={{ tipo: 'movie' }} seeAllLabel={t('viewAll')} />
+      <CardSection title={t('series')} cards={series} seeAllHref="/buscar" seeAllQuery={{ tipo: 'series' }} seeAllLabel={t('viewAll')} />
+      <CardSection title={t('books')} cards={books} seeAllHref="/buscar" seeAllQuery={{ tipo: 'book' }} seeAllLabel={t('viewAllBooks')} />
 
       <div className="border-t border-ink/10 pt-8 text-center">
         <Link
           href="/buscar"
           className="inline-flex items-center gap-2 rounded-lg border border-ink/20 px-5 py-2.5 text-sm font-semibold text-ink/65 transition hover:border-ink/40 hover:text-ink"
         >
-          Explorar catálogo completo →
+          {t('explore')}
         </Link>
       </div>
     </div>

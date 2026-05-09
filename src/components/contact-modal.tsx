@@ -1,15 +1,13 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
 
-const TYPE_OPTIONS = [
-  { value: 'suggestion', label: 'Sugerencia' },
-  { value: 'bug', label: 'Error o bug' },
-  { value: 'other', label: 'Otro' },
-]
-
 export function ContactModal() {
+  const t = useTranslations('ContactModal')
+  const tBeta = useTranslations('BetaBanner')
+  const tCommon = useTranslations('Common')
   const [open, setOpen] = useState(false)
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -18,6 +16,12 @@ export function ContactModal() {
   const [sending, setSending] = useState(false)
   const [sent, setSent] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  const TYPE_OPTIONS = [
+    { value: 'suggestion', label: tBeta('types.suggestion') },
+    { value: 'bug', label: tBeta('types.bug') },
+    { value: 'other', label: tBeta('types.other') },
+  ]
 
   useEffect(() => {
     if (!open) return
@@ -38,10 +42,10 @@ export function ContactModal() {
         body: JSON.stringify({ name, email, type, message }),
       })
       const data = await res.json()
-      if (!res.ok) { setError(data.error ?? 'Error al enviar'); setSending(false); return }
+      if (!res.ok) { setError(data.error ?? tCommon('sendError')); setSending(false); return }
       setSent(true)
     } catch {
-      setError('Error de red')
+      setError(tCommon('networkError'))
       setSending(false)
     }
   }
@@ -61,7 +65,7 @@ export function ContactModal() {
         onClick={() => setOpen(true)}
         className="transition hover:text-paper/70"
       >
-        Contacto
+        {t('trigger')}
       </button>
 
       {open && (
@@ -73,25 +77,25 @@ export function ContactModal() {
             {sent ? (
               <div className="py-6 text-center">
                 <p className="text-3xl">✅</p>
-                <h3 className="mt-3 text-lg font-black text-ink">Mensaje enviado</h3>
+                <h3 className="mt-3 text-lg font-black text-ink">{t('successTitle')}</h3>
                 <p className="mt-2 text-sm text-ink/50">
-                  Gracias por escribirnos. Lo leeremos pronto.
+                  {t('successBody')}
                 </p>
                 <button
                   onClick={handleClose}
                   className="mt-5 rounded-lg bg-ember px-5 py-2 text-sm font-semibold text-white transition hover:bg-ember/90"
                 >
-                  Cerrar
+                  {tCommon('close')}
                 </button>
               </div>
             ) : (
               <>
                 <div className="mb-5 flex items-start justify-between gap-4">
                   <div>
-                    <h3 className="text-lg font-black text-ink">¿Tienes alguna sugerencia o problema?</h3>
-                    <p className="mt-0.5 text-sm text-ink/50">Cuéntanos, lo leemos todo.</p>
+                    <h3 className="text-lg font-black text-ink">{t('title')}</h3>
+                    <p className="mt-0.5 text-sm text-ink/50">{t('subtitle')}</p>
                   </div>
-                  <button onClick={handleClose} className="shrink-0 text-ink/45 hover:text-ink" aria-label="Cerrar">
+                  <button onClick={handleClose} className="shrink-0 text-ink/45 hover:text-ink" aria-label={t('closeAria')}>
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-5 w-5">
                       <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />
                     </svg>
@@ -102,32 +106,32 @@ export function ContactModal() {
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className="mb-1 block text-xs font-semibold text-ink/60">
-                        Nombre <span className="font-normal text-ink/35">(opcional)</span>
+                        {t('nameLabel')} <span className="font-normal text-ink/35">{t('nameOptional')}</span>
                       </label>
                       <input
                         type="text"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
-                        placeholder="Tu nombre"
+                        placeholder={t('namePlaceholder')}
                         className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder-ink/45 outline-none transition focus:border-ember focus:ring-1 focus:ring-ember/20"
                       />
                     </div>
                     <div>
                       <label className="mb-1 block text-xs font-semibold text-ink/60">
-                        Email <span className="font-normal text-ink/35">(opcional)</span>
+                        {t('emailLabel')} <span className="font-normal text-ink/35">{t('emailOptional')}</span>
                       </label>
                       <input
                         type="email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        placeholder="tu@email.com"
+                        placeholder={t('emailPlaceholder')}
                         className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder-ink/45 outline-none transition focus:border-ember focus:ring-1 focus:ring-ember/20"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="mb-1 block text-xs font-semibold text-ink/60">Tipo</label>
+                    <label className="mb-1 block text-xs font-semibold text-ink/60">{t('typeLabel')}</label>
                     <select
                       value={type}
                       onChange={(e) => setType(e.target.value)}
@@ -140,13 +144,13 @@ export function ContactModal() {
                   </div>
 
                   <div>
-                    <label className="mb-1 block text-xs font-semibold text-ink/60">Mensaje</label>
+                    <label className="mb-1 block text-xs font-semibold text-ink/60">{t('messageLabel')}</label>
                     <textarea
                       value={message}
                       onChange={(e) => setMessage(e.target.value)}
                       required
                       rows={4}
-                      placeholder="Cuéntanos qué ocurre o qué mejorarías…"
+                      placeholder={t('messagePlaceholder')}
                       className="w-full resize-none rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder-ink/45 outline-none transition focus:border-ember focus:ring-1 focus:ring-ember/20"
                     />
                   </div>
@@ -159,14 +163,14 @@ export function ContactModal() {
                       disabled={sending || !message.trim()}
                       className="rounded-lg bg-ember px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-ember/90 disabled:opacity-50"
                     >
-                      {sending ? 'Enviando…' : 'Enviar'}
+                      {sending ? tCommon('sending') : tCommon('send')}
                     </button>
                     <button
                       type="button"
                       onClick={handleClose}
                       className="text-sm font-semibold text-ink/55 hover:text-ink"
                     >
-                      Cancelar
+                      {tCommon('cancel')}
                     </button>
                   </div>
                 </form>

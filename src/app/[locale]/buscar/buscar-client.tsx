@@ -1,11 +1,11 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { useRouter } from 'next/navigation'
-import Link from 'next/link'
+import { useTranslations } from 'next-intl'
+import { Link, useRouter } from '@/i18n/navigation'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
-import { TYPE_LABELS, TYPE_BADGE as TYPE_COLORS } from '@/lib/work-types'
+import { TYPE_BADGE as TYPE_COLORS } from '@/lib/work-types'
 import type { WorkType } from '@/types/database'
 
 export type { WorkType }
@@ -20,12 +20,7 @@ export interface Result {
 }
 
 const supabase = createClient()
-const FILTERS: { value: Filter; label: string }[] = [
-  { value: 'all', label: 'Todos' },
-  { value: 'movie', label: 'Películas' },
-  { value: 'series', label: 'Series' },
-  { value: 'book', label: 'Libros' },
-]
+const FILTER_VALUES: Filter[] = ['all', 'movie', 'series', 'book']
 
 interface Props {
   initialFilter: Filter
@@ -35,6 +30,8 @@ interface Props {
 }
 
 export function BuscarClient({ initialFilter, initialQuery, initialResults, pageTitle }: Props) {
+  const t = useTranslations('BuscarPage')
+  const tw = useTranslations('WorkType')
   const router = useRouter()
   const [query, setQuery] = useState(initialQuery)
   const [results, setResults] = useState<Result[]>(initialResults)
@@ -43,8 +40,6 @@ export function BuscarClient({ initialFilter, initialQuery, initialResults, page
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  // Si cambia la prop initialResults (navegación de filtro server-side), refrescamos resultados
-  // siempre que no haya búsqueda activa por texto.
   useEffect(() => {
     if (query.trim().length < 2) {
       setResults(initialResults)
@@ -59,12 +54,10 @@ export function BuscarClient({ initialFilter, initialQuery, initialResults, page
     })
   }, [])
 
-  // Búsqueda por texto con debounce
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current)
 
     if (query.trim().length < 2) {
-      // Volvemos al catálogo SSR
       setResults(initialResults)
       setSearched(false)
       setLoading(false)
@@ -93,15 +86,21 @@ export function BuscarClient({ initialFilter, initialQuery, initialResults, page
 
   function handleFilterClick(value: Filter) {
     if (value === initialFilter) return
-    const params = new URLSearchParams()
-    if (value !== 'all') params.set('tipo', value)
-    if (query.trim().length >= 2) params.set('q', query.trim())
-    const qs = params.toString()
-    router.push(qs ? `/buscar?${qs}` : '/buscar')
+    const params: { tipo?: Filter; q?: string } = {}
+    if (value !== 'all') params.tipo = value
+    if (query.trim().length >= 2) params.q = query.trim()
+    router.push({ pathname: '/buscar', query: params })
   }
 
   const isEmpty = searched && results.length === 0
   const isBrowsing = query.trim().length < 2
+
+  const filterLabel = (value: Filter): string => {
+    if (value === 'all') return t('filters.all')
+    if (value === 'movie') return t('filters.movie')
+    if (value === 'series') return t('filters.series')
+    return t('filters.book')
+  }
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-12">
@@ -112,9 +111,7 @@ export function BuscarClient({ initialFilter, initialQuery, initialResults, page
           {pageTitle}
         </h1>
         <p className="mt-2 text-sm text-ink/55">
-          {isBrowsing
-            ? 'Fichas publicadas en Spoilering'
-            : 'Solo obras que ya tienen ficha publicada en Spoilering'}
+          {isBrowsing ? t('subtitleBrowse') : t('subtitleSearch')}
         </p>
       </div>
 
@@ -124,19 +121,19 @@ export function BuscarClient({ initialFilter, initialQuery, initialResults, page
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Busca una película, serie o libro..."
+          placeholder={t('placeholder')}
           className="w-full rounded-xl border border-ink/20 bg-paper px-5 py-4 text-base text-ink placeholder-ink/55 shadow-sm outline-none transition focus:border-ember focus:ring-2 focus:ring-ember/20"
         />
         {loading && (
           <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-ink/45">
-            Cargando…
+            {t('loading')}
           </span>
         )}
       </div>
 
       {/* Filtros de tipo */}
       <div className="mb-8 flex justify-center gap-2">
-        {FILTERS.map(({ value, label }) => (
+        {FILTER_VALUES.map((value) => (
           <button
             key={value}
             onClick={() => handleFilterClick(value)}
@@ -146,7 +143,7 @@ export function BuscarClient({ initialFilter, initialQuery, initialResults, page
                 : 'border border-ink/15 text-ink/55 hover:border-ink/30 hover:text-ink'
             }`}
           >
-            {label}
+            {filterLabel(value)}
           </button>
         ))}
       </div>
@@ -174,7 +171,7 @@ export function BuscarClient({ initialFilter, initialQuery, initialResults, page
                   <div className="flex h-full items-center justify-center text-4xl text-ink/25">📖</div>
                 )}
                 <span className={`absolute left-1.5 top-1.5 rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${TYPE_COLORS[work.type]}`}>
-                  {TYPE_LABELS[work.type]}
+                  {tw(work.type)}
                 </span>
               </div>
               <div className="flex flex-col gap-0.5 p-2">
@@ -191,23 +188,26 @@ export function BuscarClient({ initialFilter, initialQuery, initialResults, page
         <div className="mx-auto mt-4 max-w-xl rounded-2xl border border-ember/25 bg-ember/[0.04] p-8 text-center">
           <p className="text-3xl">📖</p>
           <h2 className="mt-3 font-serif text-2xl font-black leading-tight text-ink sm:text-3xl">
-            «{query.length > 60 ? query.slice(0, 60) + '…' : query}» todavía no está en Spoilering
+            {t('empty.title', { query: query.length > 60 ? query.slice(0, 60) + '…' : query })}
           </h2>
           <p className="mx-auto mt-3 max-w-md text-[15px] leading-relaxed text-ink/70">
-            Spoilering es una web colaborativa: el catálogo lo escribe la propia comunidad.
-            Si la obra no está, puedes añadirla tú — la IA prepara un borrador y luego se mejora entre todos.
+            {t('empty.body')}
           </p>
           <Link
-            href={isLoggedIn ? '/nueva-obra' : `/login?redirect=${encodeURIComponent('/nueva-obra')}`}
+            href={
+              isLoggedIn
+                ? { pathname: '/nueva-obra' }
+                : { pathname: '/login', query: { redirect: '/nueva-obra' } }
+            }
             className="mt-6 inline-block rounded-lg bg-ember px-6 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-ember/90 hover:shadow"
           >
-            + Añadir esta obra
+            {t('empty.addCta')}
           </Link>
           <p className="mt-3 text-xs text-ink/50">
-            Tarda unos 2 minutos.{!isLoggedIn && ' Necesitas una cuenta gratuita.'}
+            {t('empty.timeNote')}{!isLoggedIn && ' ' + t('empty.needsAccount')}
           </p>
           <p className="mt-5 border-t border-ink/10 pt-4 text-xs text-ink/45">
-            ¿O prefieres probar con otro título o cambiar el filtro?
+            {t('empty.tryOther')}
           </p>
         </div>
       )}

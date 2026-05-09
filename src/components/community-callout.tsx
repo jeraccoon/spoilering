@@ -1,11 +1,13 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import Link from 'next/link'
+import { useTranslations } from 'next-intl'
+import { Link } from '@/i18n/navigation'
 
 const KEY = 'spoilering_community_callout_dismissed'
 
 export function CommunityCallout() {
+  const t = useTranslations('CommunityCallout')
   const [visible, setVisible] = useState(false)
 
   useEffect(() => {
@@ -25,7 +27,7 @@ export function CommunityCallout() {
       <div className="relative rounded-2xl border border-plum/25 bg-plum/[0.04] p-5 sm:p-6">
         <button
           onClick={dismiss}
-          aria-label="Cerrar aviso"
+          aria-label={t('dismissAria')}
           className="absolute right-3 top-3 text-ink/35 transition hover:text-ink/70"
         >
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
@@ -37,16 +39,16 @@ export function CommunityCallout() {
             ✏️
           </div>
           <div className="flex-1 pr-6 sm:pr-0">
-            <p className="text-[15px] font-bold text-ink">Spoilering crece contigo</p>
+            <p className="text-[15px] font-bold text-ink">{t('title')}</p>
             <p className="mt-1 text-[13px] leading-relaxed text-ink/65">
-              No es un catálogo terminado, es un proyecto comunitario. Si buscas una obra y no está,{' '}
-              <span className="font-semibold text-ink/80">añádela tú</span>: la IA escribe un primer borrador y la comunidad lo mejora con sugerencias.
+              {t('body')}{' '}
+              <span className="font-semibold text-ink/80">{t('addItYourself')}</span>{t('bodyTail')}
             </p>
             <Link
               href="/faq"
               className="mt-2 inline-block text-xs font-semibold text-plum hover:underline"
             >
-              Cómo funciona →
+              {t('howItWorks')}
             </Link>
           </div>
         </div>

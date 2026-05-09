@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import Link from 'next/link'
+import { useTranslations } from 'next-intl'
+import { Link } from '@/i18n/navigation'
 import { createClient } from '@/lib/supabase/client'
 
 const USERNAME_REGEX = /^[a-z0-9_]+$/
@@ -9,14 +10,16 @@ const USERNAME_REGEX = /^[a-z0-9_]+$/
 type UsernameState = 'idle' | 'checking' | 'available' | 'taken' | 'invalid'
 
 function UsernameHint({ state }: { state: UsernameState }) {
-  if (state === 'checking') return <span className="text-ink/55">Comprobando…</span>
-  if (state === 'available') return <span className="font-semibold text-moss">✓ Disponible</span>
-  if (state === 'taken') return <span className="font-semibold text-ember">✗ Ya está en uso</span>
-  if (state === 'invalid') return <span className="text-ember">Mínimo 3, máximo 20. Solo letras minúsculas, números y guiones bajos.</span>
-  return <span className="text-ink/55">Solo letras, números y guiones bajos. Sin espacios.</span>
+  const t = useTranslations('RegistroPage.username')
+  if (state === 'checking') return <span className="text-ink/55">{t('checking')}</span>
+  if (state === 'available') return <span className="font-semibold text-moss">{t('available')}</span>
+  if (state === 'taken') return <span className="font-semibold text-ember">{t('taken')}</span>
+  if (state === 'invalid') return <span className="text-ember">{t('invalid')}</span>
+  return <span className="text-ink/55">{t('default')}</span>
 }
 
 export default function RegistroPage() {
+  const t = useTranslations('RegistroPage')
   const [email, setEmail] = useState('')
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
@@ -59,12 +62,12 @@ export default function RegistroPage() {
     setError(null)
 
     if (usernameState !== 'available') {
-      setError('Elige un nombre de usuario válido y disponible.')
+      setError(t('errors.invalidUsername'))
       return
     }
 
     if (password.length < 6) {
-      setError('La contraseña debe tener al menos 6 caracteres.')
+      setError(t('errors.shortPassword'))
       return
     }
 
@@ -82,7 +85,7 @@ export default function RegistroPage() {
     if (signUpError) {
       setError(
         signUpError.message.includes('already registered')
-          ? 'Ya existe una cuenta con ese email.'
+          ? t('errors.alreadyRegistered')
           : signUpError.message
       )
       setLoading(false)
@@ -104,17 +107,18 @@ export default function RegistroPage() {
       <div className="flex min-h-[calc(100vh-8rem)] items-center justify-center px-4 py-12">
         <div className="w-full max-w-sm rounded-lg border border-ink/10 bg-paper p-8 text-center shadow-sm">
           <div className="mb-4 text-4xl">✉️</div>
-          <h1 className="text-xl font-black text-ink">Revisa tu email</h1>
+          <h1 className="text-xl font-black text-ink">{t('success.title')}</h1>
           <p className="mt-3 text-sm text-ink/60">
-            Te hemos enviado un enlace de confirmación a{' '}
-            <span className="font-semibold text-ink">{email}</span>.
-            Haz clic en él para activar tu cuenta.
+            {t.rich('success.body', {
+              email,
+              bold: (chunks) => <span className="font-semibold text-ink">{chunks}</span>,
+            })}
           </p>
           <Link
             href="/login"
             className="mt-6 inline-block text-sm font-semibold text-ink/50 underline hover:text-ink"
           >
-            Volver al login
+            {t('success.back')}
           </Link>
         </div>
       </div>
@@ -125,14 +129,14 @@ export default function RegistroPage() {
     <div className="flex min-h-[calc(100vh-8rem)] items-center justify-center px-4 py-12">
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
-          <h1 className="text-2xl font-black tracking-tight text-ink">Crea tu cuenta</h1>
-          <p className="mt-2 text-sm text-ink/50">Únete a Spoilering</p>
+          <h1 className="text-2xl font-black tracking-tight text-ink">{t('title')}</h1>
+          <p className="mt-2 text-sm text-ink/50">{t('subtitle')}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label htmlFor="email" className="mb-1.5 block text-sm font-semibold text-ink">
-              Email
+              {t('emailLabel')}
             </label>
             <input
               id="email"
@@ -142,13 +146,13 @@ export default function RegistroPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2.5 text-sm text-ink placeholder-ink/45 outline-none transition focus:border-ember focus:ring-2 focus:ring-ember/20"
-              placeholder="tu@email.com"
+              placeholder={t('emailPlaceholder')}
             />
           </div>
 
           <div>
             <label htmlFor="username" className="mb-1.5 block text-sm font-semibold text-ink">
-              Nombre de usuario
+              {t('usernameLabel')}
             </label>
             <input
               id="username"
@@ -158,7 +162,7 @@ export default function RegistroPage() {
               value={username}
               onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
               className={`w-full rounded-lg border bg-paper px-3 py-2.5 text-sm text-ink placeholder-ink/45 outline-none transition focus:ring-2 ${borderClass(usernameState)}`}
-              placeholder="ej: juanperez"
+              placeholder={t('usernamePlaceholder')}
               maxLength={20}
             />
             <p className="mt-1 text-[11px]">
@@ -168,7 +172,7 @@ export default function RegistroPage() {
 
           <div>
             <label htmlFor="password" className="mb-1.5 block text-sm font-semibold text-ink">
-              Contraseña
+              {t('passwordLabel')}
             </label>
             <input
               id="password"
@@ -178,7 +182,7 @@ export default function RegistroPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2.5 text-sm text-ink placeholder-ink/45 outline-none transition focus:border-ember focus:ring-2 focus:ring-ember/20"
-              placeholder="Mínimo 6 caracteres"
+              placeholder={t('passwordPlaceholder')}
               minLength={6}
             />
           </div>
@@ -194,14 +198,14 @@ export default function RegistroPage() {
             disabled={loading || usernameState !== 'available'}
             className="w-full rounded-lg bg-ember py-2.5 text-sm font-semibold text-white transition hover:bg-ember/90 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {loading ? 'Creando cuenta…' : 'Crear cuenta'}
+            {loading ? t('submitting') : t('submit')}
           </button>
         </form>
 
         <p className="mt-6 text-center text-sm text-ink/50">
-          ¿Ya tienes cuenta?{' '}
+          {t('haveAccount')}{' '}
           <Link href="/login" className="font-semibold text-ink underline hover:text-ember">
-            Inicia sesión
+            {t('login')}
           </Link>
         </p>
       </div>

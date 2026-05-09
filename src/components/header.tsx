@@ -1,13 +1,9 @@
-import Link from 'next/link'
+import { getTranslations } from 'next-intl/server'
+import { Link } from '@/i18n/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { UserMenu } from '@/components/user-menu'
 import { NavSearch } from '@/components/NavSearch'
-
-const navItems = [
-  { href: '/buscar', label: 'Catálogo' },
-  { href: '/faq', label: 'Cómo funciona' },
-]
 
 async function getUser() {
   try {
@@ -64,6 +60,7 @@ async function getPendingCardsCount(): Promise<number> {
 }
 
 export async function Header() {
+  const t = await getTranslations('Header')
   const auth = await getUser()
   const isPrivileged = auth?.role === 'admin' || auth?.role === 'editor'
   const isAdmin = auth?.role === 'admin'
@@ -72,6 +69,11 @@ export async function Header() {
     isAdmin ? getUnreadMessagesCount() : Promise.resolve(0),
     isPrivileged ? getPendingCardsCount() : Promise.resolve(0),
   ])
+
+  const navItems = [
+    { href: '/buscar', label: t('nav.catalog') },
+    { href: '/faq', label: t('nav.howItWorks') },
+  ] as const
 
   return (
     <header className="sticky top-0 z-20 border-b border-ink/10 bg-paper/90 backdrop-blur">
@@ -83,9 +85,7 @@ export async function Header() {
           <span className="flex size-4 items-center justify-center rounded-full bg-white/20 text-[10px] font-black">
             {pendingCards}
           </span>
-          {pendingCards === 1
-            ? 'Hay 1 ficha pendiente de revisión'
-            : `Hay ${pendingCards} fichas pendientes de revisión`}
+          {t('pendingCards', { count: pendingCards })}
           <span>→</span>
         </Link>
       )}
@@ -97,7 +97,7 @@ export async function Header() {
           <span className="flex size-4 items-center justify-center rounded-full bg-white/20 text-[10px] font-black">
             {unreadMessages}
           </span>
-          {unreadMessages === 1 ? 'Tienes 1 mensaje de contacto sin leer' : `Tienes ${unreadMessages} mensajes de contacto sin leer`}
+          {t('unreadMessages', { count: unreadMessages })}
           <span>→</span>
         </Link>
       )}
@@ -117,7 +117,7 @@ export async function Header() {
           <span className="text-lg sm:text-xl">Spoilering</span>
         </Link>
 
-        <nav aria-label="Navegación principal" className="hidden items-center gap-6 sm:flex">
+        <nav aria-label={t('nav.primaryAria')} className="hidden items-center gap-6 sm:flex">
           {navItems.map((item) => (
             <Link
               key={item.href}
@@ -137,13 +137,13 @@ export async function Header() {
                 href={addHref}
                 className="hidden rounded-lg border border-ember/50 px-3 py-1.5 text-sm font-semibold text-ember transition hover:border-ember hover:bg-ember/5 sm:block"
               >
-                + Añadir obra
+                {t('addWork')}
               </Link>
               {auth.username ? (
                 <UserMenu username={auth.username} />
               ) : (
                 <Link href="/perfil" className="text-sm font-semibold text-ink/70 transition hover:text-ember">
-                  Mi perfil
+                  {t('myProfile')}
                 </Link>
               )}
             </>
@@ -153,13 +153,13 @@ export async function Header() {
                 href="/login"
                 className="hidden text-sm font-semibold text-ink/70 transition hover:text-ink sm:block"
               >
-                Iniciar sesión
+                {t('login')}
               </Link>
               <Link
                 href="/registro"
                 className="rounded-lg bg-ink px-3 py-1.5 text-sm font-semibold text-paper transition hover:bg-ember sm:px-4 sm:py-2"
               >
-                Registrarse
+                {t('register')}
               </Link>
             </>
           )}

@@ -1,20 +1,18 @@
 'use client'
 
 import { useState } from 'react'
-import Link from 'next/link'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useTranslations } from 'next-intl'
+import { useSearchParams } from 'next/navigation'
+import { Link, useRouter } from '@/i18n/navigation'
 import { createClient } from '@/lib/supabase/client'
 
-const MENSAJES: Record<string, string> = {
-  'registro-sugerir': 'Inicia sesión para sugerir cambios en esta ficha.',
-}
-
 export function LoginForm() {
+  const t = useTranslations('LoginPage')
   const router = useRouter()
   const searchParams = useSearchParams()
   const redirect = searchParams.get('redirect')
   const mensaje = searchParams.get('mensaje')
-  const banner = mensaje ? MENSAJES[mensaje] : null
+  const banner = mensaje === 'registro-sugerir' ? t('banners.registroSugerir') : null
 
   const [identifier, setIdentifier] = useState('')
   const [password, setPassword] = useState('')
@@ -31,7 +29,7 @@ export function LoginForm() {
     if (!email.includes('@')) {
       const res = await fetch(`/api/get-email-by-username?username=${encodeURIComponent(email)}`)
       if (!res.ok) {
-        setError('Usuario no encontrado.')
+        setError(t('errors.userNotFound'))
         setLoading(false)
         return
       }
@@ -45,7 +43,7 @@ export function LoginForm() {
     if (signInError) {
       setError(
         signInError.message === 'Invalid login credentials'
-          ? 'Email o contraseña incorrectos.'
+          ? t('errors.invalidCredentials')
           : signInError.message
       )
       setLoading(false)
@@ -66,14 +64,14 @@ export function LoginForm() {
         )}
 
         <div className="mb-8 text-center">
-          <h1 className="text-2xl font-black tracking-tight text-ink">Inicia sesión</h1>
-          <p className="mt-2 text-sm text-ink/50">Bienvenido de nuevo a Spoilering</p>
+          <h1 className="text-2xl font-black tracking-tight text-ink">{t('title')}</h1>
+          <p className="mt-2 text-sm text-ink/50">{t('subtitle')}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label htmlFor="identifier" className="mb-1.5 block text-sm font-semibold text-ink">
-              Email o nombre de usuario
+              {t('identifierLabel')}
             </label>
             <input
               id="identifier"
@@ -83,13 +81,13 @@ export function LoginForm() {
               value={identifier}
               onChange={(e) => setIdentifier(e.target.value)}
               className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2.5 text-sm text-ink placeholder-ink/45 outline-none transition focus:border-ember focus:ring-2 focus:ring-ember/20"
-              placeholder="tu@email.com o tu_nombre"
+              placeholder={t('identifierPlaceholder')}
             />
           </div>
 
           <div>
             <label htmlFor="password" className="mb-1.5 block text-sm font-semibold text-ink">
-              Contraseña
+              {t('passwordLabel')}
             </label>
             <input
               id="password"
@@ -99,7 +97,7 @@ export function LoginForm() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2.5 text-sm text-ink placeholder-ink/45 outline-none transition focus:border-ember focus:ring-2 focus:ring-ember/20"
-              placeholder="••••••••"
+              placeholder={t('passwordPlaceholder')}
             />
           </div>
 
@@ -114,20 +112,20 @@ export function LoginForm() {
             disabled={loading}
             className="w-full rounded-lg bg-ember py-2.5 text-sm font-semibold text-white transition hover:bg-ember/90 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {loading ? 'Iniciando sesión…' : 'Iniciar sesión'}
+            {loading ? t('submitting') : t('submit')}
           </button>
         </form>
 
         <p className="mt-4 text-center text-sm text-ink/50">
           <Link href="/recuperar-contrasena" className="text-ink/55 hover:text-ink hover:underline">
-            ¿Olvidaste tu contraseña?
+            {t('forgot')}
           </Link>
         </p>
 
         <p className="mt-3 text-center text-sm text-ink/50">
-          ¿No tienes cuenta?{' '}
+          {t('noAccount')}{' '}
           <Link href="/registro" className="font-semibold text-ink underline hover:text-ember">
-            Regístrate
+            {t('register')}
           </Link>
         </p>
       </div>

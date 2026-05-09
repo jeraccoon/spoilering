@@ -1,10 +1,12 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import Link from 'next/link'
+import { useTranslations } from 'next-intl'
+import { Link } from '@/i18n/navigation'
 import { createClient } from '@/lib/supabase/client'
 
 export function HeroActions() {
+  const t = useTranslations('HeroActions')
   const [isLoggedIn, setIsLoggedIn] = useState(false)
 
   useEffect(() => {
@@ -20,13 +22,13 @@ export function HeroActions() {
         href="/buscar"
         className="w-full rounded-lg bg-ember px-6 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-ember/90 hover:shadow-md sm:w-auto"
       >
-        Buscar una obra
+        {t('search')}
       </Link>
       <Link
-        href={isLoggedIn ? '/nueva-obra' : '/login?redirect=/nueva-obra'}
+        href={isLoggedIn ? '/nueva-obra' : { pathname: '/login', query: { redirect: '/nueva-obra' } }}
         className="w-full rounded-lg border border-ember/40 px-6 py-3 text-base font-semibold text-ember transition hover:border-ember hover:bg-ember/5 sm:w-auto"
       >
-        + Añadir obra
+        {t('addWork')}
       </Link>
     </div>
   )

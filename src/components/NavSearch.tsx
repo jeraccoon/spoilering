@@ -1,11 +1,11 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { useRouter } from 'next/navigation'
-import Link from 'next/link'
+import { useTranslations } from 'next-intl'
+import { Link, useRouter } from '@/i18n/navigation'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
-import { TYPE_LABELS, TYPE_BADGE as TYPE_COLORS } from '@/lib/work-types'
+import { TYPE_BADGE as TYPE_COLORS } from '@/lib/work-types'
 import type { WorkType } from '@/types/database'
 
 const supabase = createClient()
@@ -30,6 +30,8 @@ function SearchIcon() {
 }
 
 export function NavSearch() {
+  const t = useTranslations('NavSearch')
+  const tw = useTranslations('WorkType')
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<SearchResult[]>([])
@@ -106,7 +108,7 @@ export function NavSearch() {
         router.push(`/ficha/${results[highlighted].slug}`)
         setOpen(false)
       } else if (query.trim().length >= 2) {
-        router.push(`/buscar?q=${encodeURIComponent(query.trim())}`)
+        router.push({ pathname: '/buscar', query: { q: query.trim() } })
         setOpen(false)
       }
     }
@@ -114,18 +116,20 @@ export function NavSearch() {
 
   const hasNoResults = !loading && query.trim().length >= 2 && results.length === 0
   const showDropdown = open && (results.length > 0 || (loading && query.trim().length >= 2) || hasNoResults)
-  const addHref = isLoggedIn ? '/nueva-obra' : `/login?redirect=${encodeURIComponent('/nueva-obra')}`
+  const addHref = isLoggedIn
+    ? { pathname: '/nueva-obra' as const }
+    : { pathname: '/login' as const, query: { redirect: '/nueva-obra' } }
 
   return (
     <div ref={containerRef} className="relative flex items-center">
       {!open ? (
         <button
           onClick={() => setOpen(true)}
-          aria-label="Buscar"
+          aria-label={t('openAria')}
           className="flex items-center gap-2 rounded-full border border-ink/15 bg-ink/5 px-3 py-1.5 text-sm text-ink/55 transition hover:border-ink/25 hover:bg-ink/10 hover:text-ink/60 sm:w-40"
         >
           <SearchIcon />
-          <span className="hidden sm:block">Buscar...</span>
+          <span className="hidden sm:block">{t('trigger')}</span>
         </button>
       ) : (
         <div className="flex items-center gap-2">
@@ -139,7 +143,7 @@ export function NavSearch() {
               value={query}
               onChange={e => setQuery(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Buscar series, películas, libros..."
+              placeholder={t('placeholder')}
               className="w-full rounded-lg border border-ink/20 bg-paper py-1.5 pl-9 pr-8 text-sm text-ink placeholder-ink/45 outline-none transition focus:border-ember focus:ring-2 focus:ring-ember/20"
             />
             {loading && (
@@ -148,7 +152,7 @@ export function NavSearch() {
           </div>
           <button
             onClick={() => setOpen(false)}
-            aria-label="Cerrar búsqueda"
+            aria-label={t('closeAria')}
             className="shrink-0 rounded-lg p-1.5 text-sm text-ink/55 transition hover:text-ink"
           >
             ✕
@@ -186,31 +190,31 @@ export function NavSearch() {
                 {result.year && <p className="text-xs text-ink/55">{result.year}</p>}
               </div>
               <span className={`shrink-0 rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${TYPE_COLORS[result.type] ?? ''}`}>
-                {TYPE_LABELS[result.type] ?? result.type}
+                {tw(result.type)}
               </span>
             </Link>
           ))}
           {hasNoResults && (
             <div className="border-t border-ink/10 bg-ember/[0.04] px-4 py-3.5 text-center">
               <p className="text-xs text-ink/65">
-                «{query.length > 30 ? query.slice(0, 30) + '…' : query}» todavía no está en Spoilering.
+                {t('notFoundQuery', { query: query.length > 30 ? query.slice(0, 30) + '…' : query })}
               </p>
               <Link
                 href={addHref}
                 onClick={() => setOpen(false)}
                 className="mt-1.5 inline-block rounded-md bg-ember px-3 py-1.5 text-xs font-bold text-white transition hover:bg-ember/90"
               >
-                + Añade tú la ficha
+                {t('addItYourself')}
               </Link>
             </div>
           )}
           {!hasNoResults && query.trim().length >= 2 && (
             <Link
-              href={`/buscar?q=${encodeURIComponent(query.trim())}`}
+              href={{ pathname: '/buscar', query: { q: query.trim() } }}
               onClick={() => setOpen(false)}
               className="block border-t border-ink/10 px-4 py-2.5 text-center text-xs font-semibold text-ink/50 transition hover:bg-ink/5 hover:text-ember"
             >
-              Ver todos los resultados →
+              {t('viewAllResults')}
             </Link>
           )}
         </div>

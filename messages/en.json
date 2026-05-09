@@ -1,0 +1,314 @@
+{
+  "WorkType": {
+    "movie": "Film",
+    "series": "Show",
+    "book": "Book",
+    "moviePlural": "Films",
+    "seriesPlural": "Shows",
+    "bookPlural": "Books"
+  },
+  "Common": {
+    "loading": "Loading…",
+    "error": "Something went wrong",
+    "close": "Close",
+    "cancel": "Cancel",
+    "save": "Save",
+    "send": "Send",
+    "sending": "Sending…",
+    "networkError": "Network error",
+    "sendError": "Couldn't send"
+  },
+  "Header": {
+    "nav": {
+      "catalog": "Catalog",
+      "howItWorks": "How it works",
+      "primaryAria": "Primary navigation"
+    },
+    "addWork": "+ Add a work",
+    "login": "Sign in",
+    "register": "Sign up",
+    "myProfile": "My profile",
+    "pendingCards": "{count, plural, =1 {1 entry pending} other {# entries pending}} review",
+    "unreadMessages": "{count, plural, =1 {You have 1 unread} other {You have # unread}} contact message{count, plural, =1 {} other {s}}"
+  },
+  "Footer": {
+    "tagline": "Not a review aggregator and not a substitute for the work itself. A community-written summary archive.",
+    "join": "Join",
+    "faq": "FAQ",
+    "legal": "Legal notice",
+    "privacy": "Privacy",
+    "cookies": "Cookies",
+    "copyright": "© 2026 Spoilering"
+  },
+  "UserMenu": {
+    "myProfile": "My profile",
+    "signOut": "Sign out"
+  },
+  "NavSearch": {
+    "openAria": "Search",
+    "closeAria": "Close search",
+    "trigger": "Search...",
+    "placeholder": "Search shows, films, books...",
+    "notFoundQuery": "«{query}» isn't on Spoilering yet.",
+    "addItYourself": "+ Add it yourself",
+    "viewAllResults": "See all results →"
+  },
+  "BetaBanner": {
+    "tag": "Beta",
+    "intro": "Spoilering is under active development.",
+    "askExtra": "Spotted something odd or have ideas?",
+    "cta": "Tell us — thanks! →",
+    "dismissAria": "Dismiss beta notice",
+    "modal": {
+      "title": "Send feedback",
+      "subtitle": "Bugs, ideas, anything — we read it all.",
+      "typeLabel": "Type",
+      "emailLabel": "Email",
+      "emailHint": "(optional, so we can reply)",
+      "emailPlaceholder": "you@email.com",
+      "messageLabel": "Message",
+      "messagePlaceholder": "Tell us what's happening or what you'd improve…",
+      "successTitle": "Thanks!",
+      "successBody": "Your message helps us improve Spoilering.",
+      "closeAria": "Close"
+    },
+    "types": {
+      "suggestion": "Suggestion",
+      "bug": "Bug",
+      "other": "Other"
+    }
+  },
+  "HeroActions": {
+    "search": "Search a work",
+    "addWork": "+ Add a work"
+  },
+  "CommunityCallout": {
+    "title": "Spoilering grows with you",
+    "body": "It's not a finished catalog, it's a community project. If you look up a work and it isn't there,",
+    "addItYourself": "add it yourself",
+    "bodyTail": ": the AI writes a first draft and the community improves it with suggestions.",
+    "howItWorks": "How it works →",
+    "dismissAria": "Dismiss notice"
+  },
+  "ContactModal": {
+    "trigger": "Contact",
+    "title": "Have a suggestion or a problem?",
+    "subtitle": "Tell us — we read everything.",
+    "closeAria": "Close",
+    "successTitle": "Message sent",
+    "successBody": "Thanks for writing. We'll read it soon.",
+    "nameLabel": "Name",
+    "nameOptional": "(optional)",
+    "namePlaceholder": "Your name",
+    "emailLabel": "Email",
+    "emailOptional": "(optional)",
+    "emailPlaceholder": "you@email.com",
+    "typeLabel": "Type",
+    "messageLabel": "Message",
+    "messagePlaceholder": "Tell us what's happening or what you'd improve…"
+  },
+  "Home": {
+    "hero": {
+      "title": "Remember any story without rewatching it",
+      "titleStart": "Remember any story",
+      "titleBreak": "without rewatching it",
+      "subtitle": "Spoilers included. A community writing summaries of films, shows and books so you can pick up a saga, remember an ending or understand what happened — no fluff.",
+      "communityCount": "{count, plural, =1 {<bold>1 entry</bold> written} other {<bold># entries</bold> written}} by the community ·",
+      "communityCta": "Yours not here? Add it.",
+      "trustSpoilers": "📖 Full spoilers",
+      "trustNoOpinions": "🚫 No opinions",
+      "trustCollab": "✏️ Community-written"
+    },
+    "empty": {
+      "noCards": "No entries published yet.",
+      "beFirst": "Be the first to create one"
+    }
+  },
+  "HomeSections": {
+    "featured": "Featured entry",
+    "viewSummary": "Read the summary",
+    "recent": "Recently added",
+    "movies": "Films",
+    "series": "Shows",
+    "books": "Books",
+    "viewCatalog": "View catalog",
+    "viewAll": "See all",
+    "viewAllBooks": "See all",
+    "explore": "Explore the full catalog →"
+  },
+  "BuscarPage": {
+    "titleAll": "Full catalog",
+    "titleMovie": "Films",
+    "titleSeries": "Shows",
+    "titleBook": "Books",
+    "descriptionAll": "Browse the full catalog of entries with summaries and spoilers of films, shows and books published on Spoilering.",
+    "descriptionMovie": "Films with full summary and spoilers on Spoilering.",
+    "descriptionSeries": "Shows with full summary and spoilers on Spoilering.",
+    "descriptionBook": "Books with full summary and spoilers on Spoilering.",
+    "subtitleBrowse": "Entries published on Spoilering",
+    "subtitleSearch": "Only works that already have an entry on Spoilering",
+    "placeholder": "Search a film, show or book...",
+    "loading": "Loading…",
+    "filters": {
+      "all": "All",
+      "movie": "Films",
+      "series": "Shows",
+      "book": "Books"
+    },
+    "empty": {
+      "title": "«{query}» isn't on Spoilering yet",
+      "body": "Spoilering is community-built: the catalog is written by readers like you. If a work isn't here, you can add it — the AI drafts a starting point and the community refines it together.",
+      "addCta": "+ Add this work",
+      "timeNote": "Takes about 2 minutes.",
+      "needsAccount": "You'll need a free account.",
+      "tryOther": "Want to try another title or change the filter?"
+    }
+  },
+  "LoginPage": {
+    "banners": {
+      "registroSugerir": "Sign in to suggest changes to this entry."
+    },
+    "title": "Sign in",
+    "subtitle": "Welcome back to Spoilering",
+    "identifierLabel": "Email or username",
+    "identifierPlaceholder": "you@email.com or your_handle",
+    "passwordLabel": "Password",
+    "passwordPlaceholder": "••••••••",
+    "submit": "Sign in",
+    "submitting": "Signing in…",
+    "forgot": "Forgot your password?",
+    "noAccount": "No account yet?",
+    "register": "Sign up",
+    "errors": {
+      "userNotFound": "User not found.",
+      "invalidCredentials": "Wrong email or password."
+    }
+  },
+  "RegistroPage": {
+    "title": "Create your account",
+    "subtitle": "Join Spoilering",
+    "emailLabel": "Email",
+    "emailPlaceholder": "you@email.com",
+    "usernameLabel": "Username",
+    "usernamePlaceholder": "e.g. janedoe",
+    "passwordLabel": "Password",
+    "passwordPlaceholder": "At least 6 characters",
+    "submit": "Create account",
+    "submitting": "Creating account…",
+    "haveAccount": "Already have an account?",
+    "login": "Sign in",
+    "username": {
+      "checking": "Checking…",
+      "available": "✓ Available",
+      "taken": "✗ Already taken",
+      "invalid": "3 to 20 chars. Lowercase letters, numbers and underscores only.",
+      "default": "Letters, numbers and underscores only. No spaces."
+    },
+    "success": {
+      "title": "Check your email",
+      "body": "We've sent a confirmation link to <bold>{email}</bold>. Click it to activate your account.",
+      "back": "Back to sign in"
+    },
+    "errors": {
+      "invalidUsername": "Pick a valid and available username.",
+      "shortPassword": "Password must be at least 6 characters.",
+      "alreadyRegistered": "An account with that email already exists."
+    }
+  },
+  "FaqPage": {
+    "title": "Frequently asked questions",
+    "subtitle": "Everything you need to know about Spoilering",
+    "moreQuestions": "More questions?",
+    "writeUs": "Email us at spoilering@outlook.com",
+    "sections": [
+      {
+        "title": "About Spoilering",
+        "questions": [
+          {
+            "q": "What is Spoilering?",
+            "a": "Spoilering is a community-built library of full spoiler summaries for shows, films and books. It's meant for when you come back to something after a while and need to remember what happened before continuing. You won't find ratings or reviews — just the facts of the story."
+          },
+          {
+            "q": "Is it free?",
+            "a": "Yes, Spoilering is completely free. Creating an account costs nothing."
+          },
+          {
+            "q": "Do I need an account to read entries?",
+            "a": "No. You can read every published entry without signing up. An account is only needed to contribute by creating entries, suggesting corrections or tracking what you've seen or read."
+          }
+        ]
+      },
+      {
+        "title": "Entries",
+        "questions": [
+          {
+            "q": "What's an entry?",
+            "a": "An entry is the full summary of a work. It's split into accordion sections: Setup, Conflict, Resolution and Subplots. Each section covers part of the story with all the relevant detail and spoilers. It also includes metadata like cast, director, runtime, genres and external links."
+          },
+          {
+            "q": "Do entries contain spoilers?",
+            "a": "Yes, every entry contains full spoilers. That's exactly the point: refreshing your memory without re-watching or re-reading the whole work. We warn you before showing the content so you can decide."
+          },
+          {
+            "q": "Who writes the entries?",
+            "a": "The community writes them. Any registered user can create a new entry or suggest corrections to existing ones. We also use AI as a starting point, but content is always reviewed and improved by people."
+          },
+          {
+            "q": "Can I trust the information is correct?",
+            "a": "We do our best to keep content accurate, but as a community-built site mistakes can slip in. If you spot something wrong, you can suggest a correction directly from the entry using the \"Suggest correction\" button on each section."
+          },
+          {
+            "q": "Can I mark works as watched?",
+            "a": "Yes. With an account, every entry has a \"My activity\" panel where you can mark the work as watched, add a date and write personal notes. Your full history lives in your profile."
+          }
+        ]
+      },
+      {
+        "title": "Contributing",
+        "questions": [
+          {
+            "q": "How do I add an entry?",
+            "a": "Sign in and use the \"+ Add a work\" button in the top bar or on the home page. Search for the work in our database (connected to TMDb and Google Books) or enter the data manually. New users can create up to 5 entries, which stay pending review before being published."
+          },
+          {
+            "q": "How do I fix an error in an entry?",
+            "a": "On each entry section you'll find a \"Suggest correction\" button. Write how the text should read and we'll review it. You don't need to be the original author to suggest changes."
+          },
+          {
+            "q": "What happens to my entries after I submit them?",
+            "a": "New entries stay in \"Pending review\" until an editor or admin approves and publishes them. You can check the status of your entries from your profile."
+          },
+          {
+            "q": "Can I invite other people?",
+            "a": "Yes. From your profile you can send up to 5 invites per month. The invitee gets an email to create their account directly."
+          }
+        ]
+      },
+      {
+        "title": "Account",
+        "questions": [
+          {
+            "q": "Can I sign in with my username?",
+            "a": "Yes. The login accepts both email and username. Either works."
+          },
+          {
+            "q": "Can I add my Letterboxd, Goodreads or other profiles?",
+            "a": "Coming soon. We're working on linking external profiles like Letterboxd, Trakt.tv, Goodreads and Filmaffinity from your Spoilering profile."
+          },
+          {
+            "q": "How do I change my password?",
+            "a": "Go to your profile and in the \"My account\" section you'll find the option to change your password."
+          },
+          {
+            "q": "Can I delete my account?",
+            "a": "Yes. From your profile, in the \"My account\" section, you can delete your account. This action is irreversible and removes all your data."
+          },
+          {
+            "q": "What do you do with my data?",
+            "a": "We only store your email and username to manage your account. We don't sell or share your data with third parties. Check our privacy policy for details."
+          }
+        ]
+      }
+    ]
+  }
+}

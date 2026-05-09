@@ -1,4 +1,5 @@
-import Link from 'next/link'
+import { getTranslations } from 'next-intl/server'
+import { Link } from '@/i18n/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { HomeSections } from '@/components/home-sections'
 import { HeroActions } from '@/components/HeroActions'
@@ -34,6 +35,7 @@ async function getData() {
 }
 
 export default async function HomePage() {
+  const t = await getTranslations('Home')
   const { featured, recent, movies, series, books, total } = await getData()
 
   return (
@@ -41,24 +43,27 @@ export default async function HomePage() {
       {/* Hero */}
       <section className="border-b border-ink/10 px-4 pb-10 pt-16 text-center">
         <h1 className="font-serif text-[34px] font-black leading-[1.05] tracking-tight text-ink sm:text-5xl md:text-[56px]">
-          Recuerda cualquier historia<br className="hidden sm:inline" /> sin volver a verla
+          {t('hero.titleStart')}<br className="hidden sm:inline" /> {t('hero.titleBreak')}
         </h1>
         <p className="mx-auto mt-5 max-w-2xl text-base text-ink/65 sm:text-lg">
-          Spoilers incluidos. Una comunidad escribiendo resúmenes de películas, series y libros para retomar una saga, recordar un final o entender qué pasó sin rodeos.
+          {t('hero.subtitle')}
         </p>
         <HeroActions />
         {total > 0 && (
           <p className="mt-5 text-sm text-ink/55">
-            <span className="font-bold text-ink/80">{total} {total === 1 ? 'ficha' : 'fichas'}</span> escritas por la comunidad ·{' '}
-            <span className="text-ink/65">¿No está la tuya? Añádela.</span>
+            {t.rich('hero.communityCount', {
+              count: total,
+              bold: (chunks) => <span className="font-bold text-ink/80">{chunks}</span>,
+            })}{' '}
+            <span className="text-ink/65">{t('hero.communityCta')}</span>
           </p>
         )}
         <div className="mt-6 inline-flex items-center gap-3 rounded-full border border-ink/15 bg-ink/[0.03] px-6 py-2.5 text-[15px] font-medium text-ink/65">
-          <span>📖 Spoilers completos</span>
+          <span>{t('hero.trustSpoilers')}</span>
           <span className="text-ink/25">·</span>
-          <span>🚫 Sin opiniones</span>
+          <span>{t('hero.trustNoOpinions')}</span>
           <span className="text-ink/25">·</span>
-          <span>✏️ Fichas colaborativas</span>
+          <span>{t('hero.trustCollab')}</span>
         </div>
       </section>
 
@@ -67,12 +72,12 @@ export default async function HomePage() {
       {/* Contenido editorial */}
       {total === 0 ? (
         <div className="py-24 text-center text-ink/55">
-          <p className="text-lg">Todavía no hay fichas publicadas.</p>
+          <p className="text-lg">{t('empty.noCards')}</p>
           <Link
             href="/nueva-obra"
             className="mt-4 inline-block text-sm text-ink/60 underline hover:text-ink"
           >
-            Sé el primero en crear una
+            {t('empty.beFirst')}
           </Link>
         </div>
       ) : (

@@ -1,13 +1,18 @@
 import type { Metadata } from "next";
 import { Inter, Fraunces } from "next/font/google";
-import "./globals.css";
+import { notFound } from "next/navigation";
+import { NextIntlClientProvider, hasLocale } from "next-intl";
+import { setRequestLocale } from "next-intl/server";
+import "../globals.css";
 
-const sans = Inter({ subsets: ["latin"], variable: "--font-sans", display: "swap" });
-const serif = Fraunces({ subsets: ["latin"], variable: "--font-serif", display: "swap", axes: ["opsz"] });
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
 import { AuthProvider } from "@/components/auth-provider";
 import { BetaBanner } from "@/components/beta-banner";
+import { routing } from "@/i18n/routing";
+
+const sans = Inter({ subsets: ["latin"], variable: "--font-sans", display: "swap" });
+const serif = Fraunces({ subsets: ["latin"], variable: "--font-serif", display: "swap", axes: ["opsz"] });
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
@@ -50,22 +55,37 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export function generateStaticParams() {
+  return routing.locales.map((locale) => ({ locale }));
+}
+
+export default async function LocaleLayout({
   children,
-}: Readonly<{
+  params,
+}: {
   children: React.ReactNode;
-}>) {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  if (!hasLocale(routing.locales, locale)) {
+    notFound();
+  }
+
+  setRequestLocale(locale);
+
   return (
-    <html lang="es" className={`${sans.variable} ${serif.variable}`}>
+    <html lang={locale} className={`${sans.variable} ${serif.variable}`}>
       <body className="font-sans antialiased">
-        <AuthProvider>
-          <div className="flex min-h-screen flex-col">
-            <BetaBanner />
-            <Header />
-            <main className="flex-1">{children}</main>
-            <Footer />
-          </div>
-        </AuthProvider>
+        <NextIntlClientProvider>
+          <AuthProvider>
+            <div className="flex min-h-screen flex-col">
+              <BetaBanner />
+              <Header />
+              <main className="flex-1">{children}</main>
+              <Footer />
+            </div>
+          </AuthProvider>
+        </NextIntlClientProvider>
       </body>
     </html>
   );
