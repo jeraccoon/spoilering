@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
+import { useRouter } from '@/i18n/navigation'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 
@@ -47,7 +48,6 @@ interface FormState {
   saga_order: string
 }
 
-const TYPE_LABELS = { movie: 'Película', series: 'Serie', book: 'Libro' }
 const TYPE_COLORS = {
   movie: 'bg-moss/15 text-moss',
   series: 'bg-plum/15 text-plum',
@@ -63,11 +63,10 @@ const EMPTY_FORM: FormState = {
 }
 
 type SearchType = 'all' | 'movie' | 'series' | 'book'
-const SEARCH_TYPE_LABELS: Record<SearchType, string> = {
-  all: 'Todo', movie: 'Película', series: 'Serie', book: 'Libro',
-}
 
 export default function NuevaObraPage() {
+  const t = useTranslations('Admin.newWork')
+  const tw = useTranslations('WorkType')
   const router = useRouter()
   const [query, setQuery] = useState('')
   const [searchType, setSearchType] = useState<SearchType>('all')
@@ -86,6 +85,13 @@ export default function NuevaObraPage() {
   const [isbnSearching, setIsbnSearching] = useState(false)
   const [isbnError, setIsbnError] = useState<string | null>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const SEARCH_TYPE_LABELS: Record<SearchType, string> = {
+    all: t('filterAll'),
+    movie: tw('movie'),
+    series: tw('series'),
+    book: tw('book'),
+  }
 
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current)
@@ -177,7 +183,7 @@ export default function NuevaObraPage() {
       const { data: { publicUrl } } = supabase.storage.from('posters').getPublicUrl(data.path)
       updateField('poster_url', publicUrl)
     } catch (err) {
-      setError(err instanceof Error ? `Error al subir imagen: ${err.message}` : 'Error al subir imagen')
+      setError(err instanceof Error ? t('errors.uploadWith', { message: err.message }) : t('errors.uploadGeneric'))
     } finally { setUploading(false) }
   }
 
@@ -274,7 +280,7 @@ export default function NuevaObraPage() {
           }
         }
 
-        setIsbnError('No se encontró este libro en Open Library. Prueba a buscarlo por título.')
+        setIsbnError(t('errors.olNotFound'))
         return
       }
 
@@ -286,14 +292,14 @@ export default function NuevaObraPage() {
         )
         const json = await res.json()
         const book = Object.values(json)[0] as any
-        if (!book) { setIsbnError('No se encontró ningún libro con ese ISBN.'); return }
+        if (!book) { setIsbnError(t('errors.isbnNotFound')); return }
         applyOlBook(book)
         return
       }
 
-      setIsbnError('Introduce un ISBN (10 o 13 dígitos) o un enlace de Goodreads válido.')
+      setIsbnError(t('errors.invalidIsbnOrLink'))
     } catch {
-      setIsbnError('Error al buscar. Comprueba la conexión e inténtalo de nuevo.')
+      setIsbnError(t('errors.lookupNetwork'))
     } finally {
       setIsbnSearching(false)
     }
@@ -335,7 +341,7 @@ export default function NuevaObraPage() {
           // Ya existe una ficha activa para esta obra
           setDuplicateSlug(data.slug)
         } else {
-          setError(data.error ?? 'Error al crear la obra')
+          setError(data.error ?? t('errors.createWork'))
         }
         setSubmitting(false)
         return
@@ -346,37 +352,37 @@ export default function NuevaObraPage() {
         router.push(`/admin/ficha/${data.cardId}`)
       }
     } catch {
-      setError('Error inesperado. Inténtalo de nuevo.')
+      setError(t('errors.unexpected'))
       setSubmitting(false)
     }
   }
 
   const searchLabel = searchType === 'book'
-    ? 'Buscar en Google Books y Open Library'
+    ? t('searchLabelBook')
     : searchType !== 'all'
-    ? 'Buscar en TMDb'
-    : 'Buscar en TMDb, Google Books y Open Library'
+    ? t('searchLabelTmdb')
+    : t('searchLabelAll')
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
 
       <div className="mb-8">
-        <h1 className="text-3xl font-black tracking-tight text-ink">Nueva obra</h1>
+        <h1 className="text-3xl font-black tracking-tight text-ink">{t('title')}</h1>
         <p className="mt-1 text-sm text-ink/50">
-          Busca en TMDb, Google Books u Open Library para rellenar el formulario automáticamente.
+          {t('subtitle')}
         </p>
       </div>
 
       {/* Selector de tipo */}
       <div className="mb-4">
-        <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-ink/55">¿Qué tipo de obra es?</p>
+        <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-ink/55">{t('typeQuestion')}</p>
         <div className="flex gap-2">
-          {(['all', 'movie', 'series', 'book'] as SearchType[]).map((t) => (
-            <button key={t} type="button" onClick={() => setSearchType(t)}
+          {(['all', 'movie', 'series', 'book'] as SearchType[]).map((tp) => (
+            <button key={tp} type="button" onClick={() => setSearchType(tp)}
               className={`rounded-lg border px-4 py-1.5 text-sm font-semibold transition ${
-                searchType === t ? 'border-ember bg-ember text-white' : 'border-ink/20 text-ink/50 hover:border-ink/40 hover:text-ink'
+                searchType === tp ? 'border-ember bg-ember text-white' : 'border-ink/20 text-ink/50 hover:border-ink/40 hover:text-ink'
               }`}>
-              {SEARCH_TYPE_LABELS[t]}
+              {SEARCH_TYPE_LABELS[tp]}
             </button>
           ))}
         </div>
@@ -386,14 +392,12 @@ export default function NuevaObraPage() {
       <div className="relative mb-8">
         <label className="mb-1.5 block text-sm font-semibold text-ink">{searchLabel}</label>
         <input type="text" value={query} onChange={(e) => setQuery(e.target.value)}
-          placeholder="Busca por título, autor, director, actor..."
+          placeholder={t('searchPlaceholder')}
           className="w-full rounded-lg border border-ink/20 bg-paper px-4 py-3 text-sm text-ink placeholder-ink/45 outline-none transition focus:border-ember focus:ring-2 focus:ring-ember/20" />
         <p className="mt-1.5 text-xs text-ink/55">
-          {searchType === 'book'
-            ? 'Puedes buscar por título o autor. Ejemplo: "autor:tolkien" para buscar por autor.'
-            : 'Puedes buscar por título, director o actor.'}
+          {searchType === 'book' ? t('hintBook') : t('hintMedia')}
         </p>
-        {searching && <p className="mt-1 text-xs text-ink/55">Buscando…</p>}
+        {searching && <p className="mt-1 text-xs text-ink/55">{t('searching')}</p>}
 
         {results.length > 0 && (
           <div className="absolute left-0 right-0 top-full z-10 mt-1 overflow-hidden rounded-lg border border-ink/10 bg-paper shadow-lg">
@@ -410,12 +414,12 @@ export default function NuevaObraPage() {
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-semibold text-ink">{result.title}</p>
                   <p className="text-xs text-ink/55">
-                    {result.year ?? '—'} · {TYPE_LABELS[result.type]}
+                    {result.year ?? '—'} · {tw(result.type)}
                     {result.authors.length > 0 && ` · ${result.authors[0]}`}
                   </p>
                 </div>
                 <span className={`shrink-0 rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase ${TYPE_COLORS[result.type]}`}>
-                  {result.open_library_id && !result.google_books_id ? 'OL' : TYPE_LABELS[result.type]}
+                  {result.open_library_id && !result.google_books_id ? 'OL' : tw(result.type)}
                 </span>
               </button>
             ))}
@@ -427,8 +431,8 @@ export default function NuevaObraPage() {
       {searchType === 'book' && (
         <div className="mb-8">
           <label className="mb-1.5 block text-sm font-semibold text-ink">
-            ISBN o enlace de Goodreads{' '}
-            <span className="font-normal text-ink/55">(opcional)</span>
+            {t('isbnLabel')}{' '}
+            <span className="font-normal text-ink/55">{t('isbnOptional')}</span>
           </label>
           <div className="flex gap-2">
             <input
@@ -436,7 +440,7 @@ export default function NuevaObraPage() {
               value={isbnQuery}
               onChange={(e) => { setIsbnQuery(e.target.value); setIsbnError(null) }}
               onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); lookupByIsbnOrGoodreads(isbnQuery) } }}
-              placeholder="9780618640157  o  https://www.goodreads.com/book/show/…"
+              placeholder={t('isbnPlaceholder')}
               className="flex-1 rounded-lg border border-ink/20 bg-paper px-4 py-3 text-sm text-ink placeholder-ink/45 outline-none transition focus:border-ember focus:ring-2 focus:ring-ember/20"
             />
             <button
@@ -445,7 +449,7 @@ export default function NuevaObraPage() {
               disabled={!isbnQuery.trim() || isbnSearching}
               className="rounded-lg border border-ink/20 px-5 py-3 text-sm font-semibold text-ink transition hover:border-ink/40 hover:bg-ink/5 disabled:cursor-not-allowed disabled:opacity-40"
             >
-              {isbnSearching ? 'Buscando…' : 'Buscar'}
+              {isbnSearching ? t('isbnSearching') : t('isbnSearch')}
             </button>
           </div>
           {isbnError && <p className="mt-2 text-xs text-ember">{isbnError}</p>}
@@ -457,12 +461,12 @@ export default function NuevaObraPage() {
         <div className="mb-6 flex items-center gap-3 rounded-lg border border-moss/30 bg-moss/5 px-4 py-3">
           <span className="text-moss">✓</span>
           <p className="text-sm text-ink">
-            Seleccionado: <span className="font-semibold">{selected.title}</span>
+            {t('selected')} <span className="font-semibold">{selected.title}</span>
             {selected.year && <span className="text-ink/50"> ({selected.year})</span>}
           </p>
           <button type="button" onClick={() => { setSelected(null); setForm(EMPTY_FORM); setExistingCard(null) }}
             className="ml-auto text-xs text-ink/55 hover:text-ink">
-            Limpiar
+            {t('clear')}
           </button>
         </div>
       )}
@@ -472,128 +476,128 @@ export default function NuevaObraPage() {
 
         {/* Tipo */}
         <div>
-          <label className="mb-1.5 block text-sm font-semibold text-ink">Tipo</label>
+          <label className="mb-1.5 block text-sm font-semibold text-ink">{t('type')}</label>
           <div className="flex gap-2">
-            {(['movie', 'series', 'book'] as const).map((t) => (
-              <button key={t} type="button" onClick={() => updateField('type', t)}
+            {(['movie', 'series', 'book'] as const).map((tp) => (
+              <button key={tp} type="button" onClick={() => updateField('type', tp)}
                 className={`rounded-lg border px-4 py-2 text-sm font-semibold transition ${
-                  form.type === t ? 'border-ember bg-ember text-white' : 'border-ink/20 text-ink/60 hover:border-ink/40 hover:text-ink'
+                  form.type === tp ? 'border-ember bg-ember text-white' : 'border-ink/20 text-ink/60 hover:border-ink/40 hover:text-ink'
                 }`}>
-                {TYPE_LABELS[t]}
+                {tw(tp)}
               </button>
             ))}
           </div>
         </div>
 
         <div className="grid gap-5 sm:grid-cols-2">
-          <Field label="Título *" value={form.title} onChange={(v) => updateField('title', v)} required />
-          <Field label="Título original" value={form.original_title} onChange={(v) => updateField('original_title', v)} />
-          <Field label="Año" value={form.year} onChange={(v) => updateField('year', v)} type="number" placeholder="2024" />
+          <Field label={t('fieldTitle')} value={form.title} onChange={(v) => updateField('title', v)} required />
+          <Field label={t('fieldOriginalTitle')} value={form.original_title} onChange={(v) => updateField('original_title', v)} />
+          <Field label={t('fieldYear')} value={form.year} onChange={(v) => updateField('year', v)} type="number" placeholder={t('fieldYearPlaceholder')} />
           {form.type === 'series' && (
-            <Field label="Número de temporadas" value={form.seasons_count} onChange={(v) => updateField('seasons_count', v)} type="number" placeholder="5" />
+            <Field label={t('fieldSeasonsCount')} value={form.seasons_count} onChange={(v) => updateField('seasons_count', v)} type="number" placeholder={t('fieldSeasonsPlaceholder')} />
           )}
         </div>
 
         {form.title && (
-          <p className="text-xs text-ink/55">URL generada automáticamente a partir del título.</p>
+          <p className="text-xs text-ink/55">{t('slugAuto')}</p>
         )}
 
         {/* Póster */}
         <div>
-          <label className="mb-2 block text-sm font-semibold text-ink">Póster</label>
+          <label className="mb-2 block text-sm font-semibold text-ink">{t('poster')}</label>
           <div className="mb-3 flex gap-2">
             <button type="button" onClick={() => setPosterMode('url')}
               className={`rounded-lg border px-3 py-1.5 text-xs font-semibold transition ${
                 posterMode === 'url' ? 'border-ember bg-ember text-white' : 'border-ink/20 text-ink/50 hover:border-ink/40 hover:text-ink'
               }`}>
-              URL externa
+              {t('posterUrl')}
             </button>
             <button type="button" onClick={() => setPosterMode('file')}
               className={`rounded-lg border px-3 py-1.5 text-xs font-semibold transition ${
                 posterMode === 'file' ? 'border-ember bg-ember text-white' : 'border-ink/20 text-ink/50 hover:border-ink/40 hover:text-ink'
               }`}>
-              Subir imagen
+              {t('posterUpload')}
             </button>
           </div>
 
           {posterMode === 'url' ? (
             <input type="url" value={form.poster_url} onChange={(e) => updateField('poster_url', e.target.value)}
-              placeholder="https://…"
+              placeholder={t('posterUrlPlaceholder')}
               className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2.5 text-sm text-ink placeholder-ink/45 outline-none transition focus:border-ember focus:ring-2 focus:ring-ember/20" />
           ) : (
             <div className="flex flex-col gap-2">
               <label className={`flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-ink/20 px-4 py-6 text-sm text-ink/50 transition hover:border-ink/40 hover:text-ink/70 ${uploading ? 'opacity-60 pointer-events-none' : ''}`}>
                 <span className="text-2xl">📁</span>
-                <span>{uploading ? 'Subiendo…' : 'Haz clic para seleccionar una imagen'}</span>
-                <span className="text-xs text-ink/45">JPG, PNG o WEBP</span>
+                <span>{uploading ? t('posterUploading') : t('posterUploadHint')}</span>
+                <span className="text-xs text-ink/45">{t('posterFormats')}</span>
                 <input type="file" accept="image/jpeg,image/png,image/webp" className="hidden"
                   onChange={(e) => { const f = e.target.files?.[0]; if (f) handlePosterUpload(f) }} />
               </label>
               {form.poster_url && posterMode === 'file' && (
-                <p className="text-xs text-moss">✓ Imagen subida correctamente</p>
+                <p className="text-xs text-moss">{t('posterUploaded')}</p>
               )}
             </div>
           )}
 
           {form.poster_url && (
             <div className="relative mt-3 h-32 w-24 overflow-hidden rounded-lg border border-ink/10">
-              <Image src={form.poster_url} alt="Póster" fill className="object-cover" unoptimized />
+              <Image src={form.poster_url} alt={t('posterAlt')} fill className="object-cover" unoptimized />
             </div>
           )}
         </div>
 
         <div>
-          <label className="mb-1.5 block text-sm font-semibold text-ink">Sinopsis</label>
+          <label className="mb-1.5 block text-sm font-semibold text-ink">{t('overview')}</label>
           <textarea value={form.overview} onChange={(e) => updateField('overview', e.target.value)} rows={3}
             className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2.5 text-sm text-ink placeholder-ink/45 outline-none transition focus:border-ember focus:ring-2 focus:ring-ember/20"
-            placeholder="Descripción breve de la obra…" />
+            placeholder={t('overviewPlaceholder')} />
         </div>
 
-        <Field label="Géneros (separados por comas)" value={form.genres} onChange={(v) => updateField('genres', v)} placeholder="Drama, Thriller, Ciencia ficción" />
+        <Field label={t('fieldGenres')} value={form.genres} onChange={(v) => updateField('genres', v)} placeholder={t('fieldGenresPlaceholder')} />
 
         {form.type === 'book' && (
-          <Field label="Autores (separados por comas)" value={form.authors} onChange={(v) => updateField('authors', v)} placeholder="J.R.R. Tolkien" />
+          <Field label={t('fieldAuthors')} value={form.authors} onChange={(v) => updateField('authors', v)} placeholder={t('fieldAuthorsPlaceholder')} />
         )}
         {(form.type === 'movie' || form.type === 'series') && (
           <Field
-            label={form.type === 'series' ? 'Directores / Creadores (separados por comas)' : 'Directores (separados por comas)'}
+            label={form.type === 'series' ? t('fieldDirectorsSeries') : t('fieldDirectorsMovie')}
             value={form.directors}
             onChange={(v) => updateField('directors', v)}
-            placeholder={form.type === 'series' ? 'Vince Gilligan' : 'Christopher Nolan'}
+            placeholder={form.type === 'series' ? t('fieldDirectorsPlaceholderSeries') : t('fieldDirectorsPlaceholderMovie')}
           />
         )}
 
         {/* Campos específicos de libros */}
         {form.type === 'book' && (
           <>
-            <Field label="ISBN" value={form.isbn} onChange={(v) => updateField('isbn', v)} placeholder="978-84-..." />
+            <Field label={t('fieldIsbn')} value={form.isbn} onChange={(v) => updateField('isbn', v)} placeholder={t('fieldIsbnPlaceholder')} />
             <div className="grid gap-5 sm:grid-cols-2">
-              <Field label="Editorial" value={form.publisher} onChange={(v) => updateField('publisher', v)} placeholder="Minotauro" />
-              <Field label="Número de páginas" value={form.pages} onChange={(v) => updateField('pages', v)} type="number" placeholder="340" />
+              <Field label={t('fieldPublisher')} value={form.publisher} onChange={(v) => updateField('publisher', v)} placeholder={t('fieldPublisherPlaceholder')} />
+              <Field label={t('fieldPages')} value={form.pages} onChange={(v) => updateField('pages', v)} type="number" placeholder={t('fieldPagesPlaceholder')} />
             </div>
             <div className="grid gap-5 sm:grid-cols-2">
-              <Field label="Saga / serie de libros" value={form.saga} onChange={(v) => updateField('saga', v)} placeholder="El Señor de los Anillos" />
-              <Field label="Número en la saga" value={form.saga_order} onChange={(v) => updateField('saga_order', v)} type="number" placeholder="1" />
+              <Field label={t('fieldSaga')} value={form.saga} onChange={(v) => updateField('saga', v)} placeholder={t('fieldSagaPlaceholder')} />
+              <Field label={t('fieldSagaOrder')} value={form.saga_order} onChange={(v) => updateField('saga_order', v)} type="number" placeholder={t('fieldSagaOrderPlaceholder')} />
             </div>
           </>
         )}
 
         <div className="grid gap-5 sm:grid-cols-2">
-          <Field label="TMDb ID" value={form.tmdb_id} onChange={(v) => updateField('tmdb_id', v)} type="number" />
-          <Field label="Google Books ID" value={form.google_books_id} onChange={(v) => updateField('google_books_id', v)} />
+          <Field label={t('fieldTmdbId')} value={form.tmdb_id} onChange={(v) => updateField('tmdb_id', v)} type="number" />
+          <Field label={t('fieldGoogleBooksId')} value={form.google_books_id} onChange={(v) => updateField('google_books_id', v)} />
         </div>
 
         {duplicateSlug !== null && (
           <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-4 text-sm text-amber-900">
-            <p className="font-semibold">Esta obra ya está en Spoilering.</p>
+            <p className="font-semibold">{t('duplicateTitle')}</p>
             <div className="mt-3 flex flex-wrap gap-2">
               <a href={`/ficha/${duplicateSlug}`} target="_blank" rel="noopener noreferrer"
                 className="rounded-lg bg-ink px-4 py-2 text-xs font-semibold text-paper transition hover:bg-ember">
-                Ver la ficha →
+                {t('duplicateView')}
               </a>
               <a href={`/ficha/${duplicateSlug}`} target="_blank" rel="noopener noreferrer"
                 className="rounded-lg border border-ink/20 px-4 py-2 text-xs font-semibold text-ink transition hover:border-ink/40 hover:bg-ink/5">
-                Sugerir una corrección
+                {t('duplicateSuggest')}
               </a>
             </div>
           </div>
@@ -605,26 +609,26 @@ export default function NuevaObraPage() {
 
         {existingCard && (
           <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-            <p className="font-semibold">Ya existe una ficha para esta obra.</p>
+            <p className="font-semibold">{t('existingCardTitle')}</p>
             <a href={`/admin/ficha/${existingCard.cardId}`}
               className="mt-1 inline-block underline underline-offset-2 hover:text-amber-900">
-              Ir a editar la ficha existente →
+              {t('existingCardLink')}
             </a>
           </div>
         )}
 
         <div className="flex items-center gap-3 pt-2">
           {checkingDuplicate ? (
-            <span className="text-sm text-ink/55">Verificando…</span>
+            <span className="text-sm text-ink/55">{t('checking')}</span>
           ) : existingCard || duplicateSlug !== null ? null : (
             <button type="submit" disabled={submitting || !form.title}
               className="rounded-lg bg-ember px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-ember/90 disabled:cursor-not-allowed disabled:opacity-50">
-              {submitting ? 'Creando…' : 'Continuar →'}
+              {submitting ? t('submitting') : t('submit')}
             </button>
           )}
           <button type="button" onClick={() => router.back()}
             className="text-sm font-semibold text-ink/50 hover:text-ink">
-            Cancelar
+            {t('cancel')}
           </button>
         </div>
       </form>

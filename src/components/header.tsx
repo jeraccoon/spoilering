@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { UserMenu } from '@/components/user-menu'
 import { NavSearch } from '@/components/NavSearch'
+import { LanguageSwitcher } from '@/components/language-switcher'
 
 async function getUser() {
   try {
@@ -131,6 +132,7 @@ export async function Header() {
 
         <div className="flex items-center gap-1.5 sm:gap-3">
           <NavSearch />
+          <LanguageSwitcher />
           {auth?.user ? (
             <>
               <Link

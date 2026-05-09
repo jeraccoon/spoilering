@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Fraunces } from "next/font/google";
 import { notFound } from "next/navigation";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
-import { setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import "../globals.css";
 
 import { Footer } from "@/components/footer";
@@ -16,44 +16,54 @@ const serif = Fraunces({ subsets: ["latin"], variable: "--font-serif", display: 
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
-export const metadata: Metadata = {
-  metadataBase: new URL(siteUrl),
-  title: {
-    default: "Spoilering",
-    template: "%s | Spoilering",
-  },
-  description:
-    "Resúmenes claros con spoilers de libros, series y películas para entender una historia sin rodeos.",
-  applicationName: "Spoilering",
-  authors: [{ name: "Spoilering" }],
-  keywords: [
-    "spoilers",
-    "resúmenes",
-    "libros",
-    "series",
-    "películas",
-    "final explicado",
-  ],
-  openGraph: {
-    title: "Spoilering",
-    description:
-      "Resúmenes claros con spoilers de libros, series y películas.",
-    url: siteUrl,
-    siteName: "Spoilering",
-    locale: "es_ES",
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Spoilering",
-    description:
-      "Resúmenes claros con spoilers de libros, series y películas.",
-  },
-  robots: {
-    index: true,
-    follow: true,
-  },
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "Metadata" });
+  const siteName = t("siteName");
+  const description = t("description");
+  const ogDescription = t("ogDescription");
+  const keywords = t("keywords").split(",").map((k) => k.trim());
+  const localeUrl = `${siteUrl}/${locale}`;
+
+  return {
+    metadataBase: new URL(siteUrl),
+    title: {
+      default: siteName,
+      template: `%s | ${siteName}`,
+    },
+    description,
+    applicationName: siteName,
+    authors: [{ name: siteName }],
+    keywords,
+    alternates: {
+      canonical: localeUrl,
+      languages: Object.fromEntries(
+        routing.locales.map((l) => [l, `${siteUrl}/${l}`])
+      ),
+    },
+    openGraph: {
+      title: siteName,
+      description: ogDescription,
+      url: localeUrl,
+      siteName,
+      locale: t("ogLocale"),
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: siteName,
+      description: ogDescription,
+    },
+    robots: {
+      index: true,
+      follow: true,
+    },
+  };
+}
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));

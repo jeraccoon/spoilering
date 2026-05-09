@@ -1,8 +1,9 @@
 'use client'
 
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 import Image from 'next/image'
-import { useRouter } from 'next/navigation'
+import { useRouter } from '@/i18n/navigation'
 import { SeasonsPanel } from '@/components/admin/SeasonsPanel'
 import { UserContentPanel } from '@/components/public/UserContentPanel'
 
@@ -43,8 +44,6 @@ interface Card {
   sections: Section[]
 }
 
-const TYPE_LABELS: Record<string, string> = { movie: 'Película', series: 'Serie', book: 'Libro' }
-
 interface AddSectionModalProps {
   cardId: string
   parentId: string | null
@@ -54,6 +53,7 @@ interface AddSectionModalProps {
 }
 
 function AddSectionModal({ cardId, parentId, parentLabel, onClose, onCreated }: AddSectionModalProps) {
+  const t = useTranslations('Admin.editor')
   const [label, setLabel] = useState('')
   const [shortLabel, setShortLabel] = useState('')
   const [saving, setSaving] = useState(false)
@@ -74,7 +74,7 @@ function AddSectionModal({ cardId, parentId, parentLabel, onClose, onCreated }: 
       if (!res.ok) { setError(data.error); setSaving(false); return }
       onCreated({ ...data, children: [] })
     } catch {
-      setError('Error inesperado')
+      setError(t('unexpectedError'))
       setSaving(false)
     }
   }
@@ -83,14 +83,14 @@ function AddSectionModal({ cardId, parentId, parentLabel, onClose, onCreated }: 
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 px-4 backdrop-blur-sm">
       <div className="w-full max-w-md rounded-xl border border-ink/10 bg-paper p-6 shadow-xl">
         <h3 className="mb-1 text-lg font-black text-ink">
-          {parentLabel ? `Añadir subsección en "${parentLabel}"` : 'Añadir sección'}
+          {parentLabel ? t('addSubsectionIn', { label: parentLabel }) : t('addSection')}
         </h3>
         <p className="mb-5 text-sm text-ink/50">
-          {parentLabel ? 'Por ejemplo: Episodio 1, Capítulo 3…' : 'Por ejemplo: Temporada 1, Acto I, Resumen general…'}
+          {parentLabel ? t('subsectionHint') : t('sectionHint')}
         </p>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="mb-1.5 block text-sm font-semibold text-ink">Nombre de la sección *</label>
+            <label className="mb-1.5 block text-sm font-semibold text-ink">{t('sectionNameLabel')}</label>
             <input
               autoFocus
               type="text"
@@ -98,28 +98,28 @@ function AddSectionModal({ cardId, parentId, parentLabel, onClose, onCreated }: 
               onChange={(e) => setLabel(e.target.value)}
               required
               className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2.5 text-sm text-ink placeholder-ink/45 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
-              placeholder="Ej: Temporada 1"
+              placeholder={t('sectionNamePlaceholder')}
             />
           </div>
           <div>
-            <label className="mb-1.5 block text-sm font-semibold text-ink">Nombre corto (nav)</label>
+            <label className="mb-1.5 block text-sm font-semibold text-ink">{t('shortNameLabel')}</label>
             <input
               type="text"
               value={shortLabel}
               onChange={(e) => setShortLabel(e.target.value)}
               className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2.5 text-sm text-ink placeholder-ink/45 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
-              placeholder="Ej: T1 (opcional)"
+              placeholder={t('shortNamePlaceholder')}
             />
           </div>
           {error && <p className="text-sm text-ember">{error}</p>}
           <div className="flex gap-3 pt-1">
             <button type="submit" disabled={saving || !label.trim()}
               className="rounded-lg bg-ember px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-ember/90 disabled:opacity-50">
-              {saving ? 'Creando…' : 'Crear sección'}
+              {saving ? t('creating') : t('createSection')}
             </button>
             <button type="button" onClick={onClose}
               className="text-sm font-semibold text-ink/50 hover:text-ink">
-              Cancelar
+              {t('cancel')}
             </button>
           </div>
         </form>
@@ -136,6 +136,8 @@ interface UserContentRecord {
 }
 
 export function FichaEditor({ card: initialCard, initialUserContent }: { card: Card; initialUserContent: UserContentRecord | null }) {
+  const t = useTranslations('Admin.editor')
+  const tw = useTranslations('WorkType')
   const router = useRouter()
   const [card, setCard] = useState(initialCard)
   const [openIds, setOpenIds] = useState<Set<string>>(
@@ -236,10 +238,10 @@ export function FichaEditor({ card: initialCard, initialUserContent }: { card: C
         setOpenIds((prev) => new Set([...prev, section.id]))
         setShowAiWarning(true)
       } else if (!res.ok) {
-        setGenerateError(data.error ?? 'Error al generar')
+        setGenerateError(data.error ?? t('generateError'))
       }
     } catch {
-      setGenerateError('Error de red al generar')
+      setGenerateError(t('generateNetworkError'))
     } finally {
       setGeneratingSections((prev) => {
         const next = new Set(prev)
@@ -280,10 +282,10 @@ export function FichaEditor({ card: initialCard, initialUserContent }: { card: C
               body: JSON.stringify({ content: data.content }),
             })
           } else if (!res.ok) {
-            setGenerateError(data.error ?? 'Error al generar una sección')
+            setGenerateError(data.error ?? t('generateSectionError'))
           }
         } catch {
-          setGenerateError('Error de red al generar')
+          setGenerateError(t('generateNetworkError'))
         } finally {
           setGeneratingSections((prev) => {
             const next = new Set(prev)
@@ -352,13 +354,13 @@ export function FichaEditor({ card: initialCard, initialUserContent }: { card: C
       })
       if (!res.ok) {
         const d = await res.json()
-        setMetaError(d.error ?? 'Error al guardar')
+        setMetaError(d.error ?? t('metaSaveError'))
       } else {
         setSavedMeta(true)
         setTimeout(() => setSavedMeta(false), 2500)
       }
     } catch {
-      setMetaError('Error de red')
+      setMetaError(t('metaNetworkError'))
     } finally {
       setSavingMeta(false)
     }
@@ -389,7 +391,7 @@ export function FichaEditor({ card: initialCard, initialUserContent }: { card: C
   }
 
   async function deleteCard() {
-    if (!confirm('¿Eliminar esta ficha? Esta acción no se puede deshacer.')) return
+    if (!confirm(t('confirmDelete'))) return
     const res = await fetch(`/api/admin/cards/${card.id}`, { method: 'DELETE' })
     if (res.ok) router.push('/admin')
   }
@@ -436,21 +438,21 @@ export function FichaEditor({ card: initialCard, initialUserContent }: { card: C
               {isGenerating ? (
                 <span className="mr-1 h-2 w-2 animate-pulse rounded-full bg-plum/60" />
               ) : wordCount > 0 ? (
-                <span className="mr-1 text-xs text-ink/55">{wordCount} palabras</span>
+                <span className="mr-1 text-xs text-ink/55">{t('wordCount', { count: wordCount })}</span>
               ) : null}
             </button>
             <div className="flex items-center gap-0.5 pr-3">
               <button
                 onClick={() => void generateSection(section)}
                 disabled={isGenerating}
-                title="Generar con IA"
+                title={t('generateAria')}
                 className="rounded px-1.5 py-1 text-xs font-semibold text-plum/50 transition hover:bg-plum/5 hover:text-plum disabled:opacity-40"
               >
                 ✦
               </button>
               <button
                 onClick={() => setModal({ parentId: section.id, parentLabel: section.label })}
-                title="Añadir subsección"
+                title={t('addSubsectionAria')}
                 className="rounded px-1.5 py-1 text-sm font-semibold text-ink/45 transition hover:bg-ink/5 hover:text-ink/60"
               >
                 +
@@ -467,17 +469,17 @@ export function FichaEditor({ card: initialCard, initialUserContent }: { card: C
                 onBlur={() => void saveContent(section.id)}
                 rows={6}
                 style={{ minHeight: '140px' }}
-                placeholder="Escribe el contenido de esta sección o usa ✦ para generarlo con IA…"
+                placeholder={t('sectionPlaceholder')}
                 className="w-full resize-y rounded-xl border border-ink/10 bg-paper px-4 py-3 text-sm leading-relaxed text-ink placeholder-ink/25 outline-none transition focus:border-ember focus:ring-2 focus:ring-ember/20"
               />
               <div className="mt-1.5 flex items-center justify-between text-xs text-ink/45">
-                <span>{content.length} caracteres</span>
+                <span>{t('charsCount', { count: content.length })}</span>
                 <span>
-                  {saving === section.id && <span className="text-ink/55">Guardando…</span>}
-                  {savedId === section.id && saving !== section.id && <span className="text-moss">Guardado ✓</span>}
-                  {saveError === section.id && saving !== section.id && <span className="text-ember">Error al guardar</span>}
+                  {saving === section.id && <span className="text-ink/55">{t('saving')}</span>}
+                  {savedId === section.id && saving !== section.id && <span className="text-moss">{t('saved')}</span>}
+                  {saveError === section.id && saving !== section.id && <span className="text-ember">{t('saveError')}</span>}
                 </span>
-                <span>{wordCount} palabras</span>
+                <span>{t('wordCount', { count: wordCount })}</span>
               </div>
 
               {section.children.length > 0 && (
@@ -505,14 +507,16 @@ export function FichaEditor({ card: initialCard, initialUserContent }: { card: C
         <div className="flex min-w-0 flex-1 flex-col justify-center gap-1">
           <div className="flex items-center justify-between gap-2">
             <span className="text-sm text-ink/50">
-              {TYPE_LABELS[card.work.type] ?? card.work.type}
+              {card.work.type === 'movie' || card.work.type === 'series' || card.work.type === 'book'
+                ? tw(card.work.type as 'movie' | 'series' | 'book')
+                : card.work.type}
               {card.work.year && ` · ${card.work.year}`}
             </span>
             <button
               onClick={() => router.push('/admin')}
               className="shrink-0 text-sm font-semibold text-ink/55 hover:text-ink"
             >
-              ← Admin
+              {t('backToAdmin')}
             </button>
           </div>
           <h1 className="text-2xl font-black tracking-tight text-ink">{card.work.title}</h1>
@@ -522,7 +526,12 @@ export function FichaEditor({ card: initialCard, initialUserContent }: { card: C
       {!committed && (
         <div className="mb-4 flex items-center gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
           <span>⚠️</span>
-          <span>Esta ficha aún no está guardada. Pulsa <strong>Guardar borrador</strong> o <strong>Publicar</strong> para confirmarla.</span>
+          <span>
+            {t.rich('uncommittedNotice', {
+              strongDraft: (chunks) => <strong>{chunks}</strong>,
+              strongPublish: (chunks) => <strong>{chunks}</strong>,
+            })}
+          </span>
         </div>
       )}
 
@@ -532,12 +541,12 @@ export function FichaEditor({ card: initialCard, initialUserContent }: { card: C
           {card.status === 'published' ? (
             <span className="flex items-center gap-1.5 text-sm font-semibold text-moss">
               <span className="h-2 w-2 rounded-full bg-moss" />
-              Publicada
+              {t('published')}
             </span>
           ) : (
             <span className="flex items-center gap-1.5 text-sm font-semibold text-ink/55">
               <span className="h-2 w-2 rounded-full bg-ink/30" />
-              Borrador
+              {t('draft')}
             </span>
           )}
 
@@ -548,8 +557,8 @@ export function FichaEditor({ card: initialCard, initialUserContent }: { card: C
               className="flex items-center gap-1.5 rounded-lg border border-plum/30 bg-plum/5 px-3 py-1.5 text-xs font-semibold text-plum transition hover:bg-plum/10 disabled:opacity-50"
             >
               {generatingAll
-                ? `⏳ Generando… (${card.sections.length - generatingSections.size}/${card.sections.length})`
-                : '✦ Generar todo con IA'}
+                ? t('generatingProgress', { done: card.sections.length - generatingSections.size, total: card.sections.length })
+                : t('generateAll')}
             </button>
 
             {card.status === 'draft' ? (
@@ -559,14 +568,14 @@ export function FichaEditor({ card: initialCard, initialUserContent }: { card: C
                   disabled={savingMeta}
                   className="rounded-lg border border-ink/20 px-3 py-1.5 text-xs font-semibold text-ink/60 transition hover:border-ink/40 hover:bg-ink/5 disabled:opacity-50"
                 >
-                  {savingMeta ? '…' : 'Guardar borrador'}
+                  {savingMeta ? t('shortLoading') : t('saveDraft')}
                 </button>
                 <button
                   onClick={() => void toggleStatus()}
                   disabled={statusLoading}
                   className="rounded-lg bg-ember px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-ember/90 disabled:opacity-50"
                 >
-                  {statusLoading ? '…' : 'Publicar'}
+                  {statusLoading ? t('shortLoading') : t('publish')}
                 </button>
               </>
             ) : (
@@ -575,7 +584,7 @@ export function FichaEditor({ card: initialCard, initialUserContent }: { card: C
                 disabled={statusLoading}
                 className="rounded-lg border border-ink/20 px-3 py-1.5 text-xs font-semibold text-ink/60 transition hover:border-ink/40 hover:bg-ink/5 disabled:opacity-50"
               >
-                {statusLoading ? '…' : 'Despublicar'}
+                {statusLoading ? t('shortLoading') : t('unpublish')}
               </button>
             )}
           </div>
@@ -590,11 +599,12 @@ export function FichaEditor({ card: initialCard, initialUserContent }: { card: C
         <div className="mb-5 flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
           <span className="mt-0.5 text-amber-500">⚠️</span>
           <div className="flex-1 text-sm text-amber-800">
-            <span className="font-semibold">Revisa el contenido antes de publicar.</span>
-            {' '}La IA puede cometer errores, inventar datos o saltarse detalles importantes.
+            <span className="font-semibold">{t('aiWarningStrong')}</span>
+            {t('aiWarningTail')}
           </div>
           <button
             onClick={() => setShowAiWarning(false)}
+            aria-label={t('dismissAria')}
             className="text-lg leading-none text-amber-400 hover:text-amber-600"
           >
             ×
@@ -607,7 +617,7 @@ export function FichaEditor({ card: initialCard, initialUserContent }: { card: C
       <div className="space-y-2">
         {card.sections.length === 0 && (
           <div className="flex h-32 items-center justify-center rounded-xl border border-ink/10 bg-ink/5 text-ink/45">
-            <p className="text-sm">Sin secciones. Crea la primera.</p>
+            <p className="text-sm">{t('noSections')}</p>
           </div>
         )}
         {card.sections.map((section) => renderSection(section))}
@@ -615,7 +625,7 @@ export function FichaEditor({ card: initialCard, initialUserContent }: { card: C
           onClick={() => setModal({ parentId: null })}
           className="w-full rounded-xl border border-dashed border-ink/20 py-2.5 text-sm font-semibold text-ink/55 transition hover:border-ink/40 hover:text-ink/60"
         >
-          + Añadir sección
+          {t('addSectionButton')}
         </button>
       </div>
 
@@ -625,59 +635,59 @@ export function FichaEditor({ card: initialCard, initialUserContent }: { card: C
       {/* Metadatos y enlaces */}
       <section className="mt-10 border-t border-ink/10 pt-8">
         <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-ink/55">Metadatos y enlaces</h2>
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-ink/55">{t('metaTitle')}</h2>
           <div className="flex items-center gap-3">
-            {savingMeta && <span className="text-xs text-ink/55">Guardando…</span>}
-            {savedMeta && !savingMeta && <span className="text-xs text-moss">Guardado ✓</span>}
+            {savingMeta && <span className="text-xs text-ink/55">{t('metaSaving')}</span>}
+            {savedMeta && !savingMeta && <span className="text-xs text-moss">{t('metaSaved')}</span>}
             {metaError && <span className="text-xs text-ember">{metaError}</span>}
           </div>
         </div>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="sm:col-span-2">
-            <label className="mb-1.5 block text-xs font-semibold text-ink/60">URL del póster</label>
+            <label className="mb-1.5 block text-xs font-semibold text-ink/60">{t('fieldPosterUrl')}</label>
             <input
               type="url"
               value={meta.poster_url}
               onChange={(e) => setMeta((p) => ({ ...p, poster_url: e.target.value }))}
               onBlur={() => void saveMeta()}
-              placeholder="https://image.tmdb.org/t/p/w500/…"
+              placeholder={t('fieldPosterUrlPlaceholder')}
               className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder-ink/45 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
             />
           </div>
           {card.work.type !== 'book' && (
             <div className="sm:col-span-2">
-              <label className="mb-1.5 block text-xs font-semibold text-ink/60">Reparto principal (separado por comas)</label>
+              <label className="mb-1.5 block text-xs font-semibold text-ink/60">{t('fieldCast')}</label>
               <input
                 type="text"
                 value={meta.cast}
                 onChange={(e) => setMeta((p) => ({ ...p, cast: e.target.value }))}
                 onBlur={() => void saveMeta()}
-                placeholder="Actor 1, Actor 2, Actor 3…"
+                placeholder={t('fieldCastPlaceholder')}
                 className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder-ink/45 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
               />
             </div>
           )}
           <div>
-            <label className="mb-1.5 block text-xs font-semibold text-ink/60">País de origen</label>
+            <label className="mb-1.5 block text-xs font-semibold text-ink/60">{t('fieldCountry')}</label>
             <input
               type="text"
               value={meta.country}
               onChange={(e) => setMeta((p) => ({ ...p, country: e.target.value }))}
               onBlur={() => void saveMeta()}
-              placeholder="Ej: Estados Unidos"
+              placeholder={t('fieldCountryPlaceholder')}
               className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder-ink/45 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
             />
           </div>
           {card.work.type !== 'book' && (
             <div>
-              <label className="mb-1.5 block text-xs font-semibold text-ink/60">Duración (minutos)</label>
+              <label className="mb-1.5 block text-xs font-semibold text-ink/60">{t('fieldRuntime')}</label>
               <input
                 type="number"
                 min="0"
                 value={meta.runtime}
                 onChange={(e) => setMeta((p) => ({ ...p, runtime: e.target.value }))}
                 onBlur={() => void saveMeta()}
-                placeholder="Ej: 120"
+                placeholder={t('fieldRuntimePlaceholder')}
                 className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder-ink/45 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
               />
             </div>
@@ -685,7 +695,7 @@ export function FichaEditor({ card: initialCard, initialUserContent }: { card: C
           {card.work.type !== 'book' && (
             <div>
               <div className="mb-1.5 flex items-center justify-between">
-                <label className="text-xs font-semibold text-ink/60">ID de IMDb (ej: tt1234567)</label>
+                <label className="text-xs font-semibold text-ink/60">{t('fieldImdbId')}</label>
                 {meta.imdb_id && (
                   <a
                     href={`https://www.imdb.com/title/${meta.imdb_id}/`}
@@ -693,7 +703,7 @@ export function FichaEditor({ card: initialCard, initialUserContent }: { card: C
                     rel="noopener noreferrer"
                     className="text-[11px] font-semibold text-ember/70 hover:text-ember"
                   >
-                    Ver en IMDb ↗
+                    {t('viewOnImdb')}
                   </a>
                 )}
               </div>
@@ -702,7 +712,7 @@ export function FichaEditor({ card: initialCard, initialUserContent }: { card: C
                 value={meta.imdb_id}
                 onChange={(e) => setMeta((p) => ({ ...p, imdb_id: e.target.value }))}
                 onBlur={() => void saveMeta()}
-                placeholder="tt1234567"
+                placeholder={t('fieldImdbIdPlaceholder')}
                 className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder-ink/45 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
               />
             </div>
@@ -710,7 +720,7 @@ export function FichaEditor({ card: initialCard, initialUserContent }: { card: C
           {card.work.type !== 'book' && (
             <div>
               <div className="mb-1.5 flex items-center justify-between">
-                <label className="text-xs font-semibold text-ink/60">URL de Letterboxd</label>
+                <label className="text-xs font-semibold text-ink/60">{t('fieldLetterboxd')}</label>
                 <a
                   href={meta.imdb_id
                     ? `https://letterboxd.com/imdb/${meta.imdb_id}/`
@@ -719,7 +729,7 @@ export function FichaEditor({ card: initialCard, initialUserContent }: { card: C
                   rel="noopener noreferrer"
                   className="text-[11px] font-semibold text-ember/70 hover:text-ember"
                 >
-                  Buscar en Letterboxd ↗
+                  {t('searchOnLetterboxd')}
                 </a>
               </div>
               <input
@@ -727,87 +737,87 @@ export function FichaEditor({ card: initialCard, initialUserContent }: { card: C
                 value={meta.letterboxd_url}
                 onChange={(e) => setMeta((p) => ({ ...p, letterboxd_url: e.target.value }))}
                 onBlur={() => void saveMeta()}
-                placeholder="https://letterboxd.com/film/..."
+                placeholder={t('fieldLetterboxdPlaceholder')}
                 className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder-ink/45 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
               />
             </div>
           )}
           {card.work.type === 'book' && (
             <div>
-              <label className="mb-1.5 block text-xs font-semibold text-ink/60">URL de Goodreads</label>
+              <label className="mb-1.5 block text-xs font-semibold text-ink/60">{t('fieldGoodreads')}</label>
               <input
                 type="url"
                 value={meta.goodreads_url}
                 onChange={(e) => setMeta((p) => ({ ...p, goodreads_url: e.target.value }))}
                 onBlur={() => void saveMeta()}
-                placeholder="https://www.goodreads.com/book/show/..."
+                placeholder={t('fieldGoodreadsPlaceholder')}
                 className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder-ink/45 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
               />
             </div>
           )}
           {card.work.type === 'book' && (
             <div>
-              <label className="mb-1.5 block text-xs font-semibold text-ink/60">ISBN</label>
+              <label className="mb-1.5 block text-xs font-semibold text-ink/60">{t('fieldIsbn')}</label>
               <input
                 type="text"
                 value={meta.isbn}
                 onChange={(e) => setMeta((p) => ({ ...p, isbn: e.target.value }))}
                 onBlur={() => void saveMeta()}
-                placeholder="9788401021145"
+                placeholder={t('fieldIsbnPlaceholder')}
                 className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder-ink/45 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
               />
             </div>
           )}
           {card.work.type === 'book' && (
             <div>
-              <label className="mb-1.5 block text-xs font-semibold text-ink/60">Editorial</label>
+              <label className="mb-1.5 block text-xs font-semibold text-ink/60">{t('fieldPublisher')}</label>
               <input
                 type="text"
                 value={meta.publisher}
                 onChange={(e) => setMeta((p) => ({ ...p, publisher: e.target.value }))}
                 onBlur={() => void saveMeta()}
-                placeholder="Ej: Alfaguara"
+                placeholder={t('fieldPublisherPlaceholder')}
                 className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder-ink/45 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
               />
             </div>
           )}
           {card.work.type === 'book' && (
             <div>
-              <label className="mb-1.5 block text-xs font-semibold text-ink/60">Número de páginas</label>
+              <label className="mb-1.5 block text-xs font-semibold text-ink/60">{t('fieldPages')}</label>
               <input
                 type="number"
                 min="0"
                 value={meta.pages}
                 onChange={(e) => setMeta((p) => ({ ...p, pages: e.target.value }))}
                 onBlur={() => void saveMeta()}
-                placeholder="Ej: 384"
+                placeholder={t('fieldPagesPlaceholder')}
                 className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder-ink/45 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
               />
             </div>
           )}
           {card.work.type === 'book' && (
             <div>
-              <label className="mb-1.5 block text-xs font-semibold text-ink/60">Saga</label>
+              <label className="mb-1.5 block text-xs font-semibold text-ink/60">{t('fieldSaga')}</label>
               <input
                 type="text"
                 value={meta.saga}
                 onChange={(e) => setMeta((p) => ({ ...p, saga: e.target.value }))}
                 onBlur={() => void saveMeta()}
-                placeholder="Ej: El señor de los anillos"
+                placeholder={t('fieldSagaPlaceholder')}
                 className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder-ink/45 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
               />
             </div>
           )}
           {card.work.type === 'book' && (
             <div>
-              <label className="mb-1.5 block text-xs font-semibold text-ink/60">Orden en la saga</label>
+              <label className="mb-1.5 block text-xs font-semibold text-ink/60">{t('fieldSagaOrder')}</label>
               <input
                 type="number"
                 min="1"
                 value={meta.saga_order}
                 onChange={(e) => setMeta((p) => ({ ...p, saga_order: e.target.value }))}
                 onBlur={() => void saveMeta()}
-                placeholder="Ej: 1"
+                placeholder={t('fieldSagaOrderPlaceholder')}
                 className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder-ink/45 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
               />
             </div>
@@ -815,14 +825,14 @@ export function FichaEditor({ card: initialCard, initialUserContent }: { card: C
           {card.work.type !== 'book' && (
             <div>
               <div className="mb-1.5 flex items-center justify-between">
-                <label className="text-xs font-semibold text-ink/60">URL de Filmaffinity</label>
+                <label className="text-xs font-semibold text-ink/60">{t('fieldFilmaffinity')}</label>
                 <a
                   href={`https://www.filmaffinity.com/es/search.php?stext=${encodeURIComponent(card.work.title)}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-[11px] font-semibold text-ember/70 hover:text-ember"
                 >
-                  Buscar en Filmaffinity ↗
+                  {t('searchOnFilmaffinity')}
                 </a>
               </div>
               <input
@@ -830,7 +840,7 @@ export function FichaEditor({ card: initialCard, initialUserContent }: { card: C
                 value={meta.filmaffinity_url}
                 onChange={(e) => setMeta((p) => ({ ...p, filmaffinity_url: e.target.value }))}
                 onBlur={() => void saveMeta()}
-                placeholder="https://www.filmaffinity.com/es/film..."
+                placeholder={t('fieldFilmaffinityPlaceholder')}
                 className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder-ink/45 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
               />
             </div>
@@ -838,14 +848,14 @@ export function FichaEditor({ card: initialCard, initialUserContent }: { card: C
           {card.work.type !== 'book' && (
             <div>
               <div className="mb-1.5 flex items-center justify-between">
-                <label className="text-xs font-semibold text-ink/60">URL de Trakt.tv</label>
+                <label className="text-xs font-semibold text-ink/60">{t('fieldTrakt')}</label>
                 <a
                   href={`https://trakt.tv/search?query=${encodeURIComponent(card.work.title)}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-[11px] font-semibold text-ember/70 hover:text-ember"
                 >
-                  Buscar en Trakt ↗
+                  {t('searchOnTrakt')}
                 </a>
               </div>
               <input
@@ -853,7 +863,7 @@ export function FichaEditor({ card: initialCard, initialUserContent }: { card: C
                 value={meta.tracktv_url}
                 onChange={(e) => setMeta((p) => ({ ...p, tracktv_url: e.target.value }))}
                 onBlur={() => void saveMeta()}
-                placeholder={card.work.type === 'series' ? 'https://trakt.tv/shows/...' : 'https://trakt.tv/movies/...'}
+                placeholder={card.work.type === 'series' ? t('fieldTraktPlaceholderSeries') : t('fieldTraktPlaceholderMovie')}
                 className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder-ink/45 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
               />
             </div>
@@ -874,7 +884,7 @@ export function FichaEditor({ card: initialCard, initialUserContent }: { card: C
           onClick={deleteCard}
           className="text-xs font-semibold text-ink/45 transition hover:text-ember"
         >
-          Eliminar ficha
+          {t('deleteCard')}
         </button>
       </div>
 
