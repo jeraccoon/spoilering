@@ -18,6 +18,8 @@ import { PerfilCardsSection } from '@/components/perfil-cards-section'
 import { SocialLinksEditor } from '@/components/social-links-editor'
 import type { CardWithWork } from '@/types/database'
 
+export const dynamic = 'force-dynamic'
+
 const ROLE_COLORS = {
   admin: 'bg-ember/10 text-ember',
   editor: 'bg-moss/10 text-moss',

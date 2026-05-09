@@ -2,6 +2,8 @@ import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { NuevaFichaEditor } from './nueva-ficha-editor'
 
+export const dynamic = 'force-dynamic'
+
 export default async function NuevaFichaPage({
   params,
 }: {

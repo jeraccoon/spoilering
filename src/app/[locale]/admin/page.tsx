@@ -6,6 +6,8 @@ import { OrphanWorksSection } from '@/components/admin/orphan-works-section'
 import { InactiveDraftsSection } from '@/components/admin/inactive-drafts-section'
 import { AdminCardsFilter } from '@/components/admin/admin-cards-filter'
 
+export const dynamic = 'force-dynamic'
+
 async function getAdminData() {
   const supabase = await createClient()
 

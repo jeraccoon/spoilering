@@ -3,6 +3,8 @@ import { Link } from '@/i18n/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { SuggestionActions } from './suggestion-actions'
 
+export const dynamic = 'force-dynamic'
+
 async function getSuggestions() {
   const supabase = await createClient()
   const { data } = await (supabase.from('suggestions') as any)

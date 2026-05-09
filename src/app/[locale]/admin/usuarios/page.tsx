@@ -4,6 +4,8 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { AdminUsersTable, type UserRow } from '@/components/admin-users-table'
 
+export const dynamic = 'force-dynamic'
+
 async function getUsers(locale: string) {
   const supabase = await createClient()
   const auth = await supabase.auth.getUser()
