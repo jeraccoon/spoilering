@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 
 interface Props {
   initialLinks: {
@@ -39,6 +40,8 @@ const NETWORKS = [
 ] as const
 
 export function SocialLinksEditor({ initialLinks }: Props) {
+  const t = useTranslations('SocialLinks')
+  const tCommon = useTranslations('Common')
   const [links, setLinks] = useState({
     letterboxd_profile: initialLinks.letterboxd_profile ?? '',
     tracktv_profile: initialLinks.tracktv_profile ?? '',
@@ -61,13 +64,13 @@ export function SocialLinksEditor({ initialLinks }: Props) {
       })
       if (!res.ok) {
         const d = await res.json()
-        setError(d.error ?? 'Error al guardar')
+        setError(d.error ?? t('saveError'))
       } else {
         setSaved(true)
         setTimeout(() => setSaved(false), 2500)
       }
     } catch {
-      setError('Error de red')
+      setError(tCommon('networkError'))
     } finally {
       setSaving(false)
     }
@@ -76,10 +79,10 @@ export function SocialLinksEditor({ initialLinks }: Props) {
   return (
     <section className="mb-10">
       <div className="mb-4 flex items-center justify-between gap-3">
-        <h2 className="text-xs font-semibold uppercase tracking-wider text-ink/55">Mis perfiles externos</h2>
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-ink/55">{t('title')}</h2>
         <div className="flex items-center gap-2 text-xs">
-          {saving && <span className="text-ink/55">Guardando…</span>}
-          {saved && !saving && <span className="text-moss">Guardado ✓</span>}
+          {saving && <span className="text-ink/55">{t('saving')}</span>}
+          {saved && !saving && <span className="text-moss">{t('saved')}</span>}
           {error && <span className="text-ember">{error}</span>}
         </div>
       </div>
@@ -101,7 +104,7 @@ export function SocialLinksEditor({ initialLinks }: Props) {
                       rel="noopener noreferrer"
                       className="text-[11px] font-semibold text-ember/70 hover:text-ember"
                     >
-                      Ver perfil ↗
+                      {t('viewProfile')}
                     </a>
                   )}
                 </div>

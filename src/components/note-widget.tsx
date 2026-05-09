@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { useTranslations } from 'next-intl'
 
 interface Note {
   id: string
@@ -9,6 +10,7 @@ interface Note {
 }
 
 export function NoteWidget({ cardId }: { cardId: string }) {
+  const t = useTranslations('NoteWidget')
   const [note, setNote] = useState<Note | null>(null)
   const [loading, setLoading] = useState(true)
   const [editing, setEditing] = useState(false)
@@ -68,8 +70,8 @@ export function NoteWidget({ cardId }: { cardId: string }) {
     <div className="mt-10 max-w-2xl rounded-lg border border-moss/20 bg-moss/5 p-5">
       <div className="mb-3 flex items-center gap-2">
         <span className="text-base" aria-hidden>🔒</span>
-        <h3 className="text-sm font-semibold text-ink/70">Mis notas</h3>
-        <span className="text-xs text-ink/55">(solo tú puedes ver esto)</span>
+        <h3 className="text-sm font-semibold text-ink/70">{t('title')}</h3>
+        <span className="text-xs text-ink/55">{t('private')}</span>
       </div>
 
       {editing ? (
@@ -78,7 +80,7 @@ export function NoteWidget({ cardId }: { cardId: string }) {
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
             onBlur={handleBlur}
-            placeholder="Añade una nota personal sobre esta obra... ¿Cuándo la viste? ¿Con quién? ¿Qué te pareció?"
+            placeholder={t('placeholder')}
             rows={4}
             autoFocus={!note}
             className="w-full resize-none rounded-md border border-moss/20 bg-paper px-3 py-2.5 text-sm leading-relaxed text-ink/80 placeholder:text-ink/45 focus:border-moss/40 focus:outline-none focus:ring-1 focus:ring-moss/20"
@@ -89,14 +91,14 @@ export function NoteWidget({ cardId }: { cardId: string }) {
               disabled={!draft.trim() || saving}
               className="rounded-md bg-moss px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-moss/90 disabled:opacity-40"
             >
-              {saving ? 'Guardando…' : 'Guardar nota'}
+              {saving ? t('saving') : t('save')}
             </button>
             {note && (
               <button
                 onClick={() => setEditing(false)}
                 className="text-xs text-ink/55 transition hover:text-ink/70"
               >
-                Cancelar
+                {t('cancel')}
               </button>
             )}
           </div>
@@ -109,13 +111,13 @@ export function NoteWidget({ cardId }: { cardId: string }) {
               onClick={startEdit}
               className="text-xs font-semibold text-moss/70 underline underline-offset-2 transition hover:text-moss"
             >
-              Editar
+              {t('edit')}
             </button>
             <button
               onClick={deleteNote}
               className="text-xs text-ink/45 underline underline-offset-2 transition hover:text-ember"
             >
-              Eliminar
+              {t('delete')}
             </button>
           </div>
         </div>

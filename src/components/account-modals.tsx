@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
+import { useRouter } from '@/i18n/navigation'
 import { createClient } from '@/lib/supabase/client'
 
 interface Props {
@@ -10,6 +11,7 @@ interface Props {
 }
 
 export function AccountModals({ username, signOutButton }: Props) {
+  const t = useTranslations('AccountModals')
   const router = useRouter()
   const [modal, setModal] = useState<'none' | 'password' | 'delete'>('none')
 
@@ -44,21 +46,20 @@ export function AccountModals({ username, signOutButton }: Props) {
     setPasswordError(null)
 
     if (newPassword.length < 8) {
-      setPasswordError('La nueva contraseña debe tener al menos 8 caracteres.')
+      setPasswordError(t('errors.shortPassword'))
       return
     }
     if (newPassword !== confirmPassword) {
-      setPasswordError('Las contraseñas no coinciden.')
+      setPasswordError(t('errors.mismatch'))
       return
     }
 
     setPasswordLoading(true)
     const supabase = createClient()
 
-    // Verify current password by re-authenticating
     const { data: { user } } = await supabase.auth.getUser()
     if (!user?.email) {
-      setPasswordError('No se pudo verificar tu sesión.')
+      setPasswordError(t('errors.noSession'))
       setPasswordLoading(false)
       return
     }
@@ -68,7 +69,7 @@ export function AccountModals({ username, signOutButton }: Props) {
       password: currentPassword,
     })
     if (signInError) {
-      setPasswordError('La contraseña actual no es correcta.')
+      setPasswordError(t('errors.wrongCurrent'))
       setPasswordLoading(false)
       return
     }
@@ -89,7 +90,7 @@ export function AccountModals({ username, signOutButton }: Props) {
     setDeleteError(null)
 
     if (deleteConfirm !== username) {
-      setDeleteError('El nombre de usuario no coincide.')
+      setDeleteError(t('errors.usernameMismatch'))
       return
     }
 
@@ -98,14 +99,14 @@ export function AccountModals({ username, signOutButton }: Props) {
 
     if (!res.ok) {
       const data = await res.json()
-      setDeleteError(data.error ?? 'Error al eliminar la cuenta.')
+      setDeleteError(data.error ?? t('errors.deleteFailed'))
       setDeleteLoading(false)
       return
     }
 
     const supabase = createClient()
     await supabase.auth.signOut()
-    router.push('/?cuenta=eliminada')
+    router.push({ pathname: '/', query: { cuenta: 'eliminada' } })
   }
 
   return (
@@ -116,7 +117,7 @@ export function AccountModals({ username, signOutButton }: Props) {
           onClick={() => setModal('password')}
           className="rounded-lg border border-ink/20 px-4 py-2 text-sm font-semibold text-ink/70 transition hover:border-ink/40 hover:bg-ink/5 hover:text-ink"
         >
-          Cambiar contraseña
+          {t('changePassword')}
         </button>
         {signOutButton}
       </div>
@@ -124,16 +125,16 @@ export function AccountModals({ username, signOutButton }: Props) {
       {/* Zona de peligro */}
       <div className="mt-4 rounded-lg border border-red-200 bg-red-50/60 px-4 py-3">
         <p className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-red-400">
-          Zona de peligro
+          {t('dangerZone')}
         </p>
         <p className="mb-2 text-xs text-red-400/80">
-          Esta acción es irreversible y eliminará tu cuenta y todos tus datos.
+          {t('dangerWarning')}
         </p>
         <button
           onClick={() => setModal('delete')}
           className="text-xs text-red-400 underline underline-offset-2 transition hover:text-red-600"
         >
-          Eliminar cuenta
+          {t('deleteAccount')}
         </button>
       </div>
 
@@ -146,20 +147,20 @@ export function AccountModals({ username, signOutButton }: Props) {
           {/* Modal: Cambiar contraseña */}
           {modal === 'password' && (
             <div className="w-full max-w-sm rounded-xl border border-ink/10 bg-paper p-6 shadow-xl">
-              <h2 className="mb-5 text-lg font-black text-ink">Cambiar contraseña</h2>
+              <h2 className="mb-5 text-lg font-black text-ink">{t('modal.passwordTitle')}</h2>
 
               {passwordSuccess ? (
                 <div className="text-center">
-                  <p className="text-sm font-semibold text-moss">✓ Contraseña actualizada correctamente.</p>
+                  <p className="text-sm font-semibold text-moss">{t('modal.passwordSuccess')}</p>
                   <button onClick={closeModal} className="mt-4 text-sm text-ink/50 underline hover:text-ink">
-                    Cerrar
+                    {t('modal.close')}
                   </button>
                 </div>
               ) : (
                 <form onSubmit={handleChangePassword} className="space-y-4">
                   <div>
                     <label className="mb-1.5 block text-sm font-semibold text-ink">
-                      Contraseña actual
+                      {t('modal.currentPassword')}
                     </label>
                     <input
                       type="password"
@@ -168,12 +169,12 @@ export function AccountModals({ username, signOutButton }: Props) {
                       value={currentPassword}
                       onChange={(e) => setCurrentPassword(e.target.value)}
                       className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2.5 text-sm text-ink placeholder-ink/45 outline-none transition focus:border-ember focus:ring-2 focus:ring-ember/20"
-                      placeholder="••••••••"
+                      placeholder={t('modal.currentPasswordPlaceholder')}
                     />
                   </div>
                   <div>
                     <label className="mb-1.5 block text-sm font-semibold text-ink">
-                      Nueva contraseña
+                      {t('modal.newPassword')}
                     </label>
                     <input
                       type="password"
@@ -182,13 +183,13 @@ export function AccountModals({ username, signOutButton }: Props) {
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
                       className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2.5 text-sm text-ink placeholder-ink/45 outline-none transition focus:border-ember focus:ring-2 focus:ring-ember/20"
-                      placeholder="Mínimo 8 caracteres"
+                      placeholder={t('modal.newPasswordPlaceholder')}
                       minLength={8}
                     />
                   </div>
                   <div>
                     <label className="mb-1.5 block text-sm font-semibold text-ink">
-                      Confirmar nueva contraseña
+                      {t('modal.confirmPassword')}
                     </label>
                     <input
                       type="password"
@@ -197,7 +198,7 @@ export function AccountModals({ username, signOutButton }: Props) {
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2.5 text-sm text-ink placeholder-ink/45 outline-none transition focus:border-ember focus:ring-2 focus:ring-ember/20"
-                      placeholder="Repite la contraseña"
+                      placeholder={t('modal.confirmPasswordPlaceholder')}
                     />
                   </div>
 
@@ -213,14 +214,14 @@ export function AccountModals({ username, signOutButton }: Props) {
                       onClick={closeModal}
                       className="text-sm text-ink/50 hover:text-ink"
                     >
-                      Cancelar
+                      {t('modal.cancel')}
                     </button>
                     <button
                       type="submit"
                       disabled={passwordLoading}
                       className="rounded-lg bg-ember px-4 py-2 text-sm font-semibold text-white transition hover:bg-ember/90 disabled:opacity-50"
                     >
-                      {passwordLoading ? 'Guardando…' : 'Guardar'}
+                      {passwordLoading ? t('modal.saving') : t('modal.save')}
                     </button>
                   </div>
                 </form>
@@ -231,15 +232,15 @@ export function AccountModals({ username, signOutButton }: Props) {
           {/* Modal: Eliminar cuenta */}
           {modal === 'delete' && (
             <div className="w-full max-w-sm rounded-xl border border-ink/10 bg-paper p-6 shadow-xl">
-              <h2 className="mb-2 text-lg font-black text-ink">Eliminar cuenta</h2>
+              <h2 className="mb-2 text-lg font-black text-ink">{t('modal.deleteTitle')}</h2>
               <p className="mb-5 text-sm text-ink/60">
-                ¿Estás seguro? Esta acción es irreversible. Se eliminarán tu perfil y todas tus fichas.
+                {t('modal.deleteIntro')}
               </p>
 
               <form onSubmit={handleDeleteAccount} className="space-y-4">
                 <div>
                   <label className="mb-1.5 block text-sm font-semibold text-ink">
-                    Escribe tu nombre de usuario para confirmar:{' '}
+                    {t('modal.deleteConfirmLabel')}{' '}
                     <span className="font-black text-ember">{username}</span>
                   </label>
                   <input
@@ -265,14 +266,14 @@ export function AccountModals({ username, signOutButton }: Props) {
                     onClick={closeModal}
                     className="text-sm text-ink/50 hover:text-ink"
                   >
-                    Cancelar
+                    {t('modal.cancel')}
                   </button>
                   <button
                     type="submit"
                     disabled={deleteLoading || deleteConfirm !== username}
                     className="rounded-lg bg-ember px-4 py-2 text-sm font-semibold text-white transition hover:bg-ember/90 disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    {deleteLoading ? 'Eliminando…' : 'Eliminar mi cuenta'}
+                    {deleteLoading ? t('modal.deleting') : t('modal.deleteSubmit')}
                   </button>
                 </div>
               </form>

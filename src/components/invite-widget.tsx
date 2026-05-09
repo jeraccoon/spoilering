@@ -1,10 +1,13 @@
 'use client'
 
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 
 const MONTHLY_LIMIT = 5
 
 export function InviteWidget({ initialCount }: { initialCount: number }) {
+  const t = useTranslations('InviteWidget')
+  const tCommon = useTranslations('Common')
   const [email, setEmail] = useState('')
   const [sending, setSending] = useState(false)
   const [success, setSuccess] = useState<string | null>(null)
@@ -28,14 +31,14 @@ export function InviteWidget({ initialCount }: { initialCount: number }) {
       })
       const data = await res.json()
       if (!res.ok) {
-        setError(data.error ?? 'Error al enviar la invitación')
+        setError(data.error ?? t('errorSend'))
       } else {
         setSuccess(email)
         setEmail('')
         setCount((c) => c + 1)
       }
     } catch {
-      setError('Error de red')
+      setError(tCommon('networkError'))
     } finally {
       setSending(false)
     }
@@ -45,14 +48,18 @@ export function InviteWidget({ initialCount }: { initialCount: number }) {
     <div className="overflow-hidden rounded-lg border border-ink/10 bg-paper">
       <div className="px-6 py-5">
         <p className="mb-1 text-sm text-ink/70">
-          Invita a un amigo a Spoilering. Puedes enviar hasta {MONTHLY_LIMIT} invitaciones al mes.
+          {t('intro', { limit: MONTHLY_LIMIT })}
         </p>
         <p className="mb-4 text-xs text-ink/55">
           {atLimit ? (
-            <span className="text-ember">Has alcanzado el límite de este mes.</span>
+            <span className="text-ember">{t('atLimit')}</span>
           ) : (
             <span>
-              <span className="font-semibold text-ink/60">{count} de {MONTHLY_LIMIT}</span> invitaciones usadas este mes
+              {t.rich('usage', {
+                count,
+                limit: MONTHLY_LIMIT,
+                bold: (chunks) => <span className="font-semibold text-ink/60">{chunks}</span>,
+              })}
             </span>
           )}
         </p>
@@ -62,7 +69,7 @@ export function InviteWidget({ initialCount }: { initialCount: number }) {
             type="email"
             value={email}
             onChange={(e) => { setEmail(e.target.value); setSuccess(null); setError(null) }}
-            placeholder="email@ejemplo.com"
+            placeholder={t('emailPlaceholder')}
             disabled={atLimit || sending}
             className="flex-1 rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder:text-ink/45 outline-none transition focus:border-moss/50 focus:ring-1 focus:ring-moss/20 disabled:opacity-40"
           />
@@ -71,13 +78,13 @@ export function InviteWidget({ initialCount }: { initialCount: number }) {
             disabled={!email || atLimit || sending}
             className="shrink-0 rounded-lg bg-moss px-4 py-2 text-sm font-semibold text-white transition hover:bg-moss/90 disabled:cursor-not-allowed disabled:opacity-40"
           >
-            {sending ? 'Enviando…' : 'Enviar invitación'}
+            {sending ? t('submitting') : t('submit')}
           </button>
         </form>
 
         {success && (
           <p className="mt-3 text-sm font-medium text-moss">
-            Invitación enviada a {success}
+            {t('successTo', { email: success })}
           </p>
         )}
         {error && (
