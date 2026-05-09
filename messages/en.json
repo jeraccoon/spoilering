@@ -23,6 +23,18 @@
     "privacidadTitle": "Privacy policy",
     "cookiesTitle": "Cookies policy"
   },
+  "NotFound": {
+    "tag": "Error 404",
+    "title": "This story isn't in the archive.",
+    "body": "The entry may not exist yet, or the link may have changed.",
+    "back": "Back to home"
+  },
+  "Error": {
+    "tag": "Something went wrong",
+    "title": "We couldn't load this page.",
+    "body": "Try reloading. If it happens again, we'll look into it.",
+    "retry": "Try again"
+  },
   "Common": {
     "loading": "Loading…",
     "error": "Something went wrong",

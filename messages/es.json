@@ -23,6 +23,18 @@
     "privacidadTitle": "Política de privacidad",
     "cookiesTitle": "Política de cookies"
   },
+  "NotFound": {
+    "tag": "Error 404",
+    "title": "Esta historia no está en el archivo.",
+    "body": "Puede que la ficha todavía no exista o que el enlace haya cambiado.",
+    "back": "Volver al inicio"
+  },
+  "Error": {
+    "tag": "Algo ha fallado",
+    "title": "No se ha podido cargar esta página.",
+    "body": "Prueba a recargar. Si vuelve a pasar, revisaremos el error con calma.",
+    "retry": "Intentar de nuevo"
+  },
   "Common": {
     "loading": "Cargando…",
     "error": "Algo ha ido mal",
