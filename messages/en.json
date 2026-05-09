@@ -827,6 +827,15 @@
     "approved": "Approved",
     "rejected": "Rejected"
   },
+  "TranslationBanner": {
+    "label": "Auto-translated with AI",
+    "explain": "This entry was originally written in {originalLanguage}. The translation may contain errors.",
+    "viewOriginal": "View original →",
+    "languages": {
+      "es": "Spanish",
+      "en": "English"
+    }
+  },
   "FichaPage": {
     "metaNotFound": "Entry not found — Spoilering",
     "metaDescription": "Full summary with spoilers of {title}.",

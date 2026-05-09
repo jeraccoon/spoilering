@@ -9,6 +9,8 @@ import { CardContent } from '@/components/card-content'
 import { SeasonsAccordion } from '@/components/public/SeasonsAccordion'
 import { UserContentPanel } from '@/components/public/UserContentPanel'
 import { SuggestBar } from '@/components/public/SuggestBar'
+import { TranslationBanner } from '@/components/public/TranslationBanner'
+import { getOrCreateCardTranslation } from '@/lib/translate/translate-card'
 import type { CardFull } from '@/types/database'
 import type { Season } from '@/components/public/SeasonsAccordion'
 
@@ -164,15 +166,23 @@ async function getUserContent(userId: string, workId: string, episodeIds: string
   }
 }
 
+function pickTitle(card: any, locale: string): string {
+  const original = card.work.title as string
+  if (!card.original_locale || locale === card.original_locale) return original
+  const trans = (card.work.title_translations ?? {}) as Record<string, string>
+  return trans[locale] ?? original
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, slug } = await params
   const t = await getTranslations({ locale, namespace: 'FichaPage' })
   const card = await getCard(slug)
   if (!card) return { title: t('metaNotFound') }
-  if (card.status !== 'published') return { title: `${card.work.title} — Spoilering`, robots: { index: false } }
+  const title = pickTitle(card, locale)
+  if (card.status !== 'published') return { title: `${title} — Spoilering`, robots: { index: false } }
   return {
-    title: `${card.work.title}${card.work.year ? ` (${card.work.year})` : ''} — Spoilering`,
-    description: t('metaDescription', { title: card.work.title }).slice(0, 160),
+    title: `${title}${card.work.year ? ` (${card.work.year})` : ''} — Spoilering`,
+    description: t('metaDescription', { title }).slice(0, 160),
     openGraph: { images: card.work.poster_url ? [card.work.poster_url] : [] },
   }
 }
@@ -208,10 +218,62 @@ export default async function CardPage({ params }: Props) {
 
   const [card, { role, isLoggedIn, userId }] = await Promise.all([getCard(slug), getAuthInfo()])
   if (!card) notFound()
-  const [seasons, credits] = await Promise.all([
+
+  const originalLocale = (card as any).original_locale ?? 'es'
+  const isTranslated = locale !== originalLocale
+
+  const [seasons, credits, translation] = await Promise.all([
     card.work.type === 'series' ? getSeasons(card.work.id) : Promise.resolve([]),
     getCredits(card.id, (card as any).created_by ?? null),
+    isTranslated
+      ? getOrCreateCardTranslation(
+          {
+            id: card.id,
+            original_locale: originalLocale,
+            summary: (card as any).summary ?? null,
+            sections: card.sections.flatMap((s: any) => [
+              { id: s.id, label: s.label, short_label: s.short_label ?? null, content: s.content ?? null },
+              ...(s.children ?? []).map((c: any) => ({
+                id: c.id,
+                label: c.label,
+                short_label: c.short_label ?? null,
+                content: c.content ?? null,
+              })),
+            ]),
+            work: {
+              id: card.work.id,
+              title: card.work.title,
+              overview: card.work.overview ?? null,
+              title_translations: (card.work as any).title_translations ?? {},
+              overview_translations: (card.work as any).overview_translations ?? {},
+            },
+          },
+          locale,
+        ).catch((e) => {
+          console.error('[ficha] translation failed:', e)
+          return null
+        })
+      : Promise.resolve(null),
   ])
+
+  // Apply translations in-place onto the rendering objects
+  if (translation) {
+    const apply = (s: any) => {
+      const t = translation.sectionTranslations.get(s.id)
+      if (t) {
+        s.label = t.label
+        s.short_label = t.short_label ?? s.short_label
+        s.content = t.content
+      }
+    }
+    for (const s of card.sections) {
+      apply(s)
+      for (const child of s.children ?? []) apply(child)
+    }
+    ;(card as any).summary = translation.summaryTranslation
+    card.work.title = translation.workTitleTranslation
+    card.work.overview = translation.workOverviewTranslation
+  }
 
   let workUserContent: { id: string; watched: boolean; watched_at: string | null; notes: string | null } | null = null
   let watchedEpisodeIds: string[] = []
@@ -243,6 +305,9 @@ export default async function CardPage({ params }: Props) {
 
   return (
     <div>
+      {isTranslated && (
+        <TranslationBanner originalLocale={originalLocale} slug={slug} />
+      )}
       {isDraft && (
         <div className="border-b border-amber-300 bg-amber-50 px-4 py-3">
           <div className="mx-auto flex max-w-5xl items-center justify-between gap-4">

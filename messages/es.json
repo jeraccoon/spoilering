@@ -827,6 +827,15 @@
     "approved": "Aprobada",
     "rejected": "Rechazada"
   },
+  "TranslationBanner": {
+    "label": "Traducido automáticamente con IA",
+    "explain": "Esta ficha se escribió originalmente en {originalLanguage}. La traducción puede contener errores.",
+    "viewOriginal": "Ver original →",
+    "languages": {
+      "es": "español",
+      "en": "inglés"
+    }
+  },
   "FichaPage": {
     "metaNotFound": "Ficha no encontrada — Spoilering",
     "metaDescription": "Resumen completo con spoilers de {title}.",
