@@ -1,4 +1,5 @@
-import Link from 'next/link'
+import { getTranslations, setRequestLocale } from 'next-intl/server'
+import { Link } from '@/i18n/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { SuggestionActions } from './suggestion-actions'
 
@@ -11,11 +12,14 @@ async function getSuggestions() {
   return (data ?? []) as any[]
 }
 
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })
-}
+export default async function SugerenciasPage({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params
+  setRequestLocale(locale)
+  const t = await getTranslations('Admin.suggestions')
+  const dateLocale = locale === 'en' ? 'en-US' : 'es-ES'
+  const formatDate = (iso: string) =>
+    new Date(iso).toLocaleDateString(dateLocale, { day: 'numeric', month: 'short', year: 'numeric' })
 
-export default async function SugerenciasPage() {
   const suggestions = await getSuggestions()
 
   return (
@@ -23,9 +27,9 @@ export default async function SugerenciasPage() {
 
       <div className="mb-8 flex flex-wrap items-center gap-3">
         <Link href="/admin" className="text-sm font-semibold text-ink/55 transition hover:text-ink">
-          ← Admin
+          {t('back')}
         </Link>
-        <h1 className="text-2xl font-black tracking-tight text-ink">Sugerencias pendientes</h1>
+        <h1 className="text-2xl font-black tracking-tight text-ink">{t('title')}</h1>
         {suggestions.length > 0 && (
           <span className="rounded-full bg-ember/10 px-3 py-1 text-sm font-semibold text-ember">
             {suggestions.length}
@@ -35,7 +39,7 @@ export default async function SugerenciasPage() {
 
       {suggestions.length === 0 ? (
         <div className="rounded-lg border border-ink/10 bg-ink/5 px-6 py-16 text-center text-ink/55">
-          No hay sugerencias pendientes.
+          {t('empty')}
         </div>
       ) : (
         <div className="flex flex-col gap-4">
@@ -61,7 +65,7 @@ export default async function SugerenciasPage() {
                       <p className="font-bold text-ink">{workTitle}</p>
                     )}
                     <p className="mt-0.5 text-sm text-ink/50">
-                      Sección: <span className="font-semibold text-ink/70">{sectionLabel}</span>
+                      {t('section')} <span className="font-semibold text-ink/70">{sectionLabel}</span>
                       <span className="mx-1.5 text-ink/45">·</span>
                       {formatDate(s.created_at)}
                     </p>
@@ -71,7 +75,7 @@ export default async function SugerenciasPage() {
 
                 {s.comment && (
                   <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-sm text-amber-800">
-                    <span className="font-semibold">Comentario:</span> {s.comment}
+                    <span className="font-semibold">{t('comment')}</span> {s.comment}
                   </div>
                 )}
 
@@ -79,7 +83,7 @@ export default async function SugerenciasPage() {
                   {s.original_content && (
                     <div>
                       <p className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-ink/55">
-                        Texto actual
+                        {t('originalText')}
                       </p>
                       <div className="max-h-48 overflow-y-auto rounded-lg bg-ink/5 p-3 text-xs leading-relaxed text-ink/60 whitespace-pre-wrap">
                         {s.original_content}
@@ -88,7 +92,7 @@ export default async function SugerenciasPage() {
                   )}
                   <div>
                     <p className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-moss">
-                      Texto sugerido
+                      {t('suggestedText')}
                     </p>
                     <div className="max-h-48 overflow-y-auto rounded-lg bg-moss/5 p-3 text-xs leading-relaxed text-ink whitespace-pre-wrap">
                       {s.suggested_content}

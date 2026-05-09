@@ -1,17 +1,18 @@
-import { redirect } from 'next/navigation'
-import Link from 'next/link'
+import { getTranslations, setRequestLocale } from 'next-intl/server'
+import { Link, redirect } from '@/i18n/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { AdminUsersTable, type UserRow } from '@/components/admin-users-table'
 
-async function getUsers() {
+async function getUsers(locale: string) {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  const auth = await supabase.auth.getUser()
+  if (!auth.data.user) redirect({ href: '/login', locale })
+  const user = auth.data.user!
 
   const { data: profile } = await (supabase.from('profiles') as any)
     .select('role').eq('id', user.id).single()
-  if ((profile as any)?.role !== 'admin') redirect('/admin')
+  if ((profile as any)?.role !== 'admin') redirect({ href: '/admin', locale })
 
   const admin = createAdminClient()
 
@@ -51,8 +52,11 @@ async function getUsers() {
   return { users: rows, currentUserId: user.id }
 }
 
-export default async function AdminUsuariosPage() {
-  const { users, currentUserId } = await getUsers()
+export default async function AdminUsuariosPage({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params
+  setRequestLocale(locale)
+  const t = await getTranslations('Admin.users')
+  const { users, currentUserId } = await getUsers(locale)
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
@@ -65,13 +69,12 @@ export default async function AdminUsuariosPage() {
               href="/admin"
               className="text-sm text-ink/55 hover:text-ink"
             >
-              ← Panel
+              {t('back')}
             </Link>
           </div>
-          <h1 className="text-3xl font-black tracking-tight text-ink">Gestión de usuarios</h1>
+          <h1 className="text-3xl font-black tracking-tight text-ink">{t('title')}</h1>
           <p className="mt-1 text-sm text-ink/50">
-            <span className="font-semibold text-ink">{users.length}</span>{' '}
-            {users.length === 1 ? 'usuario registrado' : 'usuarios registrados'}
+            {t('count', { count: users.length })}
           </p>
         </div>
       </div>

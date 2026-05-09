@@ -315,6 +315,85 @@
     "markWatched": "Marcar como visto",
     "markUnwatched": "Marcar como no visto"
   },
+  "Admin": {
+    "main": {
+      "title": "Panel de administración",
+      "welcome": "Bienvenido,",
+      "users": "Usuarios",
+      "newWork": "+ Nueva obra",
+      "uncommittedTitle": "{count, plural, =1 {ficha sin confirmar} other {fichas sin confirmar}}",
+      "uncommittedSubtitle": "Borradores creados que el usuario no ha guardado todavía",
+      "pendingCardsTitle": "Fichas pendientes de revisión",
+      "pendingCardsSubtitle": "Enviadas por usuarios registrados, esperando aprobación.",
+      "inactiveDraftsTitle": "Borradores inactivos",
+      "inactiveDraftsSubtitle": "Sin cambios en más de 30 días.",
+      "orphanWorksTitle": "Obras sin ficha",
+      "orphanWorksSubtitle": "Obras creadas pero sin borrador guardado todavía.",
+      "pendingRevisionsTitle": "Revisiones pendientes",
+      "pendingRevisionsLabel": "{count, plural, =1 {revisión pendiente} other {revisiones pendientes}}",
+      "pendingRevisionsSubtitle": "Propuestas de edición esperando aprobación",
+      "review": "Revisar",
+      "contactMessagesTitle": "Mensajes de contacto",
+      "contactMessagesSubtitle": "Enviados desde el footer por cualquier visitante.",
+      "viewAll": "Ver todos →",
+      "noMessages": "No hay mensajes todavía.",
+      "tableDate": "Fecha",
+      "tableType": "Tipo",
+      "tableFrom": "De",
+      "tableMessage": "Mensaje",
+      "anonymous": "Anónimo",
+      "suggestionsTitle": "Sugerencias de corrección",
+      "suggestionsLabel": "{count, plural, =1 {sugerencia pendiente} other {sugerencias pendientes}}",
+      "suggestionsSubtitle": "Correcciones propuestas por usuarios registrados",
+      "viewAllSuggestions": "Ver todas"
+    },
+    "users": {
+      "back": "← Panel",
+      "title": "Gestión de usuarios",
+      "count": "{count, plural, =1 {1 usuario registrado} other {# usuarios registrados}}"
+    },
+    "suggestions": {
+      "back": "← Admin",
+      "title": "Sugerencias pendientes",
+      "empty": "No hay sugerencias pendientes.",
+      "section": "Sección:",
+      "comment": "Comentario:",
+      "originalText": "Texto actual",
+      "suggestedText": "Texto sugerido",
+      "approve": "Aprobar",
+      "reject": "Rechazar"
+    },
+    "newCard": {
+      "breadcrumbAdmin": "Admin",
+      "breadcrumbNewWork": "Nueva obra",
+      "breadcrumbConfirm": "Confirmar",
+      "title": "Guardar borrador",
+      "incomplete": "Esta obra tiene datos incompletos (sin póster, sinopsis o géneros). La ficha quedará marcada como incompleta.",
+      "save": "Guardar borrador",
+      "saving": "Guardando…",
+      "discard": "Descartar obra",
+      "discarding": "Descartando…",
+      "cancel": "Cancelar",
+      "discardHint": "\"Descartar obra\" elimina permanentemente la obra recién creada sin guardar ninguna ficha.",
+      "errors": {
+        "create": "Error al crear la ficha",
+        "discard": "Error al descartar",
+        "unexpected": "Error inesperado. Inténtalo de nuevo."
+      }
+    },
+    "contact": {
+      "metaTitle": "Mensajes de contacto — Admin",
+      "title": "Mensajes de contacto",
+      "summary": "{unread} sin leer · {total} en total",
+      "back": "← Admin",
+      "types": {
+        "suggestion": "Sugerencia",
+        "error": "Error",
+        "other": "Otro",
+        "bug": "Error o bug"
+      }
+    }
+  },
   "PerfilPage": {
     "title": "Mi perfil",
     "welcome": "Bienvenido,",

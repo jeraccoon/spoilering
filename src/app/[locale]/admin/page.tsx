@@ -1,4 +1,5 @@
-import Link from 'next/link'
+import { getTranslations, setRequestLocale } from 'next-intl/server'
+import { Link } from '@/i18n/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { PendingCardsSection, type PendingCard } from '@/components/pending-cards-section'
 import { OrphanWorksSection } from '@/components/admin/orphan-works-section'
@@ -85,18 +86,19 @@ async function getAdminData() {
 }
 
 
-const TYPE_LABELS: Record<string, string> = {
-  suggestion: 'Sugerencia',
-  bug: 'Error o bug',
-  other: 'Otro',
-}
 const TYPE_COLORS: Record<string, string> = {
   suggestion: 'bg-moss/10 text-moss',
   bug: 'bg-ember/10 text-ember',
   other: 'bg-ink/10 text-ink/60',
 }
 
-export default async function AdminPage() {
+export default async function AdminPage({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params
+  setRequestLocale(locale)
+  const t = await getTranslations('Admin.main')
+  const tContactTypes = await getTranslations('Admin.contact.types')
+  const dateLocale = locale === 'en' ? 'en-US' : 'es-ES'
+
   const { stats, allCards, pendingCards, orphanWorks, inactiveDrafts, contactMessages, username } = await getAdminData()
 
   return (
@@ -105,9 +107,9 @@ export default async function AdminPage() {
       {/* Cabecera */}
       <div className="mb-10 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-black tracking-tight text-ink">Panel de administración</h1>
+          <h1 className="text-3xl font-black tracking-tight text-ink">{t('title')}</h1>
           <p className="mt-1 text-sm text-ink/50">
-            Bienvenido, <span className="font-semibold text-ink">{username}</span>
+            {t('welcome')} <span className="font-semibold text-ink">{username}</span>
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -115,13 +117,13 @@ export default async function AdminPage() {
             href="/admin/usuarios"
             className="rounded-lg border border-ink/20 px-5 py-2.5 text-sm font-semibold text-ink/70 transition hover:border-ink/40 hover:bg-ink/5 hover:text-ink"
           >
-            Usuarios
+            {t('users')}
           </Link>
           <Link
             href="/admin/nueva-obra"
             className="rounded-lg bg-ember px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-ember/90"
           >
-            + Nueva obra
+            {t('newWork')}
           </Link>
         </div>
       </div>
@@ -138,9 +140,9 @@ export default async function AdminPage() {
             </span>
             <div>
               <p className="font-semibold text-orange-800">
-                {stats.uncommitted === 1 ? 'ficha sin confirmar' : 'fichas sin confirmar'}
+                {t('uncommittedTitle', { count: stats.uncommitted })}
               </p>
-              <p className="text-sm text-orange-700/70">Borradores creados que el usuario no ha guardado todavía</p>
+              <p className="text-sm text-orange-700/70">{t('uncommittedSubtitle')}</p>
             </div>
           </div>
         </section>
@@ -149,9 +151,9 @@ export default async function AdminPage() {
       {/* Fichas pendientes de revisión (enviadas por usuarios) */}
       <section className="mb-10">
         <h2 className="mb-1 text-xs font-semibold uppercase tracking-wider text-ink/55">
-          Fichas pendientes de revisión
+          {t('pendingCardsTitle')}
         </h2>
-        <p className="mb-4 text-xs text-ink/55">Enviadas por usuarios registrados, esperando aprobación.</p>
+        <p className="mb-4 text-xs text-ink/55">{t('pendingCardsSubtitle')}</p>
         <PendingCardsSection initialCards={pendingCards} />
       </section>
 
@@ -159,9 +161,9 @@ export default async function AdminPage() {
       {inactiveDrafts.length > 0 && (
         <section className="mb-10">
           <h2 className="mb-1 text-xs font-semibold uppercase tracking-wider text-ink/55">
-            Borradores inactivos
+            {t('inactiveDraftsTitle')}
           </h2>
-          <p className="mb-4 text-xs text-ink/55">Sin cambios en más de 30 días.</p>
+          <p className="mb-4 text-xs text-ink/55">{t('inactiveDraftsSubtitle')}</p>
           <InactiveDraftsSection initialDrafts={inactiveDrafts} />
         </section>
       )}
@@ -170,9 +172,9 @@ export default async function AdminPage() {
       {orphanWorks.length > 0 && (
         <section className="mb-10">
           <h2 className="mb-1 text-xs font-semibold uppercase tracking-wider text-ink/55">
-            Obras sin ficha
+            {t('orphanWorksTitle')}
           </h2>
-          <p className="mb-4 text-xs text-ink/55">Obras creadas pero sin borrador guardado todavía.</p>
+          <p className="mb-4 text-xs text-ink/55">{t('orphanWorksSubtitle')}</p>
           <OrphanWorksSection initialWorks={orphanWorks} />
         </section>
       )}
@@ -180,7 +182,7 @@ export default async function AdminPage() {
       {/* Revisiones pendientes */}
       <section className="mb-6">
         <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-ink/55">
-          Revisiones pendientes
+          {t('pendingRevisionsTitle')}
         </h2>
         <div className="flex items-center gap-4 rounded-lg border border-ink/10 bg-paper px-6 py-5 shadow-sm">
           <span className="text-4xl font-black tabular-nums text-ink">
@@ -188,16 +190,16 @@ export default async function AdminPage() {
           </span>
           <div>
             <p className="font-semibold text-ink">
-              {stats.pendingRevisions === 1 ? 'revisión pendiente' : 'revisiones pendientes'}
+              {t('pendingRevisionsLabel', { count: stats.pendingRevisions })}
             </p>
-            <p className="text-sm text-ink/50">Propuestas de edición esperando aprobación</p>
+            <p className="text-sm text-ink/50">{t('pendingRevisionsSubtitle')}</p>
           </div>
           {stats.pendingRevisions > 0 && (
             <Link
-              href="/admin/revisiones"
+              href={'/admin' as const}
               className="ml-auto rounded-lg border border-ink/20 px-4 py-2 text-sm font-semibold text-ink transition hover:border-ink/40 hover:bg-ink/5"
             >
-              Revisar
+              {t('review')}
             </Link>
           )}
         </div>
@@ -208,55 +210,59 @@ export default async function AdminPage() {
         <div className="mb-4 flex items-center justify-between">
           <div>
             <h2 className="mb-1 text-xs font-semibold uppercase tracking-wider text-ink/55">
-              Mensajes de contacto
+              {t('contactMessagesTitle')}
             </h2>
-            <p className="text-xs text-ink/55">Enviados desde el footer por cualquier visitante.</p>
+            <p className="text-xs text-ink/55">{t('contactMessagesSubtitle')}</p>
           </div>
-          <a
+          <Link
             href="/admin/contacto"
             className="rounded-lg border border-ink/20 px-3 py-1.5 text-xs font-semibold text-ink/60 transition hover:border-ink/40 hover:text-ink"
           >
-            Ver todos →
-          </a>
+            {t('viewAll')}
+          </Link>
         </div>
         {contactMessages.length === 0 ? (
           <div className="rounded-lg border border-ink/10 bg-ink/[0.02] px-6 py-8 text-center text-sm text-ink/45">
-            No hay mensajes todavía.
+            {t('noMessages')}
           </div>
         ) : (
           <div className="overflow-hidden rounded-lg border border-ink/10">
             <table className="w-full text-sm">
               <thead className="border-b border-ink/10 bg-ink/5 text-xs text-ink/50">
                 <tr>
-                  <th className="px-4 py-3 text-left font-semibold">Fecha</th>
-                  <th className="px-4 py-3 text-left font-semibold">Tipo</th>
-                  <th className="px-4 py-3 text-left font-semibold hidden sm:table-cell">De</th>
-                  <th className="px-4 py-3 text-left font-semibold">Mensaje</th>
+                  <th className="px-4 py-3 text-left font-semibold">{t('tableDate')}</th>
+                  <th className="px-4 py-3 text-left font-semibold">{t('tableType')}</th>
+                  <th className="px-4 py-3 text-left font-semibold hidden sm:table-cell">{t('tableFrom')}</th>
+                  <th className="px-4 py-3 text-left font-semibold">{t('tableMessage')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-ink/10">
-                {contactMessages.map((m: any) => (
-                  <tr key={m.id} className="align-top transition hover:bg-ink/5">
-                    <td className="px-4 py-3 text-xs text-ink/55 whitespace-nowrap">
-                      {new Date(m.created_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className={`rounded px-2 py-0.5 text-[11px] font-semibold ${TYPE_COLORS[m.type] ?? TYPE_COLORS.other}`}>
-                        {TYPE_LABELS[m.type] ?? m.type}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-xs text-ink/50 hidden sm:table-cell">
-                      <div className="flex flex-col gap-0.5">
-                        {m.name && <span className="font-medium text-ink">{m.name}</span>}
-                        {m.email && <span className="text-ink/55">{m.email}</span>}
-                        {!m.name && !m.email && <span className="text-ink/25">Anónimo</span>}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-ink/70 max-w-xs">
-                      <p className="line-clamp-3 text-sm leading-relaxed">{m.message}</p>
-                    </td>
-                  </tr>
-                ))}
+                {contactMessages.map((m: any) => {
+                  const typeKey = m.type as 'suggestion' | 'error' | 'bug' | 'other'
+                  const typeLabel = ['suggestion', 'error', 'bug', 'other'].includes(typeKey) ? tContactTypes(typeKey) : m.type
+                  return (
+                    <tr key={m.id} className="align-top transition hover:bg-ink/5">
+                      <td className="px-4 py-3 text-xs text-ink/55 whitespace-nowrap">
+                        {new Date(m.created_at).toLocaleDateString(dateLocale, { day: 'numeric', month: 'short' })}
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className={`rounded px-2 py-0.5 text-[11px] font-semibold ${TYPE_COLORS[m.type] ?? TYPE_COLORS.other}`}>
+                          {typeLabel}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-xs text-ink/50 hidden sm:table-cell">
+                        <div className="flex flex-col gap-0.5">
+                          {m.name && <span className="font-medium text-ink">{m.name}</span>}
+                          {m.email && <span className="text-ink/55">{m.email}</span>}
+                          {!m.name && !m.email && <span className="text-ink/25">{t('anonymous')}</span>}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-ink/70 max-w-xs">
+                        <p className="line-clamp-3 text-sm leading-relaxed">{m.message}</p>
+                      </td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </div>
@@ -266,7 +272,7 @@ export default async function AdminPage() {
       {/* Sugerencias pendientes */}
       <section>
         <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-ink/55">
-          Sugerencias de corrección
+          {t('suggestionsTitle')}
         </h2>
         <div className="flex items-center gap-4 rounded-lg border border-ink/10 bg-paper px-6 py-5 shadow-sm">
           <span className={`text-4xl font-black tabular-nums ${stats.pendingSuggestions > 0 ? 'text-plum' : 'text-ink'}`}>
@@ -274,19 +280,18 @@ export default async function AdminPage() {
           </span>
           <div>
             <p className="font-semibold text-ink">
-              {stats.pendingSuggestions === 1 ? 'sugerencia pendiente' : 'sugerencias pendientes'}
+              {t('suggestionsLabel', { count: stats.pendingSuggestions })}
             </p>
-            <p className="text-sm text-ink/50">Correcciones propuestas por usuarios registrados</p>
+            <p className="text-sm text-ink/50">{t('suggestionsSubtitle')}</p>
           </div>
           <Link
             href="/admin/sugerencias"
             className="ml-auto rounded-lg border border-ink/20 px-4 py-2 text-sm font-semibold text-ink transition hover:border-ink/40 hover:bg-ink/5"
           >
-            {stats.pendingSuggestions > 0 ? 'Revisar' : 'Ver todas'}
+            {stats.pendingSuggestions > 0 ? t('review') : t('viewAllSuggestions')}
           </Link>
         </div>
       </section>
     </div>
   )
 }
-

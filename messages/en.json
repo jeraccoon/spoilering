@@ -315,6 +315,85 @@
     "markWatched": "Mark as watched",
     "markUnwatched": "Mark as unwatched"
   },
+  "Admin": {
+    "main": {
+      "title": "Admin panel",
+      "welcome": "Welcome,",
+      "users": "Users",
+      "newWork": "+ New work",
+      "uncommittedTitle": "{count, plural, =1 {unconfirmed entry} other {unconfirmed entries}}",
+      "uncommittedSubtitle": "Drafts the user hasn't saved yet",
+      "pendingCardsTitle": "Entries pending review",
+      "pendingCardsSubtitle": "Submitted by registered users, awaiting approval.",
+      "inactiveDraftsTitle": "Inactive drafts",
+      "inactiveDraftsSubtitle": "No changes in over 30 days.",
+      "orphanWorksTitle": "Works without entry",
+      "orphanWorksSubtitle": "Works created but no draft saved yet.",
+      "pendingRevisionsTitle": "Pending revisions",
+      "pendingRevisionsLabel": "{count, plural, =1 {pending revision} other {pending revisions}}",
+      "pendingRevisionsSubtitle": "Edit proposals awaiting approval",
+      "review": "Review",
+      "contactMessagesTitle": "Contact messages",
+      "contactMessagesSubtitle": "Sent from the footer by any visitor.",
+      "viewAll": "View all →",
+      "noMessages": "No messages yet.",
+      "tableDate": "Date",
+      "tableType": "Type",
+      "tableFrom": "From",
+      "tableMessage": "Message",
+      "anonymous": "Anonymous",
+      "suggestionsTitle": "Correction suggestions",
+      "suggestionsLabel": "{count, plural, =1 {pending suggestion} other {pending suggestions}}",
+      "suggestionsSubtitle": "Corrections proposed by registered users",
+      "viewAllSuggestions": "View all"
+    },
+    "users": {
+      "back": "← Panel",
+      "title": "User management",
+      "count": "{count, plural, =1 {1 registered user} other {# registered users}}"
+    },
+    "suggestions": {
+      "back": "← Admin",
+      "title": "Pending suggestions",
+      "empty": "No pending suggestions.",
+      "section": "Section:",
+      "comment": "Comment:",
+      "originalText": "Current text",
+      "suggestedText": "Suggested text",
+      "approve": "Approve",
+      "reject": "Reject"
+    },
+    "newCard": {
+      "breadcrumbAdmin": "Admin",
+      "breadcrumbNewWork": "New work",
+      "breadcrumbConfirm": "Confirm",
+      "title": "Save draft",
+      "incomplete": "This work has incomplete data (missing poster, overview or genres). The entry will be flagged as incomplete.",
+      "save": "Save draft",
+      "saving": "Saving…",
+      "discard": "Discard work",
+      "discarding": "Discarding…",
+      "cancel": "Cancel",
+      "discardHint": "\"Discard work\" permanently deletes the newly created work without saving any entry.",
+      "errors": {
+        "create": "Couldn't create the entry",
+        "discard": "Couldn't discard",
+        "unexpected": "Unexpected error. Please try again."
+      }
+    },
+    "contact": {
+      "metaTitle": "Contact messages — Admin",
+      "title": "Contact messages",
+      "summary": "{unread} unread · {total} total",
+      "back": "← Admin",
+      "types": {
+        "suggestion": "Suggestion",
+        "error": "Error",
+        "other": "Other",
+        "bug": "Bug"
+      }
+    }
+  },
   "PerfilPage": {
     "title": "My profile",
     "welcome": "Welcome,",
