@@ -1,8 +1,11 @@
 # Roadmap — Spoilering
-_Última actualización: 9 mayo 2026 (sesión 4 — i18n)_
+_Última actualización: 9 mayo 2026 (sesión 4 — i18n, deploy preview OK)_
 
 ## Estado del proyecto
-En producción en www.spoilering.com. Base completa funcionando, **incluida internacionalización (ES + EN) con UI completamente traducida y traducción de fichas con IA bajo demanda**. Fase actual: pulido SEO multi-locale y mejoras de calidad de datos.
+- **Producción** (`www.spoilering.com` / rama `main`): última versión sin i18n.
+- **Preview** (`spoilering-git-claude-dazzling-heyro-1aea74-jeraccoons-projects.vercel.app` / rama `claude/dazzling-heyrovsky-4f9775`): **i18n completa funcionando** (ES + EN). UI 100% traducida, traducción de fichas con IA bajo demanda probada y verificada.
+- **Migración SQL fase 2 ya ejecutada** en Supabase compartida.
+- **Pendiente para mergear a main**: implementar pre-traducción al publicar para evitar el ~10s de espera del primer visitante en `/en/`. Una vez hecho, mergear y desplegar.
 
 ---
 
@@ -124,13 +127,17 @@ Los nuevos visitantes no entendían que es una web colaborativa: buscaban una ob
 
 ## 🔧 Pendiente — próxima sesión (por prioridad)
 
-### 0. Migraciones SQL (manual, si no ejecutadas)
-- **CRÍTICO**: ejecutar `scripts/migration-phase2-i18n.sql` en Supabase. Sin esto, las visitas a `/en/...` no podrán cachear traducciones.
-- Si no estaba aún: `scripts/migration-summary.sql` (ya antiguo).
+### 0. Migraciones SQL — ✅ EJECUTADAS
+- ✅ `scripts/migration-phase2-i18n.sql` ejecutado el 9 mayo. Las cuatro nuevas estructuras (cards.original_locale, works.{title,overview}_translations, section_translations, card_translations) están en producción Supabase.
+- ✅ `scripts/migration-summary.sql` ya estaba aplicado (verificado el 9 mayo).
 
-### 1. Pulido i18n — pre-traducción al publicar
-- La primera vista en `/en/...` espera ~5-10s mientras Claude traduce. Solución: trigger en background al publicar para tener cache caliente cuando llegue el primer usuario.
-- Implementación posible: extender `PATCH /api/admin/cards/[id]/status` para que cuando pase a `published` lance `getOrCreateCardTranslation` para todos los locales no-original sin esperar respuesta.
+### 1. Pulido i18n — pre-traducción al publicar (**BLOQUEA MERGE A PRODUCCIÓN**)
+- **Problema verificado en preview**: la primera vista en `/en/ficha/<slug>` tarda ~5-10s mientras Claude traduce ~2000-3600 palabras. Cache hit posterior es instantáneo, pero el primer usuario inglés siempre paga el coste — mala UX.
+- **Solución acordada**: en `PATCH /api/admin/cards/[id]/status`, cuando una ficha pasa a `published`, llamar `getOrCreateCardTranslation(card, 'en')` (y para cualquier locale no-original) en **background sin `await`** antes del `return`.
+- **Resultado**: editor publica → respuesta inmediata. Mientras Claude traduce ~10s en segundo plano, cuando el primer visitante inglés llega ya tiene cache caliente.
+- **Coste**: igual que ahora (una traducción por ficha). Solo cambia *cuándo* se hace.
+- **Mejora opcional (paralela)**: paralelizar por sección dentro de `translate-card.ts` (4 calls de ~3s vs 1 de ~10s, mismo coste). Reduce el tiempo de la traducción en sí, útil para retraducciones manuales y para casos donde la pre-traducción no haya terminado todavía.
+- **Una vez implementado**: mergear `claude/dazzling-heyrovsky-4f9775` → `main`, push → Vercel deploya a producción.
 
 ### 2. Pulido i18n — auto-fill de title_translations desde TMDb
 - TMDb permite `?language=en-US` y devuelve el título oficial inglés. Aprovecharlo al crear obra: una llamada extra para rellenar `works.title_translations` sin pasar por Claude.

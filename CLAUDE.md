@@ -259,16 +259,37 @@ Requiere las variables de entorno en `.env.local`.
 - Perfil: account-modals, perfil-cards-section, social-links-editor, note-widget, invite-widget.
 - Admin: page principal, /admin/usuarios, /admin/sugerencias (+ acciones), /admin/contacto, /admin/nueva-ficha, /admin/nueva-obra, /admin/ficha/[id]/ficha-editor, admin-cards-filter, admin-users-table, draft-cards-section, inactive-drafts-section, orphan-works-section, pending-cards-section, contact-messages-list, SeasonsPanel.
 
+### Cierre sesión 9 mayo (i18n + deploy preview)
+- ✅ **Migración SQL fase 2 ejecutada en Supabase** (cards.original_locale, works.{title,overview}_translations, section_translations, card_translations).
+- ✅ **Vercel preview construye OK** en commit `02b09b2`. URL: `spoilering-git-claude-dazzling-heyro-1aea74-jeraccoons-projects.vercel.app` (rama `claude/dazzling-heyrovsky-4f9775`).
+- ✅ **Probado en preview**: cambio de idioma OK, traducción de fichas funciona.
+- ⚠ **Observación**: la primera traducción tarda ~5-10s (Claude traduciendo ~2000-3600 palabras de golpe). Cache hit posterior es instantáneo. **Solución acordada**: implementar pre-traducción al publicar (próxima sesión, alta prioridad).
+- ⚠ **NO mergeado a main todavía**. La rama está en preview, esperando que se implemente la pre-traducción para evitar la mala UX del primer visitante en `/en/`.
+
+#### Bugs encontrados y arreglados durante el deploy a preview:
+- `not-found.tsx` y `error.tsx` se quedaron en castellano en fase 1 → traducidos (commit `64a37cf`).
+- `/admin/nueva-obra` falla en static prerender porque `useRouter` de @/i18n/navigation usa `useSearchParams` → wrap en Suspense (commit `4fc515c`) + force-dynamic en todas las admin pages, perfil y nueva-obra (commit `f59d324`).
+- **Causa raíz**: el Header en el layout renderiza NavSearch y LanguageSwitcher (ambos client components con useSearchParams transitivo). Sin Suspense, cualquier página estática bailaba en prerender. Fix: envolver ambos en `<Suspense fallback={null}>` dentro del Header (commit `02b09b2`). Esto cura todas las páginas estáticas, no solo admin.
+
 ### Pendiente de resolver (próxima sesión)
-- **Migraciones SQL** (si no ejecutadas): `scripts/migration-summary.sql` (summary, ya antiguo) y **CRÍTICO** `scripts/migration-phase2-i18n.sql` antes de probar la fase 2 i18n en serio.
-- **Perfiles de usuario con redes sociales** — UI ya implementada (SocialLinksEditor), pero verificar que columnas letterboxd_profile, tracktv_profile, goodreads_profile, filmaffinity_profile existen en `profiles`.
-- **Pre-traducción al publicar**: ahora la primera vista en `/en/...` espera ~5-10s mientras Claude traduce. Mejora: trigger background al publicar para tener cache caliente.
-- **Auto-fill de title_translations desde TMDb**: aprovechar `?language=en-US` al crear obra para tener título inglés sin pasar por Claude.
-- **Botón "Re-traducir"** en editor admin: forzar regeneración cuando la traducción quede mala.
-- **profiles.locale**: campo para preferencia de idioma del usuario (cambia el cookie de next-intl al iniciar sesión).
-- **Emails de Supabase en idioma del usuario**: requiere editar templates en dashboard de Supabase.
-- **Cleanup técnico**: `home-cards.tsx` probablemente huérfano — confirmar y borrar. Centralizar TYPE_LABELS en admin (legacy hardcoded en algunos sitios donde no se ha migrado a `WorkType` namespace).
-- **Migrar `middleware.ts` a `proxy.ts`** — Next.js 16 marca middleware como deprecado. Mismo API, solo renombrar el archivo.
+
+#### Prioridad ALTA — bloquean el merge a producción
+1. **Pre-traducción al publicar**: en `PATCH /api/admin/cards/[id]/status`, cuando una ficha pasa a `published`, lanzar `getOrCreateCardTranslation(card, 'en')` (y para cualquier locale no-original) en background sin `await` antes del response. Editor publica → respuesta inmediata. Mientras Claude traduce ~10s en segundo plano, cuando el primer visitante inglés llega ya tiene cache caliente.
+   - Alternativa complementaria: paralelizar por sección dentro de `translate-card.ts` (4 calls de ~3s vs 1 de ~10s, mismo coste de tokens).
+
+2. **Una vez resuelto lo anterior, mergear `claude/dazzling-heyrovsky-4f9775` a `main`** y desplegar a producción. La migración SQL ya está ejecutada.
+
+#### Prioridad MEDIA
+3. **Auto-fill de title_translations desde TMDb** al crear obra (`?language=en-US`). Reduce 1 traducción Claude por obra cuando se crea desde TMDb.
+4. **Botón "Re-traducir"** en editor admin (`POST /api/admin/cards/[id]/retranslate?locale=en` que borra cache y regenera).
+5. **Migrar `middleware.ts` a `proxy.ts`** — Next.js 16 marca middleware como deprecado. Mismo API, solo renombrar.
+6. **profiles.locale** — preferencia de idioma del usuario.
+
+#### Prioridad BAJA
+7. **Migración SQL** (si no ejecutada): `scripts/migration-summary.sql` (summary, ya antiguo).
+8. **Perfiles con redes sociales** — UI ya hecha, verificar columnas en `profiles`.
+9. **Cleanup técnico**: `home-cards.tsx` probablemente huérfano. Centralizar TYPE_LABELS hardcoded.
+10. **Emails de Supabase en idioma del usuario** — requiere editar templates en dashboard de Supabase.
 
 ### Conocido pero no urgente
 - Ejecutar en Supabase las policies RLS para fichas de usuarios si no se han ejecutado:
