@@ -4,7 +4,8 @@
 Spoilering es una web colaborativa de resúmenes con spoilers de series, películas y libros. El objetivo es que los usuarios puedan refrescar la memoria sobre una obra cuando vuelven a ella después de un tiempo.
 
 ## Stack tecnológico
-- Next.js 15 con App Router y TypeScript
+- Next.js 16 con App Router y TypeScript
+- **next-intl 4.x** para internacionalización (locales `es` + `en`, prefijo siempre)
 - Tailwind CSS — paleta: `ink` (#18181b), `paper` (#fbfaf7), `ember` (#d84f2a), `moss` (#52715a), `plum` (#6d4f72), `tide` (#3a6fb0)
 - Tipografía: **Inter** (sans, body) + **Fraunces** (serif, titulares editoriales) cargadas vía `next/font/google`. Variables CSS `--font-sans` y `--font-serif` en `<html>`. Usar `font-serif` solo en H1/H2 destacados (hero, ficha pública, FeaturedCard, FAQ, /buscar).
 - Supabase como backend completo (PostgreSQL, autenticación, RLS)
@@ -19,10 +20,12 @@ El git está en `C:\Proyectos\spoilering\spoilering\`. El `tsconfig.json` excluy
 ## Decisiones de arquitectura
 - Sin Prisma — Supabase sustituye toda la capa de base de datos
 - Se usa `(supabase.from('tabla') as any)` para evitar errores de tipo `never`
-- Middleware en `src/middleware.ts` — protege /admin por rol
+- Middleware en `src/middleware.ts` — protege /admin por rol Y compone con next-intl
 - Autenticación SSR con `@supabase/ssr`
 - El modelo de IA es `claude-sonnet-4-6` — NO usar claude-sonnet-4-20250514, no existe
 - El cliente admin de Supabase está en `src/lib/supabase/admin.ts` con `import 'server-only'` y usa `SUPABASE_SERVICE_ROLE_KEY`
+- **i18n**: todo el árbol de páginas vive en `src/app/[locale]/`. `api/`, `auth/`, `global-error.tsx`, `robots.ts`, `sitemap.ts` y favicons se quedan en la raíz `src/app/`.
+- **Imports de navegación interna**: usar SIEMPRE `@/i18n/navigation` (`Link`, `useRouter`, `redirect`, `usePathname`). NO importar `Link` de `next/link` ni `useRouter`/`redirect` de `next/navigation` para rutas internas — perderán el prefijo de locale.
 
 ## Roles de usuario
 - **user** — hasta 5 fichas (pendientes de aprobación), sugerir correcciones, gestionar perfil
@@ -71,10 +74,22 @@ El git está en `C:\Proyectos\spoilering\spoilering\`. El `tsconfig.json` excluy
 - `GET /api/user-content` — obtiene registro de visionado del usuario actual por work_id o episode_id
 - `DELETE /api/user-content` — elimina registro de visionado por work_id o episode_id
 
+## i18n — pipeline de traducción
+- Locales soportados: `['es', 'en']`. Default `es`. Configuración en `src/i18n/routing.ts`. URLs SIEMPRE con prefijo (`localePrefix: 'always'`).
+- Mensajes de UI en `messages/{es,en}.json`. Namespaces principales: `Common`, `Header`, `Footer`, `BetaBanner`, `ContactModal`, `NavSearch`, `UserMenu`, `HeroActions`, `CommunityCallout`, `Home`, `HomeSections`, `BuscarPage`, `LoginPage`, `RegistroPage`, `RecuperarPage`, `NuevaContrasenaPage`, `FaqPage`, `PerfilPage`, `PerfilCards`, `AccountModals`, `SocialLinks`, `NoteWidget`, `InviteWidget`, `FichaPage`, `SuggestBar`, `SuggestionModal`, `SpoilerGate`, `CardContent`, `UserContentPanel`, `SeasonsAccordion`, `EpisodeRow`, `TranslationBanner`, `Admin.*`, `WorkType`, `Roles`, `SuggestionStatus`, `Metadata`, `ContenidoPage`, `Legal`.
+- Patrón de `WorkType`: usar `const tw = useTranslations('WorkType'); tw(work.type)` en lugar de TYPE_LABELS hardcoded.
+- Pluralización ICU: `"key": "{count, plural, =1 {1 cosa} other {# cosas}}"`, llamado con `t('key', { count })`.
+- Rich text con tags HTML: `t.rich('key', { bold: chunks => <span>{chunks}</span> })`.
+- Páginas client-only que necesitan `generateMetadata`: patrón **server-wrapper + client-island**. Ej. `faq/page.tsx` (server) → renderiza `<FaqClient />` (client). Aplicado a: faq, registro, recuperar-contrasena, nueva-contrasena.
+- Selector de idioma: `src/components/language-switcher.tsx` (píldoras ES|EN), integrado en Header. Preserva pathname y query params al cambiar.
+- **Traducción de fichas con IA bajo demanda**: `src/lib/translate/translate-card.ts`. Cuando un usuario visita `/en/ficha/X` y `card.original_locale === 'es'`, lee cache en `section_translations` + `card_translations` + `works.title_translations`/`overview_translations`. Si falta algo, una sola llamada a Claude (`claude-sonnet-4-6`) traduce TODO lo pendiente en bulk con respuesta JSON dentro de `<json>...</json>`. Persiste con upsert. Banner `TranslationBanner` muestra "Traducido automáticamente con IA" + "Ver original →" en plum.
+- **Sitemap multi-locale**: `src/app/sitemap.ts` emite cada URL con `alternates.languages` (es, en, x-default) para hreflang.
+- **Cuerpo legal**: aviso-legal, privacidad y cookies se mantienen en castellano para ambos locales (decisión consciente para no inventar texto legal). Banner aviso solo en `/en/`.
+
 ## Tablas en Supabase
 - `works` — obras. Unique en tmdb_id y google_books_id. Extra para libros: isbn, publisher, pages, saga, saga_order. Nuevas columnas: `"cast"` text[], runtime integer, imdb_id text, letterboxd_url text, goodreads_url text, filmaffinity_url text, tracktv_url text, poster_url text. Ejecutar en Supabase si faltan: `ALTER TABLE works ADD COLUMN IF NOT EXISTS filmaffinity_url text; ALTER TABLE works ADD COLUMN IF NOT EXISTS tracktv_url text;`
 - `contact_messages` — nombre, email, tipo (Sugerencia/Error/Otro), mensaje, user_id nullable, created_at. RLS: insert público, select solo admin
-- `cards` — fichas (status: draft/published, is_committed: boolean, created_by: uuid, **summary** text nullable). El campo `is_complete` fue eliminado. Migración necesaria si falta `summary`: `ALTER TABLE cards ADD COLUMN IF NOT EXISTS summary text;` (ver `scripts/migration-summary.sql`)
+- `cards` — fichas (status: draft/published, is_committed: boolean, created_by: uuid, **summary** text nullable, **original_locale** text default 'es'). Migraciones SQL: `scripts/migration-summary.sql` (summary) y `scripts/migration-phase2-i18n.sql` (original_locale + tablas de traducción).
 - `sections` — secciones en markdown
 - `profiles` — usuario con rol (admin/editor/user), username único, is_active boolean
 - `suggestions` — correcciones (status: pending/approved/rejected, user_id: uuid)
@@ -82,6 +97,10 @@ El git está en `C:\Proyectos\spoilering\spoilering\`. El `tsconfig.json` excluy
 - `episodes` — episodios (season_id, episode_number, card_id nullable, tmdb_episode_id, still_path)
 - `user_content` — user_id, work_id, episode_id, watched, watched_at, notes. RLS estricto por user_id
 - `invites` — inviter_id, email, created_at. RLS estricto por inviter_id
+- `section_translations` — section_id, locale, label, short_label, content, source ('ai'|'manual'|'tmdb'). UNIQUE (section_id, locale). RLS lectura pública.
+- `card_translations` — card_id, locale, summary, source. UNIQUE (card_id, locale). RLS lectura pública.
+- `works.title_translations` — jsonb `{"es":"…","en":"…"}` (no es tabla, columna).
+- `works.overview_translations` — jsonb similar.
 
 ## Variables de entorno necesarias (Vercel)
 - `NEXT_PUBLIC_SUPABASE_URL`
@@ -207,11 +226,49 @@ Requiere las variables de entorno en `.env.local`.
 - **Hero más comunitario**: subtítulo cambiado a "Una comunidad escribiendo resúmenes…" en lugar del genérico "Resúmenes completos…". Añadida una línea de prueba social entre los botones y la trust bar: **"X fichas escritas por la comunidad · ¿No está la tuya? Añádela."** El contador es el `count` exacto de Supabase (head:true count:'exact'), no el `length` del array limitado a 60.
 - **CommunityCallout dismissible** (`src/components/community-callout.tsx`): bloque plum entre el hero y el contenido editorial, solo en home. Explica el modelo colaborativo en 2 frases ("No es un catálogo terminado, es un proyecto comunitario...") y enlaza a `/faq`. Dismissible con `localStorage` (`spoilering_community_callout_dismissed`). Una vez cerrado, no vuelve a aparecer en ese navegador.
 
+### Sesión 9 mayo — internacionalización (i18n) completa
+**Motivación**: abrir Spoilering a hablantes de inglés sin duplicar trabajo editorial. La fase 1 traduce toda la UI; la fase 2 traduce las fichas con IA bajo demanda y cachea.
+
+**Stack**: next-intl 4.x, locales `['es','en']`, prefijo siempre, detección por `Accept-Language` con fallback a `es`.
+
+**Fase 1 — UI traducida**:
+- `src/i18n/{routing,navigation,request}.ts`. Plugin en `next.config.ts` con `createNextIntlPlugin('./src/i18n/request.ts')`.
+- Todo el árbol movido a `src/app/[locale]/`. `api/`, `auth/callback/`, `global-error.tsx`, `robots.ts`, `sitemap.ts`, favicons SE QUEDAN en raíz.
+- Layout único en `[locale]/layout.tsx` con `NextIntlClientProvider`, `setRequestLocale`, `generateStaticParams`, validación con `hasLocale`, `<html lang={locale}>` dinámico, `generateMetadata` con `alternates.languages` para hreflang automático.
+- Middleware compuesto: `handleI18nRouting` + Supabase auth en pipeline. Salta i18n para `/api` y `/auth`. Protección admin migrada a regex `^/{es|en}/admin` con redirects locale-aware.
+- Selector de idioma `LanguageSwitcher` (píldoras ES|EN) en Header. Preserva pathname y query params.
+- Páginas client-only refactorizadas a patrón server-wrapper + client-island para soportar `generateMetadata`: faq, registro, recuperar-contrasena, nueva-contrasena.
+- Cuerpo legal mantiene castellano en ambos locales con banner aviso en `/en/`.
+- Plurales ICU en banners ("1 ficha pendiente" / "3 fichas pendientes"). Fechas con `dateLocale` (es-ES/en-US).
+
+**Fase 2 — Fichas traducidas con IA**:
+- Migración SQL: `scripts/migration-phase2-i18n.sql` (cards.original_locale, works.{title,overview}_translations jsonb, tablas section_translations y card_translations con UNIQUE (id, locale), RLS lectura pública, trigger updated_at).
+- Helper `src/lib/translate/translate-card.ts` (server-only): lee cache, detecta lo que falta, llama UNA SOLA VEZ a Claude (claude-sonnet-4-6) con título + overview + summary + secciones pendientes en bulk, parsea JSON dentro de `<json>...</json>`, persiste con upsert.
+- Integración en `[locale]/ficha/[slug]/page.tsx`: tras `getCard`, ejecuta `getOrCreateCardTranslation` en paralelo con seasons/credits cuando `locale !== card.original_locale`. Aplica overrides in-place sobre title, overview, summary, label, short_label y content de cada sección y subsección. Si Claude falla, sirve original (no rompe).
+- `generateMetadata` usa solo cache (`work.title_translations[locale]`) — no dispara Claude antes del render.
+- `TranslationBanner` (plum) sobre la ficha cuando hay traducción activa, con enlace "Ver original →" usando `Link locale={originalLocale}`.
+
+**SEO**:
+- Sitemap multi-locale con `alternates.languages` (es, en, x-default) por cada URL. `urlFor()` y `altLanguages()` helpers en `src/app/sitemap.ts`.
+- `robots.ts` actualizado con disallow para `/admin`, `/perfil`, `/api`, `/auth` (y sus equivalentes con prefijo).
+
+**Componentes refactorizados**:
+- Globales: Header, Footer, UserMenu, NavSearch, BetaBanner, ContactModal, HeroActions, CommunityCallout, SignOutButton.
+- Públicos: home, /buscar (con generateMetadata por locale), /login, /registro, /faq, /perfil, /ficha/[slug], /contenido/[slug], /nueva-obra, recuperar/nueva-contraseña.
+- Públicos compartidos: SuggestBar, SuggestionModal, SpoilerGate, CardContent, UserContentPanel, SeasonsAccordion, EpisodeRow, TranslationBanner.
+- Perfil: account-modals, perfil-cards-section, social-links-editor, note-widget, invite-widget.
+- Admin: page principal, /admin/usuarios, /admin/sugerencias (+ acciones), /admin/contacto, /admin/nueva-ficha, /admin/nueva-obra, /admin/ficha/[id]/ficha-editor, admin-cards-filter, admin-users-table, draft-cards-section, inactive-drafts-section, orphan-works-section, pending-cards-section, contact-messages-list, SeasonsPanel.
+
 ### Pendiente de resolver (próxima sesión)
-- **Migración SQL** (si no ejecutada): `ALTER TABLE cards ADD COLUMN IF NOT EXISTS summary text;` en Supabase.
-- **Perfiles de usuario con redes sociales** — añadir letterboxd_profile, tracktv_profile, goodreads_profile, filmaffinity_profile en tabla profiles. Mostrar en perfil público.
-- **Cleanup técnico**: `home-cards.tsx` probablemente huérfano — confirmar y borrar. Centralizar TYPE_LABELS en admin.
-- **Multidioma** — ítem estratégico importante. Ver docs/roadmap.md para modelo propuesto (columna `language` en `cards`). Tomar decisiones de arquitectura antes de que el catálogo crezca.
+- **Migraciones SQL** (si no ejecutadas): `scripts/migration-summary.sql` (summary, ya antiguo) y **CRÍTICO** `scripts/migration-phase2-i18n.sql` antes de probar la fase 2 i18n en serio.
+- **Perfiles de usuario con redes sociales** — UI ya implementada (SocialLinksEditor), pero verificar que columnas letterboxd_profile, tracktv_profile, goodreads_profile, filmaffinity_profile existen en `profiles`.
+- **Pre-traducción al publicar**: ahora la primera vista en `/en/...` espera ~5-10s mientras Claude traduce. Mejora: trigger background al publicar para tener cache caliente.
+- **Auto-fill de title_translations desde TMDb**: aprovechar `?language=en-US` al crear obra para tener título inglés sin pasar por Claude.
+- **Botón "Re-traducir"** en editor admin: forzar regeneración cuando la traducción quede mala.
+- **profiles.locale**: campo para preferencia de idioma del usuario (cambia el cookie de next-intl al iniciar sesión).
+- **Emails de Supabase en idioma del usuario**: requiere editar templates en dashboard de Supabase.
+- **Cleanup técnico**: `home-cards.tsx` probablemente huérfano — confirmar y borrar. Centralizar TYPE_LABELS en admin (legacy hardcoded en algunos sitios donde no se ha migrado a `WorkType` namespace).
+- **Migrar `middleware.ts` a `proxy.ts`** — Next.js 16 marca middleware como deprecado. Mismo API, solo renombrar el archivo.
 
 ### Conocido pero no urgente
 - Ejecutar en Supabase las policies RLS para fichas de usuarios si no se han ejecutado:

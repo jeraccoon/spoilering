@@ -1,15 +1,40 @@
 # Roadmap — Spoilering
-_Última actualización: 4 mayo 2026 (sesión 3)_
+_Última actualización: 9 mayo 2026 (sesión 4 — i18n)_
 
 ## Estado del proyecto
-En producción en www.spoilering.com. Base completa funcionando. Fase actual: mejoras de UX, comunidad y calidad de datos.
+En producción en www.spoilering.com. Base completa funcionando, **incluida internacionalización (ES + EN) con UI completamente traducida y traducción de fichas con IA bajo demanda**. Fase actual: pulido SEO multi-locale y mejoras de calidad de datos.
 
 ---
 
 ## ✅ Completado
 
+### Internacionalización (sesión 4 — 9 mayo 2026) ✅
+**Fase 1 — UI traducida (ES + EN)**:
+- next-intl 4.x instalado, plugin en `next.config.ts`
+- Routing en `src/i18n/{routing,navigation,request}.ts`, locales `['es','en']`, prefijo siempre
+- Detección automática por `Accept-Language`, fallback a `es`
+- 301 desde URLs sin prefijo (`/login` → `/es/login`)
+- Todo el árbol movido a `src/app/[locale]/` (mantienen raíz: api, auth, global-error, sitemap, robots, favicons)
+- Layout con `NextIntlClientProvider`, `setRequestLocale`, `generateStaticParams`
+- Middleware compuesto: i18n + Supabase auth, salta `/api` y `/auth`
+- Selector ES|EN en navbar (preserva pathname y query)
+- Mensajes en `messages/{es,en}.json` con ~30 namespaces
+- Patrón server-wrapper + client-island para páginas client-only que necesitan `generateMetadata`
+- Plurales ICU, `t.rich()` para HTML inline, fechas con `dateLocale`
+- Páginas legales se mantienen en castellano para ambos locales (decisión consciente, banner aviso en `/en/`)
+
+**Fase 2 — Traducción de fichas con IA bajo demanda**:
+- Migración SQL `scripts/migration-phase2-i18n.sql`: cards.original_locale, works.{title,overview}_translations jsonb, tablas section_translations + card_translations con UNIQUE (id, locale)
+- Helper `src/lib/translate/translate-card.ts` — server-only — lee cache, llama una sola vez a Claude (claude-sonnet-4-6) con todo lo pendiente en bulk, persiste con upsert
+- Banner `TranslationBanner` en plum cuando hay traducción IA activa, con "Ver original →"
+- Si Claude falla → sirve original (no rompe la página)
+
+**SEO**:
+- Sitemap multi-locale con `alternates.languages` (es, en, x-default) por URL
+- `robots.ts` con disallow en `/admin`, `/perfil`, `/api`, `/auth`
+
 ### Infraestructura y base
-- Proyecto Next.js 15 + Supabase + Vercel
+- Proyecto Next.js 16 + Supabase + Vercel
 - Autenticación completa (registro, login por email o username, recuperar contraseña, eliminar cuenta)
 - Roles: admin / editor / user con permisos diferenciados
 - Deploy en producción en www.spoilering.com
@@ -99,64 +124,74 @@ Los nuevos visitantes no entendían que es una web colaborativa: buscaban una ob
 
 ## 🔧 Pendiente — próxima sesión (por prioridad)
 
-### 0. Migración SQL (manual, si no ejecutada)
-- Ejecutar en Supabase: `ALTER TABLE cards ADD COLUMN IF NOT EXISTS summary text;`
-- Sin esto, el guardado del Resumen rápido devuelve 500.
+### 0. Migraciones SQL (manual, si no ejecutadas)
+- **CRÍTICO**: ejecutar `scripts/migration-phase2-i18n.sql` en Supabase. Sin esto, las visitas a `/en/...` no podrán cachear traducciones.
+- Si no estaba aún: `scripts/migration-summary.sql` (ya antiguo).
 
-### 1. Perfiles con redes sociales
-- Añadir letterboxd_profile, tracktv_profile, goodreads_profile, filmaffinity_profile en tabla profiles
-- Mostrar en perfil público con enlaces
+### 1. Pulido i18n — pre-traducción al publicar
+- La primera vista en `/en/...` espera ~5-10s mientras Claude traduce. Solución: trigger en background al publicar para tener cache caliente cuando llegue el primer usuario.
+- Implementación posible: extender `PATCH /api/admin/cards/[id]/status` para que cuando pase a `published` lance `getOrCreateCardTranslation` para todos los locales no-original sin esperar respuesta.
 
-### 2. Resumen rápido (TL;DR) — eliminado temporalmente, redefinir antes de reimplantar
+### 2. Pulido i18n — auto-fill de title_translations desde TMDb
+- TMDb permite `?language=en-US` y devuelve el título oficial inglés. Aprovecharlo al crear obra: una llamada extra para rellenar `works.title_translations` sin pasar por Claude.
+- Aplica a películas y series. Para libros (Google Books), el título viene siempre en inglés u original — menos crítico.
+
+### 3. Botón "Re-traducir" en editor admin
+- Cuando una traducción IA queda mala. Endpoint `POST /api/admin/cards/[id]/retranslate?locale=en` que borra de `section_translations` y `card_translations` para ese locale y vuelve a llamar al pipeline.
+
+### 4. profiles.locale (preferencia de idioma del usuario)
+- Migración: `ALTER TABLE profiles ADD COLUMN locale text;`.
+- Al iniciar sesión, si `profiles.locale` está set y el usuario no está en ese locale, redirigir.
+- Toggle en perfil para guardar la preferencia explícita.
+
+### 5. Migrar `middleware.ts` a `proxy.ts`
+- Next.js 16 marca `middleware` como deprecado. Renombrar el archivo (mismo API).
+
+### 6. Perfiles con redes sociales (verificar BD)
+- UI ya implementada (`SocialLinksEditor`). Verificar que columnas letterboxd_profile, tracktv_profile, goodreads_profile, filmaffinity_profile existen en `profiles` o crear migración.
+
+### 7. Cleanup técnico
+- `src/components/home-cards.tsx` parece huérfano. Confirmar y borrar.
+- Centralizar TYPE_LABELS en componentes admin usando `@/lib/work-types` o el namespace `WorkType` (algunos sitios todavía usan literales).
+
+### 8. Resumen rápido (TL;DR) — pendiente desde sesiones anteriores
 - Se eliminó de la ficha pública y del editor por ser redundante con el `overview` de la obra.
 - La columna `cards.summary` sigue en BD por si se reactiva en el futuro.
-- **Propuesta para reimplantar**: generado por IA condensando todas las secciones de la ficha en 3-5 frases con spoilers completos. Completamente distinto al overview (que no tiene spoilers y viene de TMDb/Google Books). Visible solo dentro del SpoilerGate.
-- **Implementación sugerida (Opción A)**: botón "Generar resumen" en el editor que llame a la API pasando el contenido de todas las secciones → guarda en `cards.summary` → muestra en ficha pública dentro del SpoilerGate. Sin coste extra en cada visita, el editor puede regenerarlo si no convence.
+- **Propuesta para reimplantar**: generado por IA condensando todas las secciones de la ficha en 3-5 frases con spoilers completos. Completamente distinto al overview. Visible solo dentro del SpoilerGate.
 
-### 3. Cleanup técnico
-- `src/components/home-cards.tsx` parece huérfano. Confirmar y borrar.
-- Centralizar TYPE_LABELS en componentes admin usando `@/lib/work-types`.
-- Valorar si el Resumen rápido debería ser visible SIN pasar el SpoilerGate.
+### 9. Subida de imagen de portada
+- Pegar URL externa funciona; falta opción de subir archivo desde el dispositivo.
+- Supabase Storage con bucket `posters` (acceso público).
 
-### 3. Subida de imagen de portada
-- Actualmente el póster se añade pegando una URL externa. Añadir opción de subir un archivo desde el dispositivo.
-- Requiere almacenamiento: Supabase Storage es la opción natural (ya en el stack). Crear un bucket `posters` con acceso público.
-- El flujo sería: usuario selecciona archivo → upload a Supabase Storage → se guarda la URL pública en `works.poster_url`.
-- Aplica tanto en la creación de obra (`/admin/nueva-obra`) como en el editor de metadatos (`/admin/ficha/[id]`).
+### 10. Feedback de guardado en el editor
+- Toast "Guardado ✓" / "Guardando…" / "Error al guardar" tras cada autoguardado.
 
-### 4. Feedback de guardado en el editor de fichas
-- Actualmente el autoguardado (onBlur) funciona pero el usuario no tiene confirmación visual clara de que sus cambios se han guardado.
-- Mejorar el indicador: toast o mensaje visible tipo "Guardado ✓" que aparezca brevemente tras cada guardado exitoso.
-- Considerar también un indicador de "Guardando..." mientras la petición está en vuelo, y "Error al guardar" si falla.
-- Aplica a secciones, metadatos y resumen rápido.
-
-### 5. Ideas potenciales (sin priorizar)
+### 11. Ideas potenciales (sin priorizar)
 - "Antes de seguir con T2" — resumen limitado hasta el episodio/capítulo X.
 - "Si te gustó X, también te puede sonar Y" — 3 obras del mismo género al final de cada ficha.
 - Compartir tarjeta visual generada con `next/og` para RR.SS.
 - "Continuar leyendo" en home para usuarios logueados.
+- Soporte de más idiomas (FR, DE, IT, PT) en `routing.locales`.
+- Emails de Supabase en idioma del usuario (requiere editar templates en dashboard).
 
 ---
 
-## 🌍 Multidioma — ítem estratégico importante
+## 🌍 Multidioma — RESUELTO con modelo de traducción cacheada
 
-El objetivo es que Spoilering funcione en varios idiomas sin duplicar obras. Una misma obra (ej. "El Principito") debe tener una sola entrada en `works`, pero poder tener fichas (`cards`) en distintos idiomas escritas por comunidades diferentes.
+**Decisión final**: en vez de duplicar fichas por idioma, una sola ficha tiene un `original_locale` y las traducciones a otros idiomas se generan con IA bajo demanda y se cachean en tablas `section_translations` y `card_translations`. Una sola entrada en `works` con `title_translations` y `overview_translations` jsonb cubre los metadatos.
 
-**Modelo propuesto:**
-- Añadir columna `language` (código ISO: 'es', 'en', 'fr'...) a la tabla `cards`.
-- Una obra puede tener múltiples cards, una por idioma.
-- El usuario ve la ficha en su idioma (detectado por navegador o seleccionado manualmente).
-- Si no existe ficha en su idioma, se muestra la disponible con aviso.
-- Las URLs podrían ser `/ficha/[slug]` con header `Accept-Language`, o `/ficha/[slug]/en`.
+**Por qué este modelo y no el de cards-por-idioma:**
+- Una sola fuente de verdad por ficha → no hay drift entre versiones.
+- El editor escribe en su idioma original, la traducción se genera sola.
+- Las correcciones (sugerencias) van al original; las traducciones se regeneran si hace falta.
+- Slugs siguen siendo únicos por obra, sin sufijos.
+- Coste mínimo: una llamada a Claude por (ficha, idioma_destino), cacheada para siempre.
 
-**Implicaciones técnicas a resolver:**
-- Gestión de slugs: ¿slug por obra o por card+idioma?
-- Búsqueda y catálogo filtrados por idioma del usuario.
-- Panel admin: crear/editar fichas por idioma.
-- La IA genera el contenido en el idioma de la ficha.
-- Sitemap con `hreflang` por idioma.
-
-**Prioridad:** alta a medio plazo. Bloquear decisiones de arquitectura de `cards` teniendo esto en mente antes de escalar el catálogo.
+**Mejoras pendientes en el pipeline (no bloquean producción)**:
+- Pre-traducir al publicar (background job) para que el primer usuario en `/en/` no espere ~5-10s.
+- Auto-fill de `title_translations` desde TMDb usando `?language=en-US` al crear obra.
+- Botón "Re-traducir" en editor admin para forzar regeneración cuando una traducción quede mala.
+- Soporte para más idiomas (FR, DE, IT, PT) — solo hay que añadirlos a `routing.locales`.
 
 ---
 
