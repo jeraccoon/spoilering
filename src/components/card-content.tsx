@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { SpoilerGate } from '@/components/spoiler-gate'
@@ -47,6 +48,7 @@ const mdComponents = {
 }
 
 export function CardContent({ sections, isLoggedIn, slug }: Props) {
+  const t = useTranslations('CardContent')
   const [openIds, setOpenIds] = useState<Set<string>>(
     () => new Set(sections[0] ? [sections[0].id] : [])
   )
@@ -63,7 +65,7 @@ export function CardContent({ sections, isLoggedIn, slug }: Props) {
     <SpoilerGate slug={slug}>
       <div className="mx-auto max-w-5xl px-4 py-8">
         {sections.length === 0 ? (
-          <p className="text-ink/45">Esta ficha todavía no tiene contenido.</p>
+          <p className="text-ink/45">{t('noContent')}</p>
         ) : (
           <div className="space-y-2">
             {sections.map((section) => {
@@ -94,7 +96,7 @@ export function CardContent({ sections, isLoggedIn, slug }: Props) {
                           </ReactMarkdown>
                         </div>
                       ) : (
-                        <p className="text-ink/45">Esta sección todavía no tiene contenido.</p>
+                        <p className="text-ink/45">{t('noSectionContent')}</p>
                       )}
 
                       {isLoggedIn && (

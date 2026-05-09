@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { EpisodeRow } from './EpisodeRow'
 import type { Episode } from './EpisodeRow'
 
@@ -20,6 +21,7 @@ interface Props {
 }
 
 export function SeasonsAccordion({ seasons, role, isLoggedIn, watchedEpisodeIds = [] }: Props) {
+  const t = useTranslations('SeasonsAccordion')
   const watchedSet = new Set(watchedEpisodeIds)
   const [openSeasons, setOpenSeasons] = useState<Set<string>>(
     () => new Set(seasons.length > 0 ? [seasons[0].id] : [])
@@ -44,7 +46,7 @@ export function SeasonsAccordion({ seasons, role, isLoggedIn, watchedEpisodeIds 
     <section className="border-t border-ink/10">
       <div className="mx-auto max-w-5xl px-4 py-10">
         <h2 className="mb-6 text-xs font-semibold uppercase tracking-wider text-ink/55">
-          Temporadas y episodios
+          {t('title')}
         </h2>
         <div className="flex flex-col gap-2">
           {seasons.map((season) => {
@@ -63,18 +65,18 @@ export function SeasonsAccordion({ seasons, role, isLoggedIn, watchedEpisodeIds 
                       ▼
                     </span>
                     <span className="font-semibold text-ink">
-                      {season.name ?? `Temporada ${season.season_number}`}
+                      {season.name ?? t('seasonFallback', { number: season.season_number })}
                     </span>
                   </div>
                   <span className="shrink-0 text-xs text-ink/55">
-                    {season.episodes.length} episodio{season.episodes.length !== 1 ? 's' : ''}
+                    {t('episodeCount', { count: season.episodes.length })}
                   </span>
                 </button>
 
                 {isOpen && (
                   <div className="divide-y divide-ink/5 border-t border-ink/10">
                     {season.episodes.length === 0 ? (
-                      <p className="px-4 py-3 text-sm text-ink/55">Sin episodios</p>
+                      <p className="px-4 py-3 text-sm text-ink/55">{t('noEpisodes')}</p>
                     ) : (
                       season.episodes.map((ep) => (
                         <EpisodeRow

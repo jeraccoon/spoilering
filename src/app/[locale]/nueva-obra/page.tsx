@@ -1,5 +1,6 @@
-import { redirect } from 'next/navigation'
+import { redirect } from '@/i18n/navigation'
 
-export default async function NuevaObraPublicPage() {
-  redirect('/admin/nueva-obra')
+export default async function NuevaObraPublicPage({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params
+  redirect({ href: '/admin/nueva-obra', locale })
 }

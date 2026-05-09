@@ -1,5 +1,5 @@
-import { redirect } from 'next/navigation'
-import Link from 'next/link'
+import { getTranslations, setRequestLocale } from 'next-intl/server'
+import { Link, redirect } from '@/i18n/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { SignOutButton } from '@/components/sign-out-button'
 import { AccountModals } from '@/components/account-modals'
@@ -7,16 +7,15 @@ import { PerfilCardsSection } from '@/components/perfil-cards-section'
 import { SocialLinksEditor } from '@/components/social-links-editor'
 import type { CardWithWork } from '@/types/database'
 
-const ROLE_LABELS = { admin: 'Administrador', editor: 'Editor', user: 'Usuario' }
 const ROLE_COLORS = {
   admin: 'bg-ember/10 text-ember',
   editor: 'bg-moss/10 text-moss',
   user: 'bg-ink/10 text-ink/60',
 }
-const SUGGESTION_STATUS: Record<string, { label: string; className: string }> = {
-  pending:  { label: 'Pendiente',  className: 'bg-ink/8 text-ink/50' },
-  approved: { label: 'Aprobada',   className: 'bg-moss/10 text-moss' },
-  rejected: { label: 'Rechazada',  className: 'bg-ember/10 text-ember' },
+const SUGGESTION_STATUS_CLASS: Record<string, string> = {
+  pending: 'bg-ink/8 text-ink/50',
+  approved: 'bg-moss/10 text-moss',
+  rejected: 'bg-ember/10 text-ember',
 }
 
 const USER_CARD_LIMIT = 5
@@ -30,10 +29,14 @@ const COLOR_STYLES = {
 function QuickLink({
   href, icon, label, color, disabled = false,
 }: {
-  href: string; icon: string; label: string; color: keyof typeof COLOR_STYLES; disabled?: boolean
+  href: '/admin' | '/admin/usuarios' | '/admin/sugerencias' | '/admin/nueva-obra' | '/nueva-obra' | '/buscar' | '/faq' | '#'
+  icon: string
+  label: string
+  color: keyof typeof COLOR_STYLES
+  disabled?: boolean
 }) {
   const styles = COLOR_STYLES[color]
-  if (disabled) {
+  if (disabled || href === '#') {
     return (
       <span className={`inline-flex cursor-not-allowed items-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-medium opacity-40 ${styles.card} ${styles.text}`}>
         <span aria-hidden>{icon}</span>{label}
@@ -47,14 +50,23 @@ function QuickLink({
   )
 }
 
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })
-}
+export default async function PerfilPage({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params
+  setRequestLocale(locale)
 
-export default async function PerfilPage() {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  const auth = await supabase.auth.getUser()
+  if (!auth.data.user) redirect({ href: '/login', locale })
+  const user = auth.data.user!
+
+  const t = await getTranslations('PerfilPage')
+  const tRole = await getTranslations('Roles')
+  const tSugStatus = await getTranslations('SuggestionStatus')
+  const tw = await getTranslations('WorkType')
+  const dateLocale = locale === 'en' ? 'en-US' : 'es-ES'
+
+  const formatDate = (iso: string) =>
+    new Date(iso).toLocaleDateString(dateLocale, { day: 'numeric', month: 'short', year: 'numeric' })
 
   const { data: profile } = await (supabase.from('profiles') as any)
     .select('username, role, created_at, letterboxd_profile, tracktv_profile, goodreads_profile, filmaffinity_profile')
@@ -102,10 +114,11 @@ export default async function PerfilPage() {
   const noteList: any[] = notes ?? []
   const watchedList: any[] = watchedWorks ?? []
   const atLimit = isUser && cardList.length >= USER_CARD_LIMIT
-  const joinedAt = new Date(profile?.created_at ?? user.created_at).toLocaleDateString('es-ES', {
+  const joinedAt = new Date(profile?.created_at ?? user.created_at).toLocaleDateString(dateLocale, {
     year: 'numeric', month: 'long', day: 'numeric',
   })
-  const addHref = isPrivileged ? '/admin/nueva-obra' : '/nueva-obra'
+  const addHref: '/admin/nueva-obra' | '/nueva-obra' = isPrivileged ? '/admin/nueva-obra' : '/nueva-obra'
+  const remaining = USER_CARD_LIMIT - cardList.length
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
@@ -113,21 +126,21 @@ export default async function PerfilPage() {
       {/* Cabecera */}
       <div className="mb-10 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-black tracking-tight text-ink">Mi perfil</h1>
+          <h1 className="text-3xl font-black tracking-tight text-ink">{t('title')}</h1>
           <p className="mt-1 text-sm text-ink/50">
-            Bienvenido, <span className="font-semibold text-ink">{username}</span>
+            {t('welcome')} <span className="font-semibold text-ink">{username}</span>
           </p>
         </div>
         {atLimit ? (
           <span className="cursor-not-allowed rounded-lg bg-ink/10 px-5 py-2.5 text-sm font-semibold text-ink/45">
-            + Añadir obra
+            {t('addWork')}
           </span>
         ) : (
           <Link
             href={addHref}
             className="rounded-lg bg-ember px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-ember/90"
           >
-            + Añadir obra
+            {t('addWork')}
           </Link>
         )}
       </div>
@@ -145,22 +158,22 @@ export default async function PerfilPage() {
 
       {/* Accesos rápidos */}
       <section className="mb-10">
-        <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-ink/55">Accesos rápidos</h2>
+        <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-ink/55">{t('quickLinks')}</h2>
         <div className="flex flex-wrap gap-3">
           {role === 'admin' && (
             <>
-              <QuickLink href="/admin" icon="⚙️" label="Panel de administración" color="plum" />
-              <QuickLink href="/admin/usuarios" icon="👥" label="Gestión de usuarios" color="plum" />
-              <QuickLink href="/admin/sugerencias" icon="✏️" label="Sugerencias pendientes" color="plum" />
-              <QuickLink href="/admin" icon="📋" label="Fichas pendientes" color="plum" />
-              <QuickLink href="/admin/nueva-obra" icon="➕" label="Nueva obra" color="plum" />
+              <QuickLink href="/admin" icon="⚙️" label={t('quickActions.adminPanel')} color="plum" />
+              <QuickLink href="/admin/usuarios" icon="👥" label={t('quickActions.userManagement')} color="plum" />
+              <QuickLink href="/admin/sugerencias" icon="✏️" label={t('quickActions.pendingSuggestions')} color="plum" />
+              <QuickLink href="/admin" icon="📋" label={t('quickActions.pendingCards')} color="plum" />
+              <QuickLink href="/admin/nueva-obra" icon="➕" label={t('quickActions.newWork')} color="plum" />
             </>
           )}
           {role === 'editor' && (
             <>
-              <QuickLink href="/admin" icon="⚙️" label="Panel de administración" color="moss" />
-              <QuickLink href="/admin/sugerencias" icon="✏️" label="Sugerencias pendientes" color="moss" />
-              <QuickLink href="/admin/nueva-obra" icon="➕" label="Nueva obra" color="moss" />
+              <QuickLink href="/admin" icon="⚙️" label={t('quickActions.adminPanel')} color="moss" />
+              <QuickLink href="/admin/sugerencias" icon="✏️" label={t('quickActions.pendingSuggestions')} color="moss" />
+              <QuickLink href="/admin/nueva-obra" icon="➕" label={t('quickActions.newWork')} color="moss" />
             </>
           )}
           {role === 'user' && (
@@ -168,12 +181,12 @@ export default async function PerfilPage() {
               <QuickLink
                 href={atLimit ? '#' : '/nueva-obra'}
                 icon="➕"
-                label={`Añadir una obra (${USER_CARD_LIMIT - cardList.length} de ${USER_CARD_LIMIT} disponibles)`}
+                label={t('quickActions.addWorkUser', { remaining, total: USER_CARD_LIMIT })}
                 color="ember"
                 disabled={atLimit}
               />
-              <QuickLink href="/buscar" icon="🔍" label="Explorar fichas" color="ember" />
-              <QuickLink href="/faq" icon="❓" label="Ver el FAQ" color="ember" />
+              <QuickLink href="/buscar" icon="🔍" label={t('quickActions.exploreCards')} color="ember" />
+              <QuickLink href="/faq" icon="❓" label={t('quickActions.viewFaq')} color="ember" />
             </>
           )}
         </div>
@@ -182,12 +195,12 @@ export default async function PerfilPage() {
 
       {/* Mi actividad — obras vistas */}
       <section className="mb-10">
-        <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-ink/55">Mi actividad</h2>
+        <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-ink/55">{t('myActivity')}</h2>
         {watchedList.length === 0 ? (
           <div className="rounded-lg border border-ink/10 bg-ink/5 px-6 py-10 text-center text-sm text-ink/55">
-            Todavía no has marcado ninguna obra como vista.{' '}
+            {t('noWatched')}{' '}
             <Link href="/buscar" className="font-semibold text-ember hover:underline">
-              Explorar fichas →
+              {t('explore')}
             </Link>
           </div>
         ) : (
@@ -195,16 +208,15 @@ export default async function PerfilPage() {
             <table className="w-full text-sm">
               <thead className="border-b border-ink/10 bg-ink/5 text-xs text-ink/50">
                 <tr>
-                  <th className="px-4 py-3 text-left font-semibold">Obra</th>
-                  <th className="px-4 py-3 text-left font-semibold hidden sm:table-cell">Tipo</th>
-                  <th className="px-4 py-3 text-left font-semibold hidden md:table-cell">Vista el</th>
-                  <th className="px-4 py-3 text-left font-semibold hidden lg:table-cell">Notas</th>
+                  <th className="px-4 py-3 text-left font-semibold">{t('tableWork')}</th>
+                  <th className="px-4 py-3 text-left font-semibold hidden sm:table-cell">{t('tableType')}</th>
+                  <th className="px-4 py-3 text-left font-semibold hidden md:table-cell">{t('tableWatchedAt')}</th>
+                  <th className="px-4 py-3 text-left font-semibold hidden lg:table-cell">{t('tableNotes')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-ink/10">
                 {watchedList.map((item: any) => {
                   const work = item.work
-                  const TYPE_LABELS: Record<string, string> = { movie: 'Película', series: 'Serie', book: 'Libro' }
                   return (
                     <tr key={item.id} className="transition hover:bg-ink/5">
                       <td className="px-4 py-3 font-semibold text-ink">
@@ -216,12 +228,12 @@ export default async function PerfilPage() {
                         ) : <span className="text-ink/55">—</span>}
                       </td>
                       <td className="px-4 py-3 text-ink/50 hidden sm:table-cell">
-                        {TYPE_LABELS[work?.type] ?? '—'}
+                        {work?.type ? tw(work.type) : '—'}
                       </td>
                       <td className="px-4 py-3 text-ink/50 hidden md:table-cell">
                         {item.watched_at
-                          ? new Date(item.watched_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })
-                          : <span className="text-ink/45">Sin fecha</span>}
+                          ? new Date(item.watched_at).toLocaleDateString(dateLocale, { day: 'numeric', month: 'short', year: 'numeric' })
+                          : <span className="text-ink/45">{t('noDate')}</span>}
                       </td>
                       <td className="px-4 py-3 text-ink/55 hidden lg:table-cell">
                         {item.notes
@@ -239,12 +251,12 @@ export default async function PerfilPage() {
 
       {/* Mis sugerencias */}
       <section className="mb-10">
-        <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-ink/55">Mis sugerencias</h2>
+        <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-ink/55">{t('mySuggestions')}</h2>
         {suggestionList.length === 0 ? (
           <div className="rounded-lg border border-ink/10 bg-ink/5 px-6 py-10 text-center text-sm text-ink/55">
-            Todavía no has enviado ninguna sugerencia.{' '}
+            {t('noSuggestions')}{' '}
             <Link href="/buscar" className="font-semibold text-ember hover:underline">
-              Explorar fichas →
+              {t('explore')}
             </Link>
           </div>
         ) : (
@@ -252,16 +264,17 @@ export default async function PerfilPage() {
             <table className="w-full text-sm">
               <thead className="border-b border-ink/10 bg-ink/5 text-xs text-ink/50">
                 <tr>
-                  <th className="px-4 py-3 text-left font-semibold">Ficha</th>
-                  <th className="px-4 py-3 text-left font-semibold hidden sm:table-cell">Sección</th>
-                  <th className="px-4 py-3 text-left font-semibold hidden md:table-cell">Fecha</th>
-                  <th className="px-4 py-3 text-right font-semibold">Estado</th>
+                  <th className="px-4 py-3 text-left font-semibold">{t('tableCard')}</th>
+                  <th className="px-4 py-3 text-left font-semibold hidden sm:table-cell">{t('tableSection')}</th>
+                  <th className="px-4 py-3 text-left font-semibold hidden md:table-cell">{t('tableDate')}</th>
+                  <th className="px-4 py-3 text-right font-semibold">{t('tableStatus')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-ink/10">
                 {suggestionList.map((s: any) => {
                   const work = s.section?.card?.work
-                  const statusInfo = SUGGESTION_STATUS[s.status] ?? SUGGESTION_STATUS.pending
+                  const statusKey = s.status as keyof typeof SUGGESTION_STATUS_CLASS
+                  const statusClass = SUGGESTION_STATUS_CLASS[statusKey] ?? SUGGESTION_STATUS_CLASS.pending
                   return (
                     <tr key={s.id} className="transition hover:bg-ink/5">
                       <td className="px-4 py-3 font-semibold text-ink">
@@ -280,8 +293,8 @@ export default async function PerfilPage() {
                         {s.created_at ? formatDate(s.created_at) : '—'}
                       </td>
                       <td className="px-4 py-3 text-right">
-                        <span className={`rounded px-2 py-0.5 text-[11px] font-semibold ${statusInfo.className}`}>
-                          {statusInfo.label}
+                        <span className={`rounded px-2 py-0.5 text-[11px] font-semibold ${statusClass}`}>
+                          {tSugStatus(statusKey)}
                         </span>
                       </td>
                     </tr>
@@ -295,12 +308,12 @@ export default async function PerfilPage() {
 
       {/* Mis notas */}
       <section className="mb-10">
-        <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-ink/55">Mis notas</h2>
+        <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-ink/55">{t('myNotes')}</h2>
         {noteList.length === 0 ? (
           <div className="rounded-lg border border-ink/10 bg-ink/5 px-6 py-10 text-center text-sm text-ink/55">
-            Todavía no has añadido ninguna nota.{' '}
+            {t('noNotes')}{' '}
             <Link href="/buscar" className="font-semibold text-ember hover:underline">
-              Explorar fichas →
+              {t('explore')}
             </Link>
           </div>
         ) : (
@@ -341,7 +354,7 @@ export default async function PerfilPage() {
 
       {/* Mi cuenta */}
       <section>
-        <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-ink/55">Mi cuenta</h2>
+        <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-ink/55">{t('myAccount')}</h2>
         <div className="overflow-hidden rounded-lg border border-ink/10 bg-paper shadow-sm">
           {/* Info + acciones */}
           <div className="flex flex-wrap items-center gap-6 px-6 py-5">
@@ -350,9 +363,9 @@ export default async function PerfilPage() {
             </div>
             <div className="flex min-w-0 flex-col gap-1">
               <p className="truncate font-semibold text-ink">{user.email}</p>
-              <p className="text-sm text-ink/50">Miembro desde {joinedAt}</p>
+              <p className="text-sm text-ink/50">{t('memberSince', { date: joinedAt })}</p>
               <span className={`mt-0.5 inline-block w-fit rounded-full px-2.5 py-0.5 text-xs font-semibold ${ROLE_COLORS[role as keyof typeof ROLE_COLORS] ?? ROLE_COLORS.user}`}>
-                {ROLE_LABELS[role as keyof typeof ROLE_LABELS] ?? role}
+                {role === 'admin' || role === 'editor' || role === 'user' ? tRole(role) : role}
               </span>
             </div>
             <div className="ml-auto">

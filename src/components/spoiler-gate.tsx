@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
+import { useRouter } from '@/i18n/navigation'
 
 interface SpoilerGateProps {
   slug: string
@@ -9,6 +10,7 @@ interface SpoilerGateProps {
 }
 
 export function SpoilerGate({ slug, children }: SpoilerGateProps) {
+  const t = useTranslations('SpoilerGate')
   const router = useRouter()
   const storageKey = `spoiler-accepted:${slug}`
   const [state, setState] = useState<'checking' | 'blocked' | 'revealed'>('checking')
@@ -39,23 +41,23 @@ export function SpoilerGate({ slug, children }: SpoilerGateProps) {
           <div className="w-full max-w-md rounded-2xl border border-ink/10 bg-paper px-8 py-8 shadow-xl text-center">
             <p className="mb-3 text-4xl">⚠️</p>
             <h2 className="mb-2 text-xl font-black text-ink">
-              Esta ficha contiene spoilers completos
+              {t('title')}
             </h2>
             <p className="mb-6 text-sm text-ink/60">
-              Si no has visto o leído la obra, te recomendamos no continuar.
+              {t('subtitle')}
             </p>
             <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
               <button
                 onClick={reveal}
                 className="rounded-lg bg-ember px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-ember/90"
               >
-                Mostrar de todas formas
+                {t('reveal')}
               </button>
               <button
                 onClick={() => router.push('/')}
                 className="rounded-lg border border-ink/20 px-6 py-2.5 text-sm font-semibold text-ink transition hover:bg-ink/5"
               >
-                Volver al inicio
+                {t('back')}
               </button>
             </div>
           </div>

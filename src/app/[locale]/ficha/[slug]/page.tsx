@@ -1,7 +1,8 @@
 import { notFound } from 'next/navigation'
-import Link from 'next/link'
 import Image from 'next/image'
 import type { Metadata } from 'next'
+import { getTranslations, setRequestLocale } from 'next-intl/server'
+import { Link } from '@/i18n/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { CardContent } from '@/components/card-content'
@@ -12,7 +13,7 @@ import type { CardFull } from '@/types/database'
 import type { Season } from '@/components/public/SeasonsAccordion'
 
 interface Props {
-  params: Promise<{ slug: string }>
+  params: Promise<{ locale: string; slug: string }>
   searchParams: Promise<Record<string, string>>
 }
 
@@ -50,7 +51,6 @@ async function getSeasons(workId: string): Promise<Season[]> {
 
   if (!seasons?.length) return []
 
-  // Collect card_ids from episodes that have one
   const allEps: any[] = seasons.flatMap((s: any) => s.episodes ?? [])
   const cardIds = [...new Set(allEps.filter((e) => e.card_id).map((e) => e.card_id))]
 
@@ -90,7 +90,6 @@ async function getCredits(cardId: string, createdBy: string | null): Promise<{ c
   try {
     const supabase = process.env.SUPABASE_SERVICE_ROLE_KEY ? createAdminClient() : await createClient()
 
-    // Fetch section IDs for this card + creator profile in parallel
     const [sectionsRes, creatorRes] = await Promise.all([
       (supabase.from('sections') as any).select('id').eq('card_id', cardId),
       createdBy
@@ -166,25 +165,24 @@ async function getUserContent(userId: string, workId: string, episodeIds: string
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { slug } = await params
+  const { locale, slug } = await params
+  const t = await getTranslations({ locale, namespace: 'FichaPage' })
   const card = await getCard(slug)
-  if (!card) return { title: 'Ficha no encontrada — Spoilering' }
+  if (!card) return { title: t('metaNotFound') }
   if (card.status !== 'published') return { title: `${card.work.title} — Spoilering`, robots: { index: false } }
   return {
     title: `${card.work.title}${card.work.year ? ` (${card.work.year})` : ''} — Spoilering`,
-    description: `Resumen completo con spoilers de ${card.work.title}.`.slice(0, 160),
+    description: t('metaDescription', { title: card.work.title }).slice(0, 160),
     openGraph: { images: card.work.poster_url ? [card.work.poster_url] : [] },
   }
 }
 
-const TYPE_LABELS = { movie: 'Película', series: 'Serie', book: 'Libro' }
-
-function formatRuntime(minutes: number): string {
+function formatRuntime(minutes: number, t: (key: string, values?: Record<string, number>) => string): string {
   const h = Math.floor(minutes / 60)
   const m = minutes % 60
-  if (h === 0) return `${m} min`
-  if (m === 0) return `${h}h`
-  return `${h}h ${m}min`
+  if (h === 0) return t('fields.minutes', { minutes: m })
+  if (m === 0) return t('fields.hours', { hours: h })
+  return t('fields.hoursMinutes', { hours: h, minutes: m })
 }
 
 function ExternalLink({ href, label }: { href: string; label: string }) {
@@ -202,7 +200,11 @@ function ExternalLink({ href, label }: { href: string; label: string }) {
 }
 
 export default async function CardPage({ params }: Props) {
-  const { slug } = await params
+  const { locale, slug } = await params
+  setRequestLocale(locale)
+
+  const t = await getTranslations('FichaPage')
+  const tw = await getTranslations('WorkType')
 
   const [card, { role, isLoggedIn, userId }] = await Promise.all([getCard(slug), getAuthInfo()])
   if (!card) notFound()
@@ -226,12 +228,12 @@ export default async function CardPage({ params }: Props) {
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center gap-3 px-4 text-center">
         <p className="text-4xl">🔒</p>
-        <h1 className="text-xl font-black text-ink">Esta ficha aún no está disponible</h1>
+        <h1 className="text-xl font-black text-ink">{t('lockedTitle')}</h1>
         <p className="max-w-sm text-sm text-ink/50">
-          El contenido está siendo preparado y todavía no ha sido publicado.
+          {t('lockedBody')}
         </p>
         <Link href="/buscar" className="mt-2 text-sm font-semibold text-ember hover:underline">
-          Explorar fichas publicadas
+          {t('lockedExplore')}
         </Link>
       </div>
     )
@@ -241,17 +243,17 @@ export default async function CardPage({ params }: Props) {
 
   return (
     <div>
-{isDraft && (
+      {isDraft && (
         <div className="border-b border-amber-300 bg-amber-50 px-4 py-3">
           <div className="mx-auto flex max-w-5xl items-center justify-between gap-4">
             <p className="text-sm font-medium text-amber-800">
-              Esta ficha está en borrador y no es visible para el público.
+              {t('draftBanner')}
             </p>
             <Link
               href={`/admin/ficha/${card.id}`}
               className="shrink-0 rounded-lg bg-amber-800 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-amber-900"
             >
-              Ir al editor
+              {t('draftCta')}
             </Link>
           </div>
         </div>
@@ -268,19 +270,19 @@ export default async function CardPage({ params }: Props) {
           <div className="flex flex-col justify-end gap-3">
             {/* Tipo + año + runtime/temporadas */}
             <div className="flex flex-wrap items-center gap-2 text-sm text-ink/50">
-              <span>{TYPE_LABELS[work.type as keyof typeof TYPE_LABELS]}</span>
+              <span>{tw(work.type)}</span>
               {work.year && <><span>·</span><span>{work.year}</span></>}
               {(work as any).country && (
                 <><span>·</span><span>{(work as any).country}</span></>
               )}
               {work.runtime && (
-                <><span>·</span><span>{formatRuntime(work.runtime)}</span></>
+                <><span>·</span><span>{formatRuntime(work.runtime, t)}</span></>
               )}
               {work.seasons_count && (
-                <><span>·</span><span>{work.seasons_count} temporada{work.seasons_count !== 1 ? 's' : ''}</span></>
+                <><span>·</span><span>{t('fields.seasons', { count: work.seasons_count })}</span></>
               )}
               {work.pages && (
-                <><span>·</span><span>{work.pages} páginas</span></>
+                <><span>·</span><span>{t('fields.pages', { count: work.pages })}</span></>
               )}
             </div>
 
@@ -308,37 +310,37 @@ export default async function CardPage({ params }: Props) {
             <div className="flex flex-col gap-1">
               {work.directors && work.directors.length > 0 && (
                 <p className="text-sm text-ink/60">
-                  <span className="font-medium text-ink/75">Dirección:</span>{' '}
+                  <span className="font-medium text-ink/75">{t('fields.directors')}</span>{' '}
                   {work.directors.join(', ')}
                 </p>
               )}
               {work.authors && work.authors.length > 0 && (
                 <p className="text-sm text-ink/60">
-                  <span className="font-medium text-ink/75">Autor:</span>{' '}
+                  <span className="font-medium text-ink/75">{t('fields.authors')}</span>{' '}
                   {work.authors.join(', ')}
                 </p>
               )}
               {work.cast && work.cast.length > 0 && (
                 <p className="text-sm text-ink/60">
-                  <span className="font-medium text-ink/75">Reparto:</span>{' '}
+                  <span className="font-medium text-ink/75">{t('fields.cast')}</span>{' '}
                   {work.cast.slice(0, 5).join(', ')}
                 </p>
               )}
               {work.publisher && (
                 <p className="text-sm text-ink/60">
-                  <span className="font-medium text-ink/75">Editorial:</span>{' '}
+                  <span className="font-medium text-ink/75">{t('fields.publisher')}</span>{' '}
                   {work.publisher}
                 </p>
               )}
               {work.saga && (
                 <p className="text-sm text-ink/60">
-                  <span className="font-medium text-ink/75">Saga:</span>{' '}
+                  <span className="font-medium text-ink/75">{t('fields.saga')}</span>{' '}
                   {work.saga_order != null ? `${work.saga} #${work.saga_order}` : work.saga}
                 </p>
               )}
               {work.isbn && (
                 <p className="text-sm text-ink/60">
-                  <span className="font-medium text-ink/75">ISBN:</span>{' '}
+                  <span className="font-medium text-ink/75">{t('fields.isbn')}</span>{' '}
                   {work.isbn}
                 </p>
               )}
@@ -350,7 +352,7 @@ export default async function CardPage({ params }: Props) {
 
             {/* Badge spoilers */}
             <span className="w-fit rounded-full bg-ember/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-ember">
-              ⚠ Contiene spoilers
+              {t('spoilersBadge')}
             </span>
 
             {/* Enlaces externos */}
@@ -410,13 +412,13 @@ export default async function CardPage({ params }: Props) {
           <div className="mx-auto flex max-w-5xl flex-wrap gap-x-6 gap-y-1 px-4 py-4 text-xs text-ink/55">
             {credits.creator && (
               <span>
-                Ficha creada por{' '}
+                {t('creator')}{' '}
                 <span className="font-semibold text-ink/60">{credits.creator}</span>
               </span>
             )}
             {credits.contributors.length > 0 && (
               <span>
-                Contribuidores:{' '}
+                {t('contributors')}{' '}
                 <span className="font-semibold text-ink/60">{credits.contributors.join(', ')}</span>
               </span>
             )}

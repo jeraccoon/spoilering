@@ -1,15 +1,23 @@
 import type { Metadata } from 'next'
+import { getTranslations } from 'next-intl/server'
 
 export const metadata: Metadata = {
   title: 'Política de cookies',
   robots: { index: false },
 }
 
-export default function CookiesPage() {
+export default async function CookiesPage() {
+  const t = await getTranslations('Legal')
+  const notice = t('spanishOnlyNotice')
   return (
     <div className="mx-auto max-w-2xl px-4 py-16">
       <h1 className="mb-2 text-3xl font-black tracking-tight text-ink">Política de cookies</h1>
       <p className="mb-10 text-sm text-ink/55">Última actualización: abril de 2026</p>
+      {notice && (
+        <p className="mb-8 rounded-lg border border-ember/30 bg-ember/5 px-4 py-3 text-sm text-ember">
+          {notice}
+        </p>
+      )}
 
       <section className="space-y-8 text-sm leading-relaxed text-ink/70">
 

@@ -215,6 +215,175 @@
       "alreadyRegistered": "An account with that email already exists."
     }
   },
+  "RecuperarPage": {
+    "title": "Reset password",
+    "subtitle": "Enter your email and we'll send you a reset link.",
+    "sentBody": "If an account exists with that email, you'll receive a reset link.",
+    "back": "Back to sign in",
+    "emailLabel": "Email",
+    "emailPlaceholder": "you@email.com",
+    "submit": "Send reset link",
+    "submitting": "Sending…"
+  },
+  "NuevaContrasenaPage": {
+    "verifying": "Verifying link…",
+    "invalidLink": "This link isn't valid or has expired.",
+    "requestNew": "Request a new one →",
+    "successTitle": "Password updated",
+    "successBody": "Taking you to your profile…",
+    "title": "New password",
+    "subtitle": "Pick a secure password for your account.",
+    "passwordLabel": "New password",
+    "passwordPlaceholder": "At least 8 characters",
+    "confirmLabel": "Confirm password",
+    "confirmPlaceholder": "Repeat the password",
+    "submit": "Save new password",
+    "submitting": "Saving…",
+    "errors": {
+      "shortPassword": "Password must be at least 8 characters.",
+      "mismatch": "Passwords don't match."
+    }
+  },
+  "Legal": {
+    "spanishOnlyNotice": "Legal text below is provided in Spanish only. An English translation has not been reviewed by a lawyer yet."
+  },
+  "ContenidoPage": {
+    "back": "Back to recent content",
+    "notFound": "Content not found"
+  },
+  "SuggestBar": {
+    "suggest": "Suggest correction"
+  },
+  "SuggestionModal": {
+    "trigger": "Suggest correction",
+    "title": "Suggest correction",
+    "section": "Section:",
+    "intro": "What's wrong in this section? Write the text as it should read.",
+    "contentLabel": "Corrected text",
+    "contentPlaceholder": "Write the correct text for this section here…",
+    "commentLabel": "Comment",
+    "commentOptional": "(optional)",
+    "commentPlaceholder": "E.g. Missing the twist from chapter 5",
+    "submit": "Send suggestion",
+    "submitting": "Sending…",
+    "successTitle": "Suggestion sent",
+    "successBody": "Thanks for contributing. An editor will review your proposal."
+  },
+  "SpoilerGate": {
+    "title": "This entry contains full spoilers",
+    "subtitle": "If you haven't watched or read the work, we'd recommend not continuing.",
+    "reveal": "Show anyway",
+    "back": "Back to home"
+  },
+  "CardContent": {
+    "noContent": "This entry has no content yet.",
+    "noSectionContent": "This section has no content yet."
+  },
+  "UserContentPanel": {
+    "title": "My activity",
+    "private": "Just you",
+    "saving": "Saving…",
+    "saved": "✓ Saved",
+    "saveError": "Couldn't save",
+    "watchedBook": "Read",
+    "watchedMovie": "Watched",
+    "markBook": "Mark as read",
+    "markMovie": "Mark as watched",
+    "whenBook": "When did you read it?",
+    "whenMovie": "When?",
+    "notesPlaceholderBook": "Personal notes... what did you think? Would you recommend it?",
+    "notesPlaceholderMovie": "Personal notes... who did you watch it with? What did you think?"
+  },
+  "SeasonsAccordion": {
+    "title": "Seasons and episodes",
+    "seasonFallback": "Season {number}",
+    "episodeCount": "{count, plural, =1 {1 episode} other {# episodes}}",
+    "noEpisodes": "No episodes"
+  },
+  "EpisodeRow": {
+    "episodeFallback": "Episode {number}",
+    "openCard": "Open entry ▼",
+    "closeCard": "Close ▲",
+    "spoilerWarning": "⚠ Contains spoilers",
+    "noSectionContent": "This section has no content yet.",
+    "noContent": "No content available.",
+    "createCard": "+ Create entry",
+    "createError": "Couldn't create entry",
+    "noCardLogged": "No entry ·",
+    "contribute": "Contribute?",
+    "contributeRegister": "Sign up to contribute",
+    "markWatched": "Mark as watched",
+    "markUnwatched": "Mark as unwatched"
+  },
+  "PerfilPage": {
+    "title": "My profile",
+    "welcome": "Welcome,",
+    "addWork": "+ Add a work",
+    "quickLinks": "Quick links",
+    "myActivity": "My activity",
+    "mySuggestions": "My suggestions",
+    "myNotes": "My notes",
+    "myAccount": "My account",
+    "memberSince": "Member since {date}",
+    "noWatched": "You haven't marked any work as watched yet.",
+    "noSuggestions": "You haven't sent any suggestion yet.",
+    "noNotes": "You haven't added any notes yet.",
+    "explore": "Browse entries →",
+    "noDate": "No date",
+    "tableWork": "Work",
+    "tableType": "Type",
+    "tableWatchedAt": "Watched on",
+    "tableNotes": "Notes",
+    "tableSection": "Section",
+    "tableDate": "Date",
+    "tableStatus": "Status",
+    "tableCard": "Entry",
+    "quickActions": {
+      "adminPanel": "Admin panel",
+      "userManagement": "User management",
+      "pendingSuggestions": "Pending suggestions",
+      "pendingCards": "Pending entries",
+      "newWork": "New work",
+      "addWorkUser": "Add a work ({remaining} of {total} available)",
+      "exploreCards": "Browse entries",
+      "viewFaq": "View FAQ"
+    }
+  },
+  "Roles": {
+    "admin": "Admin",
+    "editor": "Editor",
+    "user": "User"
+  },
+  "SuggestionStatus": {
+    "pending": "Pending",
+    "approved": "Approved",
+    "rejected": "Rejected"
+  },
+  "FichaPage": {
+    "metaNotFound": "Entry not found — Spoilering",
+    "metaDescription": "Full summary with spoilers of {title}.",
+    "draftBanner": "This entry is a draft and isn't visible to the public.",
+    "draftCta": "Open the editor",
+    "lockedTitle": "This entry isn't available yet",
+    "lockedBody": "Content is being prepared and hasn't been published yet.",
+    "lockedExplore": "Browse published entries",
+    "spoilersBadge": "⚠ Contains spoilers",
+    "creator": "Entry created by",
+    "contributors": "Contributors:",
+    "fields": {
+      "directors": "Director:",
+      "authors": "Author:",
+      "cast": "Cast:",
+      "publisher": "Publisher:",
+      "saga": "Series:",
+      "isbn": "ISBN:",
+      "seasons": "{count, plural, =1 {1 season} other {# seasons}}",
+      "pages": "{count} pages",
+      "minutes": "{minutes} min",
+      "hours": "{hours}h",
+      "hoursMinutes": "{hours}h {minutes}min"
+    }
+  },
   "FaqPage": {
     "title": "Frequently asked questions",
     "subtitle": "Everything you need to know about Spoilering",

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 
 interface Props {
   sectionId: string
@@ -9,6 +10,8 @@ interface Props {
 }
 
 export function SuggestionModal({ sectionId, sectionLabel, originalContent }: Props) {
+  const t = useTranslations('SuggestionModal')
+  const tCommon = useTranslations('Common')
   const [open, setOpen] = useState(false)
   const [content, setContent] = useState('')
   const [comment, setComment] = useState('')
@@ -33,10 +36,10 @@ export function SuggestionModal({ sectionId, sectionLabel, originalContent }: Pr
         }),
       })
       const data = await res.json()
-      if (!res.ok) { setError(data.error ?? 'Error al enviar'); setSending(false); return }
+      if (!res.ok) { setError(data.error ?? tCommon('sendError')); setSending(false); return }
       setSent(true)
     } catch {
-      setError('Error de red')
+      setError(tCommon('networkError'))
       setSending(false)
     }
   }
@@ -56,7 +59,7 @@ export function SuggestionModal({ sectionId, sectionLabel, originalContent }: Pr
         className="flex items-center gap-1.5 rounded border border-moss px-3 py-1.5 text-sm font-semibold text-moss transition-colors hover:bg-moss/10"
       >
         <span>✏️</span>
-        Sugerir corrección
+        {t('trigger')}
       </button>
 
       {open && (
@@ -65,33 +68,33 @@ export function SuggestionModal({ sectionId, sectionLabel, originalContent }: Pr
             {sent ? (
               <div className="py-4 text-center">
                 <p className="text-3xl">✅</p>
-                <h3 className="mt-3 text-lg font-black text-ink">Sugerencia enviada</h3>
+                <h3 className="mt-3 text-lg font-black text-ink">{t('successTitle')}</h3>
                 <p className="mt-2 text-sm text-ink/50">
-                  Gracias por contribuir. Un editor revisará tu propuesta.
+                  {t('successBody')}
                 </p>
                 <button
                   onClick={handleClose}
                   className="mt-5 rounded-lg bg-ember px-5 py-2 text-sm font-semibold text-white transition hover:bg-ember/90"
                 >
-                  Cerrar
+                  {tCommon('close')}
                 </button>
               </div>
             ) : (
               <>
                 <div className="mb-5">
-                  <h3 className="text-lg font-black text-ink">Sugerir corrección</h3>
+                  <h3 className="text-lg font-black text-ink">{t('title')}</h3>
                   <p className="mt-0.5 text-sm text-ink/50">
-                    Sección: <span className="font-semibold text-ink">{sectionLabel}</span>
+                    {t('section')} <span className="font-semibold text-ink">{sectionLabel}</span>
                   </p>
                   <p className="mt-2 text-sm text-ink/60">
-                    ¿Qué está mal en esta sección? Escribe cómo debería quedar el texto corregido.
+                    {t('intro')}
                   </p>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div>
                     <label className="mb-1.5 block text-sm font-semibold text-ink">
-                      Texto corregido
+                      {t('contentLabel')}
                     </label>
                     <textarea
                       value={content}
@@ -99,7 +102,7 @@ export function SuggestionModal({ sectionId, sectionLabel, originalContent }: Pr
                       rows={8}
                       required
                       autoFocus
-                      placeholder="Escribe aquí el texto correcto para esta sección…"
+                      placeholder={t('contentPlaceholder')}
                       className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2.5 text-sm text-ink placeholder-ink/45 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
                     />
 
@@ -107,14 +110,14 @@ export function SuggestionModal({ sectionId, sectionLabel, originalContent }: Pr
 
                   <div>
                     <label className="mb-1.5 block text-sm font-semibold text-ink">
-                      Comentario <span className="font-normal text-ink/55">(opcional)</span>
+                      {t('commentLabel')} <span className="font-normal text-ink/55">{t('commentOptional')}</span>
                     </label>
                     <input
                       type="text"
                       value={comment}
                       onChange={(e) => setComment(e.target.value)}
                       maxLength={200}
-                      placeholder="Ej: Falta mencionar el giro del capítulo 5"
+                      placeholder={t('commentPlaceholder')}
                       className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2.5 text-sm text-ink placeholder-ink/45 outline-none focus:border-ember focus:ring-2 focus:ring-ember/20"
                     />
                   </div>
@@ -127,14 +130,14 @@ export function SuggestionModal({ sectionId, sectionLabel, originalContent }: Pr
                       disabled={sending || !content.trim()}
                       className="rounded-lg bg-ember px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-ember/90 disabled:opacity-50"
                     >
-                      {sending ? 'Enviando…' : 'Enviar sugerencia'}
+                      {sending ? t('submitting') : t('submit')}
                     </button>
                     <button
                       type="button"
                       onClick={handleClose}
                       className="text-sm font-semibold text-ink/50 hover:text-ink"
                     >
-                      Cancelar
+                      {tCommon('cancel')}
                     </button>
                   </div>
                 </form>

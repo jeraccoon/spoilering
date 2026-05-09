@@ -215,6 +215,175 @@
       "alreadyRegistered": "Ya existe una cuenta con ese email."
     }
   },
+  "RecuperarPage": {
+    "title": "Recuperar contraseña",
+    "subtitle": "Introduce tu email y te enviaremos un enlace para restablecerla.",
+    "sentBody": "Si existe una cuenta con ese email, recibirás un enlace para restablecer tu contraseña.",
+    "back": "Volver al login",
+    "emailLabel": "Email",
+    "emailPlaceholder": "tu@email.com",
+    "submit": "Enviar enlace de recuperación",
+    "submitting": "Enviando…"
+  },
+  "NuevaContrasenaPage": {
+    "verifying": "Verificando enlace…",
+    "invalidLink": "El enlace no es válido o ha expirado.",
+    "requestNew": "Solicitar uno nuevo →",
+    "successTitle": "Contraseña actualizada",
+    "successBody": "Redirigiendo a tu perfil…",
+    "title": "Nueva contraseña",
+    "subtitle": "Elige una contraseña segura para tu cuenta.",
+    "passwordLabel": "Nueva contraseña",
+    "passwordPlaceholder": "Mínimo 8 caracteres",
+    "confirmLabel": "Confirmar contraseña",
+    "confirmPlaceholder": "Repite la contraseña",
+    "submit": "Guardar nueva contraseña",
+    "submitting": "Guardando…",
+    "errors": {
+      "shortPassword": "La contraseña debe tener al menos 8 caracteres.",
+      "mismatch": "Las contraseñas no coinciden."
+    }
+  },
+  "Legal": {
+    "spanishOnlyNotice": ""
+  },
+  "ContenidoPage": {
+    "back": "Volver a contenidos recientes",
+    "notFound": "Contenido no encontrado"
+  },
+  "SuggestBar": {
+    "suggest": "Sugerir corrección"
+  },
+  "SuggestionModal": {
+    "trigger": "Sugerir corrección",
+    "title": "Sugerir corrección",
+    "section": "Sección:",
+    "intro": "¿Qué está mal en esta sección? Escribe cómo debería quedar el texto corregido.",
+    "contentLabel": "Texto corregido",
+    "contentPlaceholder": "Escribe aquí el texto correcto para esta sección…",
+    "commentLabel": "Comentario",
+    "commentOptional": "(opcional)",
+    "commentPlaceholder": "Ej: Falta mencionar el giro del capítulo 5",
+    "submit": "Enviar sugerencia",
+    "submitting": "Enviando…",
+    "successTitle": "Sugerencia enviada",
+    "successBody": "Gracias por contribuir. Un editor revisará tu propuesta."
+  },
+  "SpoilerGate": {
+    "title": "Esta ficha contiene spoilers completos",
+    "subtitle": "Si no has visto o leído la obra, te recomendamos no continuar.",
+    "reveal": "Mostrar de todas formas",
+    "back": "Volver al inicio"
+  },
+  "CardContent": {
+    "noContent": "Esta ficha todavía no tiene contenido.",
+    "noSectionContent": "Esta sección todavía no tiene contenido."
+  },
+  "UserContentPanel": {
+    "title": "Mi actividad",
+    "private": "Solo tú",
+    "saving": "Guardando…",
+    "saved": "✓ Guardado",
+    "saveError": "Error al guardar",
+    "watchedBook": "Leído",
+    "watchedMovie": "Visto",
+    "markBook": "Marcar como leído",
+    "markMovie": "Marcar como visto",
+    "whenBook": "¿Cuándo lo leíste?",
+    "whenMovie": "¿Cuándo?",
+    "notesPlaceholderBook": "Notas personales... ¿qué te pareció? ¿lo recomendarías?",
+    "notesPlaceholderMovie": "Notas personales... ¿con quién lo viste? ¿qué te pareció?"
+  },
+  "SeasonsAccordion": {
+    "title": "Temporadas y episodios",
+    "seasonFallback": "Temporada {number}",
+    "episodeCount": "{count, plural, =1 {1 episodio} other {# episodios}}",
+    "noEpisodes": "Sin episodios"
+  },
+  "EpisodeRow": {
+    "episodeFallback": "Episodio {number}",
+    "openCard": "Ver ficha ▼",
+    "closeCard": "Cerrar ▲",
+    "spoilerWarning": "⚠ Contiene spoilers",
+    "noSectionContent": "Esta sección no tiene contenido todavía.",
+    "noContent": "Sin contenido disponible.",
+    "createCard": "+ Crear ficha",
+    "createError": "Error al crear ficha",
+    "noCardLogged": "Sin ficha ·",
+    "contribute": "¿Contribuir?",
+    "contributeRegister": "Regístrate para contribuir",
+    "markWatched": "Marcar como visto",
+    "markUnwatched": "Marcar como no visto"
+  },
+  "PerfilPage": {
+    "title": "Mi perfil",
+    "welcome": "Bienvenido,",
+    "addWork": "+ Añadir obra",
+    "quickLinks": "Accesos rápidos",
+    "myActivity": "Mi actividad",
+    "mySuggestions": "Mis sugerencias",
+    "myNotes": "Mis notas",
+    "myAccount": "Mi cuenta",
+    "memberSince": "Miembro desde {date}",
+    "noWatched": "Todavía no has marcado ninguna obra como vista.",
+    "noSuggestions": "Todavía no has enviado ninguna sugerencia.",
+    "noNotes": "Todavía no has añadido ninguna nota.",
+    "explore": "Explorar fichas →",
+    "noDate": "Sin fecha",
+    "tableWork": "Obra",
+    "tableType": "Tipo",
+    "tableWatchedAt": "Vista el",
+    "tableNotes": "Notas",
+    "tableSection": "Sección",
+    "tableDate": "Fecha",
+    "tableStatus": "Estado",
+    "tableCard": "Ficha",
+    "quickActions": {
+      "adminPanel": "Panel de administración",
+      "userManagement": "Gestión de usuarios",
+      "pendingSuggestions": "Sugerencias pendientes",
+      "pendingCards": "Fichas pendientes",
+      "newWork": "Nueva obra",
+      "addWorkUser": "Añadir una obra ({remaining} de {total} disponibles)",
+      "exploreCards": "Explorar fichas",
+      "viewFaq": "Ver el FAQ"
+    }
+  },
+  "Roles": {
+    "admin": "Administrador",
+    "editor": "Editor",
+    "user": "Usuario"
+  },
+  "SuggestionStatus": {
+    "pending": "Pendiente",
+    "approved": "Aprobada",
+    "rejected": "Rechazada"
+  },
+  "FichaPage": {
+    "metaNotFound": "Ficha no encontrada — Spoilering",
+    "metaDescription": "Resumen completo con spoilers de {title}.",
+    "draftBanner": "Esta ficha está en borrador y no es visible para el público.",
+    "draftCta": "Ir al editor",
+    "lockedTitle": "Esta ficha aún no está disponible",
+    "lockedBody": "El contenido está siendo preparado y todavía no ha sido publicado.",
+    "lockedExplore": "Explorar fichas publicadas",
+    "spoilersBadge": "⚠ Contiene spoilers",
+    "creator": "Ficha creada por",
+    "contributors": "Contribuidores:",
+    "fields": {
+      "directors": "Dirección:",
+      "authors": "Autor:",
+      "cast": "Reparto:",
+      "publisher": "Editorial:",
+      "saga": "Saga:",
+      "isbn": "ISBN:",
+      "seasons": "{count, plural, =1 {1 temporada} other {# temporadas}}",
+      "pages": "{count} páginas",
+      "minutes": "{minutes} min",
+      "hours": "{hours}h",
+      "hoursMinutes": "{hours}h {minutes}min"
+    }
+  },
   "FaqPage": {
     "title": "Preguntas frecuentes",
     "subtitle": "Todo lo que necesitas saber sobre Spoilering",

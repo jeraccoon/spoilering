@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
+import { getTranslations, setRequestLocale } from "next-intl/server";
+import { Link } from "@/i18n/navigation";
 import {
   getContentBySlug,
   getContentTypeLabel,
@@ -10,6 +11,7 @@ import {
 
 type ContentPageProps = {
   params: Promise<{
+    locale: string;
     slug: string;
   }>;
 };
@@ -23,12 +25,13 @@ export function generateStaticParams() {
 export async function generateMetadata({
   params,
 }: ContentPageProps): Promise<Metadata> {
-  const { slug } = await params;
+  const { locale, slug } = await params;
   const content = getContentBySlug(slug);
+  const t = await getTranslations({ locale, namespace: "ContenidoPage" });
 
   if (!content || !isPublishedContent(content)) {
     return {
-      title: "Contenido no encontrado",
+      title: t("notFound"),
     };
   }
 
@@ -39,8 +42,10 @@ export async function generateMetadata({
 }
 
 export default async function ContentPage({ params }: ContentPageProps) {
-  const { slug } = await params;
+  const { locale, slug } = await params;
+  setRequestLocale(locale);
   const content = getContentBySlug(slug);
+  const t = await getTranslations("ContenidoPage");
 
   if (!content || !isPublishedContent(content)) {
     notFound();
@@ -53,7 +58,7 @@ export default async function ContentPage({ params }: ContentPageProps) {
           className="inline-flex text-sm font-semibold text-ember transition hover:text-ink"
           href="/#recientes"
         >
-          Volver a contenidos recientes
+          {t("back")}
         </Link>
 
         <header className="mt-8 rounded-lg border border-zinc-200 bg-white px-6 py-8 shadow-sm sm:px-8 sm:py-10">

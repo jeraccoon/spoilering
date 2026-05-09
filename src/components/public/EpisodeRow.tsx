@@ -1,8 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useTranslations, useLocale } from 'next-intl'
+import { Link, useRouter } from '@/i18n/navigation'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 
@@ -38,11 +38,15 @@ interface Props {
   initialWatched?: boolean
 }
 
-function formatAirDate(iso: string) {
-  return new Date(iso).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })
-}
-
 export function EpisodeRow({ episode, role, isLoggedIn, isOpen, onToggle, initialWatched = false }: Props) {
+  const t = useTranslations('EpisodeRow')
+  const tCommon = useTranslations('Common')
+  const locale = useLocale()
+  const dateLocale = locale === 'en' ? 'en-US' : 'es-ES'
+
+  const formatAirDate = (iso: string) =>
+    new Date(iso).toLocaleDateString(dateLocale, { day: 'numeric', month: 'short', year: 'numeric' })
+
   const publishedCard = episode.card?.status === 'published' ? episode.card : null
   const isPrivileged = role === 'admin' || role === 'editor'
   const router = useRouter()
@@ -79,10 +83,10 @@ export function EpisodeRow({ episode, role, isLoggedIn, isOpen, onToggle, initia
       if (res.ok && data.cardId) {
         router.push(`/admin/ficha/${data.cardId}`)
       } else {
-        setCreateError(data.error ?? 'Error al crear ficha')
+        setCreateError(data.error ?? t('createError'))
       }
     } catch {
-      setCreateError('Error de red')
+      setCreateError(tCommon('networkError'))
     } finally {
       setCreating(false)
     }
@@ -97,7 +101,7 @@ export function EpisodeRow({ episode, role, isLoggedIn, isOpen, onToggle, initia
             <button
               onClick={toggleEpisodeWatched}
               disabled={savingWatched}
-              title={watched ? 'Marcar como no visto' : 'Marcar como visto'}
+              title={watched ? t('markUnwatched') : t('markWatched')}
               className={`mt-0.5 shrink-0 text-sm transition ${watched ? 'text-moss' : 'text-ink/20 hover:text-ink/50'}`}
             >
               {watched ? '✓' : '○'}
@@ -112,14 +116,14 @@ export function EpisodeRow({ episode, role, isLoggedIn, isOpen, onToggle, initia
             </span>
             <div className="min-w-0 flex-1">
               <p className="font-medium leading-snug text-ink">
-                {episode.name ?? `Episodio ${episode.episode_number}`}
+                {episode.name ?? t('episodeFallback', { number: episode.episode_number })}
               </p>
               {episode.air_date && (
                 <p className="mt-0.5 text-xs text-ink/55">{formatAirDate(episode.air_date)}</p>
               )}
             </div>
             <span className="shrink-0 rounded-full bg-moss/10 px-2.5 py-0.5 text-[11px] font-semibold text-moss">
-              {isOpen ? 'Cerrar ▲' : 'Ver ficha ▼'}
+              {isOpen ? t('closeCard') : t('openCard')}
             </span>
           </button>
         </div>
@@ -127,7 +131,7 @@ export function EpisodeRow({ episode, role, isLoggedIn, isOpen, onToggle, initia
         {isOpen && (
           <div className="border-t border-ink/5 bg-ink/[0.02] px-4 py-5">
             <p className="mb-3 text-[10px] font-semibold uppercase tracking-wider text-ember/70">
-              ⚠ Contiene spoilers
+              {t('spoilerWarning')}
             </p>
 
             {sections.length > 1 && (
@@ -187,11 +191,11 @@ export function EpisodeRow({ episode, role, isLoggedIn, isOpen, onToggle, initia
                     {activeSectionData.content}
                   </ReactMarkdown>
                 ) : (
-                  <p className="text-sm text-ink/45">Esta sección no tiene contenido todavía.</p>
+                  <p className="text-sm text-ink/45">{t('noSectionContent')}</p>
                 )}
               </div>
             ) : (
-              <p className="text-sm text-ink/45">Sin contenido disponible.</p>
+              <p className="text-sm text-ink/45">{t('noContent')}</p>
             )}
           </div>
         )}
@@ -206,7 +210,7 @@ export function EpisodeRow({ episode, role, isLoggedIn, isOpen, onToggle, initia
         <button
           onClick={toggleEpisodeWatched}
           disabled={savingWatched}
-          title={watched ? 'Marcar como no visto' : 'Marcar como visto'}
+          title={watched ? t('markUnwatched') : t('markWatched')}
           className={`mt-0.5 shrink-0 text-sm transition ${watched ? 'text-moss' : 'text-ink/15 hover:text-ink/55'}`}
         >
           {watched ? '✓' : '○'}
@@ -217,7 +221,7 @@ export function EpisodeRow({ episode, role, isLoggedIn, isOpen, onToggle, initia
       </span>
       <div className="min-w-0 flex-1">
         <p className="font-medium leading-snug text-ink/50">
-          {episode.name ?? `Episodio ${episode.episode_number}`}
+          {episode.name ?? t('episodeFallback', { number: episode.episode_number })}
         </p>
         {episode.air_date && (
           <p className="mt-0.5 text-xs text-ink/45">{formatAirDate(episode.air_date)}</p>
@@ -231,15 +235,15 @@ export function EpisodeRow({ episode, role, isLoggedIn, isOpen, onToggle, initia
               disabled={creating}
               className="rounded-md border border-ink/15 px-2.5 py-1 text-[11px] font-semibold text-ink/55 transition hover:border-ember/40 hover:text-ember disabled:opacity-40"
             >
-              {creating ? '…' : '+ Crear ficha'}
+              {creating ? '…' : t('createCard')}
             </button>
             {createError && <p className="text-[10px] text-ember">{createError}</p>}
           </div>
         ) : isLoggedIn ? (
           <span className="text-[11px] text-ink/45">
-            Sin ficha ·{' '}
+            {t('noCardLogged')}{' '}
             <Link href="/perfil" className="underline underline-offset-2 hover:text-ember">
-              ¿Contribuir?
+              {t('contribute')}
             </Link>
           </span>
         ) : (
@@ -247,7 +251,7 @@ export function EpisodeRow({ episode, role, isLoggedIn, isOpen, onToggle, initia
             href="/registro"
             className="text-[11px] text-ink/45 underline underline-offset-2 hover:text-ember"
           >
-            Regístrate para contribuir
+            {t('contributeRegister')}
           </Link>
         )}
       </div>

@@ -1,10 +1,12 @@
 'use client'
 
 import { useState } from 'react'
-import Link from 'next/link'
+import { useTranslations } from 'next-intl'
+import { Link } from '@/i18n/navigation'
 import { createClient } from '@/lib/supabase/client'
 
 export default function RecuperarContrasenaPage() {
+  const t = useTranslations('RecuperarPage')
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const [sent, setSent] = useState(false)
@@ -24,29 +26,29 @@ export default function RecuperarContrasenaPage() {
     <div className="flex min-h-[calc(100vh-8rem)] items-center justify-center px-4 py-12">
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
-          <h1 className="text-2xl font-black tracking-tight text-ink">Recuperar contraseña</h1>
+          <h1 className="text-2xl font-black tracking-tight text-ink">{t('title')}</h1>
           <p className="mt-2 text-sm text-ink/50">
-            Introduce tu email y te enviaremos un enlace para restablecerla.
+            {t('subtitle')}
           </p>
         </div>
 
         {sent ? (
           <div className="rounded-lg border border-ink/10 bg-paper p-6 text-center shadow-sm">
             <p className="text-sm text-ink/70">
-              Si existe una cuenta con ese email, recibirás un enlace para restablecer tu contraseña.
+              {t('sentBody')}
             </p>
             <Link
               href="/login"
               className="mt-5 inline-block text-sm font-semibold text-ink/50 underline hover:text-ink"
             >
-              Volver al login
+              {t('back')}
             </Link>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label htmlFor="email" className="mb-1.5 block text-sm font-semibold text-ink">
-                Email
+                {t('emailLabel')}
               </label>
               <input
                 id="email"
@@ -56,7 +58,7 @@ export default function RecuperarContrasenaPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full rounded-lg border border-ink/20 bg-paper px-3 py-2.5 text-sm text-ink placeholder-ink/45 outline-none transition focus:border-ember focus:ring-2 focus:ring-ember/20"
-                placeholder="tu@email.com"
+                placeholder={t('emailPlaceholder')}
               />
             </div>
 
@@ -65,12 +67,12 @@ export default function RecuperarContrasenaPage() {
               disabled={loading}
               className="w-full rounded-lg bg-ember py-2.5 text-sm font-semibold text-white transition hover:bg-ember/90 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {loading ? 'Enviando…' : 'Enviar enlace de recuperación'}
+              {loading ? t('submitting') : t('submit')}
             </button>
 
             <p className="text-center text-sm text-ink/50">
               <Link href="/login" className="text-ink/55 hover:text-ink hover:underline">
-                Volver al login
+                {t('back')}
               </Link>
             </p>
           </form>

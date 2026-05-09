@@ -1,6 +1,7 @@
 'use client'
 
-import Link from 'next/link'
+import { useTranslations } from 'next-intl'
+import { Link } from '@/i18n/navigation'
 import { SuggestionModal } from '@/components/suggestion-modal'
 
 interface Section {
@@ -24,6 +25,7 @@ function PencilIcon() {
 }
 
 export function SuggestBar({ isLoggedIn, slug, firstSection }: Props) {
+  const t = useTranslations('SuggestBar')
   if (!firstSection) return null
 
   return (
@@ -37,11 +39,11 @@ export function SuggestBar({ isLoggedIn, slug, firstSection }: Props) {
           />
         ) : (
           <Link
-            href={`/login?redirect=/ficha/${slug}&mensaje=registro-sugerir`}
+            href={{ pathname: '/login', query: { redirect: `/ficha/${slug}`, mensaje: 'registro-sugerir' } }}
             className="flex items-center gap-1.5 rounded border border-ink/20 px-3 py-1.5 text-sm font-semibold text-ink/50 transition hover:border-moss hover:text-moss"
           >
             <PencilIcon />
-            Sugerir corrección
+            {t('suggest')}
           </Link>
         )}
       </div>
