@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import { getTranslations } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
 import { createClient } from '@/lib/supabase/server'
@@ -131,8 +132,12 @@ export async function Header() {
         </nav>
 
         <div className="flex items-center gap-1.5 sm:gap-3">
-          <NavSearch />
-          <LanguageSwitcher />
+          <Suspense fallback={null}>
+            <NavSearch />
+          </Suspense>
+          <Suspense fallback={null}>
+            <LanguageSwitcher />
+          </Suspense>
           {auth?.user ? (
             <>
               <Link
