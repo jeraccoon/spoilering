@@ -1,10 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-
-const TYPE_LABELS: Record<string, string> = { movie: 'Película', series: 'Serie', book: 'Libro' }
+import { useTranslations, useLocale } from 'next-intl'
+import { Link, useRouter } from '@/i18n/navigation'
 
 type FilterKey = 'all' | 'published' | 'draft'
 
@@ -21,10 +19,6 @@ interface Stats {
   published: number
   drafts: number
   users: number
-}
-
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })
 }
 
 function StatCard({
@@ -60,6 +54,14 @@ export function AdminCardsFilter({
   allCards: Card[]
   stats: Stats
 }) {
+  const t = useTranslations('Admin.cardsFilter')
+  const tw = useTranslations('WorkType')
+  const locale = useLocale()
+  const dateLocale = locale === 'en' ? 'en-US' : 'es-ES'
+
+  const formatDate = (iso: string) =>
+    new Date(iso).toLocaleDateString(dateLocale, { day: 'numeric', month: 'short', year: 'numeric' })
+
   const router = useRouter()
   const [activeFilter, setActiveFilter] = useState<FilterKey>('draft')
   const [cards, setCards] = useState<Card[]>(allCards)
@@ -77,38 +79,38 @@ export function AdminCardsFilter({
   })
 
   async function handleDelete(cardId: string) {
-    if (!confirm('¿Eliminar esta ficha? Esta acción no se puede deshacer.')) return
+    if (!confirm(t('confirmDelete'))) return
     setDeleting(cardId)
     setError(null)
     try {
       const res = await fetch(`/api/admin/cards/${cardId}`, { method: 'DELETE' })
       const data = await res.json()
-      if (!res.ok) { setError(data.error ?? 'Error al eliminar'); return }
+      if (!res.ok) { setError(data.error ?? t('errorDelete')); return }
       setCards((prev) => prev.filter((c) => c.id !== cardId))
       router.refresh()
     } catch {
-      setError('Error inesperado al eliminar')
+      setError(t('errorUnexpected'))
     } finally {
       setDeleting(null)
     }
   }
 
   const sectionLabel: Record<FilterKey, string> = {
-    all: 'Fichas (admin / editor)',
-    published: 'Fichas publicadas',
-    draft: 'Fichas en borrador',
+    all: t('sectionAll'),
+    published: t('sectionPublished'),
+    draft: t('sectionDraft'),
   }
 
   return (
     <>
       {/* Stats */}
       <section className="mb-10">
-        <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-ink/55">Resumen</h2>
+        <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-ink/55">{t('summary')}</h2>
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-          <StatCard value={stats.works}     label="Obras totales"      filter={null}         active={false}                         onClick={() => {}} />
-          <StatCard value={stats.published} label="Fichas publicadas"  accent="text-moss"    filter="published" active={activeFilter === 'published'}  onClick={() => toggle('published')} />
-          <StatCard value={stats.drafts}    label="En borrador"        accent="text-ember"   filter="draft"     active={activeFilter === 'draft'}      onClick={() => toggle('draft')} />
-          <StatCard value={stats.users}     label="Usuarios"           filter={null}         active={false}                         onClick={() => {}} />
+          <StatCard value={stats.works}     label={t('stats.works')}     filter={null}      active={false}                         onClick={() => {}} />
+          <StatCard value={stats.published} label={t('stats.published')} accent="text-moss"  filter="published" active={activeFilter === 'published'} onClick={() => toggle('published')} />
+          <StatCard value={stats.drafts}    label={t('stats.drafts')}    accent="text-ember" filter="draft"     active={activeFilter === 'draft'}     onClick={() => toggle('draft')} />
+          <StatCard value={stats.users}     label={t('stats.users')}     filter={null}      active={false}                         onClick={() => {}} />
         </div>
       </section>
 
@@ -122,54 +124,58 @@ export function AdminCardsFilter({
         )}
         {filtered.length === 0 ? (
           <div className="rounded-lg border border-ink/10 bg-ink/5 px-6 py-10 text-center text-sm text-ink/55">
-            No hay fichas en esta categoría.
+            {t('noCards')}
           </div>
         ) : (
           <div className="overflow-hidden rounded-lg border border-ink/10">
             <table className="w-full text-sm">
               <thead className="border-b border-ink/10 bg-ink/5 text-xs text-ink/50">
                 <tr>
-                  <th className="px-4 py-3 text-left font-semibold">Obra</th>
-                  <th className="px-4 py-3 text-left font-semibold">Tipo</th>
-                  <th className="px-4 py-3 text-left font-semibold">Creada</th>
-                  <th className="px-4 py-3 text-right font-semibold">Acciones</th>
+                  <th className="px-4 py-3 text-left font-semibold">{t('tableWork')}</th>
+                  <th className="px-4 py-3 text-left font-semibold">{t('tableType')}</th>
+                  <th className="px-4 py-3 text-left font-semibold">{t('tableCreated')}</th>
+                  <th className="px-4 py-3 text-right font-semibold">{t('tableActions')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-ink/10">
-                {filtered.map((card) => (
-                  <tr key={card.id} className="transition hover:bg-ink/5">
-                    <td className="px-4 py-3 font-semibold text-ink">
-                      {card.work?.title ?? '—'}
-                    </td>
-                    <td className="px-4 py-3 text-ink/50">{TYPE_LABELS[card.work?.type ?? ''] ?? '—'}</td>
-                    <td className="px-4 py-3 text-ink/50">{card.created_at ? formatDate(card.created_at) : '—'}</td>
-                    <td className="px-4 py-3 text-right">
-                      <div className="flex items-center justify-end gap-3">
-                        <Link
-                          href={`/admin/ficha/${card.id}`}
-                          className="text-xs font-semibold text-ink/50 underline underline-offset-2 hover:text-ink"
-                        >
-                          Editar
-                        </Link>
-                        {card.status === 'draft' && (
+                {filtered.map((card) => {
+                  const type = card.work?.type
+                  const typeLabel = type === 'movie' || type === 'series' || type === 'book' ? tw(type) : '—'
+                  return (
+                    <tr key={card.id} className="transition hover:bg-ink/5">
+                      <td className="px-4 py-3 font-semibold text-ink">
+                        {card.work?.title ?? '—'}
+                      </td>
+                      <td className="px-4 py-3 text-ink/50">{typeLabel}</td>
+                      <td className="px-4 py-3 text-ink/50">{card.created_at ? formatDate(card.created_at) : '—'}</td>
+                      <td className="px-4 py-3 text-right">
+                        <div className="flex items-center justify-end gap-3">
                           <Link
-                            href={`/admin/fichas/${card.id}/publicar`}
-                            className="rounded-md bg-moss/10 px-2.5 py-1 text-xs font-semibold text-moss transition hover:bg-moss/20"
+                            href={`/admin/ficha/${card.id}`}
+                            className="text-xs font-semibold text-ink/50 underline underline-offset-2 hover:text-ink"
                           >
-                            Publicar
+                            {t('edit')}
                           </Link>
-                        )}
-                        <button
-                          onClick={() => handleDelete(card.id)}
-                          disabled={deleting === card.id}
-                          className="text-xs font-semibold text-ink/45 transition hover:text-ember disabled:opacity-40"
-                        >
-                          {deleting === card.id ? '…' : 'Eliminar'}
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                          {card.status === 'draft' && (
+                            <Link
+                              href={`/admin/fichas/${card.id}/publicar`}
+                              className="rounded-md bg-moss/10 px-2.5 py-1 text-xs font-semibold text-moss transition hover:bg-moss/20"
+                            >
+                              {t('publish')}
+                            </Link>
+                          )}
+                          <button
+                            onClick={() => handleDelete(card.id)}
+                            disabled={deleting === card.id}
+                            className="text-xs font-semibold text-ink/45 transition hover:text-ember disabled:opacity-40"
+                          >
+                            {deleting === card.id ? '…' : t('delete')}
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </div>

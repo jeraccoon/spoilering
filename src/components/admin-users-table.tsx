@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
+import { useTranslations, useLocale } from 'next-intl'
 
 export interface UserRow {
   id: string
@@ -12,17 +13,10 @@ export interface UserRow {
   card_count: number
 }
 
-const ROLE_LABELS = { admin: 'Admin', editor: 'Editor', user: 'Usuario' }
 const ROLE_COLORS = {
   admin: 'bg-plum/10 text-plum',
   editor: 'bg-moss/10 text-moss',
   user: 'bg-ink/10 text-ink/50',
-}
-
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString('es-ES', {
-    day: 'numeric', month: 'short', year: 'numeric',
-  })
 }
 
 function Avatar({ name }: { name: string }) {
@@ -41,6 +35,14 @@ export function AdminUsersTable({
   initialUsers: UserRow[]
   currentUserId: string
 }) {
+  const t = useTranslations('Admin.usersTable')
+  const tRole = useTranslations('Roles')
+  const locale = useLocale()
+  const dateLocale = locale === 'en' ? 'en-US' : 'es-ES'
+
+  const formatDate = (iso: string) =>
+    new Date(iso).toLocaleDateString(dateLocale, { day: 'numeric', month: 'short', year: 'numeric' })
+
   const [users, setUsers] = useState(initialUsers)
   const [search, setSearch] = useState('')
   const [roleFilter, setRoleFilter] = useState<'all' | 'admin' | 'editor' | 'user'>('all')
@@ -103,7 +105,7 @@ export function AdminUsersTable({
     const res = await fetch(`/api/admin/users/${deleteTarget.id}`, { method: 'DELETE' })
     if (!res.ok) {
       const data = await res.json()
-      setDeleteError(data.error ?? 'Error al eliminar el usuario.')
+      setDeleteError(data.error ?? t('deleteError'))
       setDeleteLoading(false)
       return
     }
@@ -118,7 +120,7 @@ export function AdminUsersTable({
       <div className="mb-4 flex flex-wrap items-center gap-3">
         <input
           type="search"
-          placeholder="Buscar por username o email…"
+          placeholder={t('searchPlaceholder')}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="min-w-0 flex-1 rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink placeholder-ink/45 outline-none transition focus:border-ember focus:ring-2 focus:ring-ember/20"
@@ -128,38 +130,38 @@ export function AdminUsersTable({
           onChange={(e) => setRoleFilter(e.target.value as typeof roleFilter)}
           className="rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink outline-none transition focus:border-ember"
         >
-          <option value="all">Todos los roles</option>
-          <option value="admin">Admin</option>
-          <option value="editor">Editor</option>
-          <option value="user">Usuario</option>
+          <option value="all">{t('filterRoleAll')}</option>
+          <option value="admin">{t('filterRoleAdmin')}</option>
+          <option value="editor">{t('filterRoleEditor')}</option>
+          <option value="user">{t('filterRoleUser')}</option>
         </select>
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value as typeof statusFilter)}
           className="rounded-lg border border-ink/20 bg-paper px-3 py-2 text-sm text-ink outline-none transition focus:border-ember"
         >
-          <option value="all">Todos los estados</option>
-          <option value="active">Activos</option>
-          <option value="inactive">Desactivados</option>
+          <option value="all">{t('filterStatusAll')}</option>
+          <option value="active">{t('filterStatusActive')}</option>
+          <option value="inactive">{t('filterStatusInactive')}</option>
         </select>
       </div>
 
       {/* Tabla */}
       {filtered.length === 0 ? (
         <div className="rounded-lg border border-ink/10 bg-ink/5 px-6 py-10 text-center text-sm text-ink/55">
-          No hay usuarios que coincidan con los filtros.
+          {t('noResults')}
         </div>
       ) : (
         <div className="overflow-x-auto overflow-hidden rounded-lg border border-ink/10">
           <table className="w-full text-sm">
             <thead className="border-b border-ink/10 bg-ink/5 text-xs text-ink/50">
               <tr>
-                <th className="px-4 py-3 text-left font-semibold">Usuario</th>
-                <th className="px-4 py-3 text-left font-semibold hidden md:table-cell">Rol</th>
-                <th className="px-4 py-3 text-left font-semibold hidden lg:table-cell">Registro</th>
-                <th className="px-4 py-3 text-left font-semibold hidden sm:table-cell">Fichas</th>
-                <th className="px-4 py-3 text-left font-semibold hidden md:table-cell">Estado</th>
-                <th className="px-4 py-3 text-right font-semibold">Acciones</th>
+                <th className="px-4 py-3 text-left font-semibold">{t('tableUser')}</th>
+                <th className="px-4 py-3 text-left font-semibold hidden md:table-cell">{t('tableRole')}</th>
+                <th className="px-4 py-3 text-left font-semibold hidden lg:table-cell">{t('tableRegister')}</th>
+                <th className="px-4 py-3 text-left font-semibold hidden sm:table-cell">{t('tableCards')}</th>
+                <th className="px-4 py-3 text-left font-semibold hidden md:table-cell">{t('tableStatus')}</th>
+                <th className="px-4 py-3 text-right font-semibold">{t('tableActions')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-ink/10">
@@ -174,8 +176,8 @@ export function AdminUsersTable({
                         <Avatar name={u.username ?? u.email} />
                         <div className="min-w-0">
                           <p className="truncate font-semibold text-ink">
-                            {u.username ?? <span className="text-ink/55 italic">sin username</span>}
-                            {isSelf && <span className="ml-1.5 text-[10px] font-normal text-ink/45">(tú)</span>}
+                            {u.username ?? <span className="text-ink/55 italic">{t('noUsername')}</span>}
+                            {isSelf && <span className="ml-1.5 text-[10px] font-normal text-ink/45">{t('you')}</span>}
                           </p>
                           <p className="truncate text-xs text-ink/55">{u.email}</p>
                         </div>
@@ -186,7 +188,7 @@ export function AdminUsersTable({
                     <td className="px-4 py-3 hidden md:table-cell">
                       {isSelf ? (
                         <span className={`rounded px-2 py-0.5 text-[11px] font-semibold ${ROLE_COLORS[u.role]}`}>
-                          {ROLE_LABELS[u.role]}
+                          {tRole(u.role)}
                         </span>
                       ) : (
                         <select
@@ -195,9 +197,9 @@ export function AdminUsersTable({
                           onChange={(e) => changeRole(u.id, e.target.value)}
                           className={`rounded border border-ink/20 bg-paper px-2 py-0.5 text-xs font-semibold outline-none transition focus:border-ember disabled:opacity-50 ${ROLE_COLORS[u.role]}`}
                         >
-                          <option value="admin">Admin</option>
-                          <option value="editor">Editor</option>
-                          <option value="user">Usuario</option>
+                          <option value="admin">{t('filterRoleAdmin')}</option>
+                          <option value="editor">{t('filterRoleEditor')}</option>
+                          <option value="user">{t('filterRoleUser')}</option>
                         </select>
                       )}
                     </td>
@@ -215,7 +217,7 @@ export function AdminUsersTable({
                     {/* Estado */}
                     <td className="px-4 py-3 hidden md:table-cell">
                       <span className={`rounded px-2 py-0.5 text-[11px] font-semibold ${u.is_active ? 'bg-moss/10 text-moss' : 'bg-ink/10 text-ink/55'}`}>
-                        {u.is_active ? 'Activo' : 'Desactivado'}
+                        {u.is_active ? t('active') : t('inactive')}
                       </span>
                     </td>
 
@@ -229,14 +231,14 @@ export function AdminUsersTable({
                               disabled={!!busy}
                               className="rounded-md border border-ink/20 px-2.5 py-1 text-xs font-semibold text-ink/60 transition hover:border-ink/40 hover:text-ink disabled:opacity-40"
                             >
-                              {busy === 'status' ? '…' : u.is_active ? 'Desactivar' : 'Activar'}
+                              {busy === 'status' ? '…' : u.is_active ? t('deactivate') : t('activate')}
                             </button>
                             <button
                               onClick={() => setDeleteTarget(u)}
                               disabled={!!busy}
                               className="rounded-md bg-ember/10 px-2.5 py-1 text-xs font-semibold text-ember transition hover:bg-ember/20 disabled:opacity-40"
                             >
-                              Eliminar
+                              {t('delete')}
                             </button>
                           </>
                         )}
@@ -257,13 +259,12 @@ export function AdminUsersTable({
           onClick={(e) => { if (e.target === e.currentTarget) { setDeleteTarget(null); setDeleteError(null) } }}
         >
           <div className="w-full max-w-sm rounded-xl border border-ink/10 bg-paper p-6 shadow-xl">
-            <h2 className="mb-2 text-lg font-black text-ink">Eliminar usuario</h2>
+            <h2 className="mb-2 text-lg font-black text-ink">{t('deleteTitle')}</h2>
             <p className="mb-5 text-sm text-ink/60">
-              ¿Eliminar a{' '}
-              <span className="font-semibold text-ink">
-                {deleteTarget.username ?? deleteTarget.email}
-              </span>
-              ? Esta acción es irreversible.
+              {t.rich('deleteIntro', {
+                name: deleteTarget.username ?? deleteTarget.email,
+                bold: (chunks) => <span className="font-semibold text-ink">{chunks}</span>,
+              })}
             </p>
 
             {deleteError && (
@@ -277,14 +278,14 @@ export function AdminUsersTable({
                 onClick={() => { setDeleteTarget(null); setDeleteError(null) }}
                 className="text-sm text-ink/50 hover:text-ink"
               >
-                Cancelar
+                {t('cancel')}
               </button>
               <button
                 onClick={confirmDelete}
                 disabled={deleteLoading}
                 className="rounded-lg bg-ember px-4 py-2 text-sm font-semibold text-white transition hover:bg-ember/90 disabled:opacity-50"
               >
-                {deleteLoading ? 'Eliminando…' : 'Eliminar'}
+                {deleteLoading ? t('deleting') : t('deleteSubmit')}
               </button>
             </div>
           </div>

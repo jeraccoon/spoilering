@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import Link from 'next/link'
+import { useTranslations, useLocale } from 'next-intl'
+import { Link } from '@/i18n/navigation'
 
 interface Episode {
   id: string
@@ -27,6 +28,10 @@ interface Props {
 }
 
 export function SeasonsPanel({ workId, workType }: Props) {
+  const t = useTranslations('Admin.seasons')
+  const locale = useLocale()
+  const dateLocale = locale === 'en' ? 'en-US' : 'es-ES'
+
   const [seasons, setSeasons] = useState<Season[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -41,7 +46,7 @@ export function SeasonsPanel({ workId, workType }: Props) {
     try {
       const res = await fetch(`/api/admin/works/${workId}/seasons`)
       const data = await res.json()
-      if (!res.ok) throw new Error(data.error ?? 'Error al cargar temporadas')
+      if (!res.ok) throw new Error(data.error ?? t('errorLoad'))
       setSeasons(data.seasons ?? [])
       if (data.seasons?.length > 0) {
         setOpenSeasons(new Set([data.seasons[0].id]))
@@ -51,7 +56,7 @@ export function SeasonsPanel({ workId, workType }: Props) {
     } finally {
       setLoading(false)
     }
-  }, [workId])
+  }, [workId, t])
 
   useEffect(() => {
     if (workType === 'series') loadSeasons()
@@ -64,8 +69,8 @@ export function SeasonsPanel({ workId, workType }: Props) {
     try {
       const res = await fetch(`/api/admin/works/${workId}/fetch-seasons`, { method: 'POST' })
       const data = await res.json()
-      if (!res.ok) throw new Error(data.error ?? 'Error al importar')
-      setImportMsg(`${data.seasons} temporadas, ${data.episodes} episodios actualizados`)
+      if (!res.ok) throw new Error(data.error ?? t('errorImport'))
+      setImportMsg(t('imported', { seasons: data.seasons, episodes: data.episodes }))
       await loadSeasons()
       setTimeout(() => setImportMsg(null), 3000)
     } catch (e: any) {
@@ -80,7 +85,7 @@ export function SeasonsPanel({ workId, workType }: Props) {
     try {
       const res = await fetch(`/api/admin/episodes/${episodeId}/card`, { method: 'POST' })
       const data = await res.json()
-      if (!res.ok) throw new Error(data.error ?? 'Error al crear ficha')
+      if (!res.ok) throw new Error(data.error ?? t('errorCreate'))
       await loadSeasons()
     } catch (e: any) {
       setError(e.message)
@@ -103,7 +108,7 @@ export function SeasonsPanel({ workId, workType }: Props) {
     <div className="mt-10">
       <div className="mb-4 flex items-center justify-between gap-4">
         <h2 className="text-xs font-semibold uppercase tracking-wider text-ink/55">
-          Temporadas y episodios
+          {t('title')}
         </h2>
         {seasons.length > 0 && (
           <button
@@ -111,7 +116,7 @@ export function SeasonsPanel({ workId, workType }: Props) {
             disabled={importing}
             className="rounded-lg border border-ink/20 px-3 py-1.5 text-xs font-semibold text-ink/60 transition hover:border-ink/40 hover:text-ink disabled:opacity-40"
           >
-            {importing ? 'Comprobando…' : '↻ Comprobar nuevas temporadas'}
+            {importing ? t('checking') : t('checkNew')}
           </button>
         )}
       </div>
@@ -130,17 +135,17 @@ export function SeasonsPanel({ workId, workType }: Props) {
       {loading ? (
         <div className="flex items-center gap-2 py-8 text-sm text-ink/55">
           <span className="inline-block h-3 w-3 animate-pulse rounded-full bg-ink/20" />
-          Cargando temporadas…
+          {t('loading')}
         </div>
       ) : seasons.length === 0 ? (
         <div className="rounded-lg border border-ink/10 bg-ink/5 px-6 py-10 text-center">
-          <p className="mb-4 text-sm text-ink/50">No hay temporadas importadas todavía.</p>
+          <p className="mb-4 text-sm text-ink/50">{t('empty')}</p>
           <button
             onClick={handleImport}
             disabled={importing}
             className="rounded-lg bg-ember px-4 py-2 text-sm font-semibold text-white transition hover:bg-ember/90 disabled:opacity-50"
           >
-            {importing ? 'Importando…' : 'Importar temporadas desde TMDb'}
+            {importing ? t('importing') : t('import')}
           </button>
         </div>
       ) : (
@@ -165,11 +170,11 @@ export function SeasonsPanel({ workId, workType }: Props) {
                       ▼
                     </span>
                     <span className="font-semibold text-ink">
-                      {season.name ?? `Temporada ${season.season_number}`}
+                      {season.name ?? t('seasonFallback', { number: season.season_number })}
                     </span>
                   </div>
                   <span className="shrink-0 text-xs text-ink/55">
-                    {season.episodes.length} episodio{season.episodes.length !== 1 ? 's' : ''}
+                    {t('episodeCount', { count: season.episodes.length })}
                   </span>
                 </button>
 
@@ -177,7 +182,7 @@ export function SeasonsPanel({ workId, workType }: Props) {
                 {isOpen && (
                   <div className="border-t border-ink/10">
                     {season.episodes.length === 0 ? (
-                      <p className="px-4 py-3 text-sm text-ink/55">Sin episodios</p>
+                      <p className="px-4 py-3 text-sm text-ink/55">{t('noEpisodes')}</p>
                     ) : (
                       <table className="w-full text-sm">
                         <tbody className="divide-y divide-ink/5">
@@ -188,11 +193,11 @@ export function SeasonsPanel({ workId, workType }: Props) {
                               </td>
                               <td className="px-3 py-2.5">
                                 <p className="font-medium text-ink leading-snug">
-                                  {ep.name ?? `Episodio ${ep.episode_number}`}
+                                  {ep.name ?? t('episodeFallback', { number: ep.episode_number })}
                                 </p>
                                 {ep.air_date && (
                                   <p className="mt-0.5 text-xs text-ink/55">
-                                    {new Date(ep.air_date).toLocaleDateString('es-ES', {
+                                    {new Date(ep.air_date).toLocaleDateString(dateLocale, {
                                       day: 'numeric', month: 'short', year: 'numeric',
                                     })}
                                   </p>
@@ -204,7 +209,7 @@ export function SeasonsPanel({ workId, workType }: Props) {
                                     href={`/admin/ficha/${ep.card_id}`}
                                     className="rounded-md border border-moss/30 bg-moss/5 px-2.5 py-1 text-xs font-semibold text-moss transition hover:bg-moss/10"
                                   >
-                                    Ver ficha
+                                    {t('viewCard')}
                                   </Link>
                                 ) : (
                                   <button
@@ -212,7 +217,7 @@ export function SeasonsPanel({ workId, workType }: Props) {
                                     disabled={creatingCard === ep.id}
                                     className="rounded-md border border-ink/15 px-2.5 py-1 text-xs font-semibold text-ink/50 transition hover:border-ember/40 hover:text-ember disabled:opacity-40"
                                   >
-                                    {creatingCard === ep.id ? '…' : '+ Crear ficha'}
+                                    {creatingCard === ep.id ? '…' : t('createCard')}
                                   </button>
                                 )}
                               </td>
