@@ -131,13 +131,14 @@ Los nuevos visitantes no entendían que es una web colaborativa: buscaban una ob
 - ✅ `scripts/migration-phase2-i18n.sql` ejecutado el 9 mayo. Las cuatro nuevas estructuras (cards.original_locale, works.{title,overview}_translations, section_translations, card_translations) están en producción Supabase.
 - ✅ `scripts/migration-summary.sql` ya estaba aplicado (verificado el 9 mayo).
 
-### 1. Pulido i18n — pre-traducción al publicar (**BLOQUEA MERGE A PRODUCCIÓN**)
-- **Problema verificado en preview**: la primera vista en `/en/ficha/<slug>` tarda ~5-10s mientras Claude traduce ~2000-3600 palabras. Cache hit posterior es instantáneo, pero el primer usuario inglés siempre paga el coste — mala UX.
-- **Solución acordada**: en `PATCH /api/admin/cards/[id]/status`, cuando una ficha pasa a `published`, llamar `getOrCreateCardTranslation(card, 'en')` (y para cualquier locale no-original) en **background sin `await`** antes del `return`.
-- **Resultado**: editor publica → respuesta inmediata. Mientras Claude traduce ~10s en segundo plano, cuando el primer visitante inglés llega ya tiene cache caliente.
-- **Coste**: igual que ahora (una traducción por ficha). Solo cambia *cuándo* se hace.
-- **Mejora opcional (paralela)**: paralelizar por sección dentro de `translate-card.ts` (4 calls de ~3s vs 1 de ~10s, mismo coste). Reduce el tiempo de la traducción en sí, útil para retraducciones manuales y para casos donde la pre-traducción no haya terminado todavía.
-- **Una vez implementado**: mergear `claude/dazzling-heyrovsky-4f9775` → `main`, push → Vercel deploya a producción.
+### 1. Pulido i18n — pre-traducción al publicar — ✅ HECHO (commit `b00f5e9`)
+- En `PATCH /api/admin/cards/[id]/status` cuando una ficha pasa a `published` se dispara `getOrCreateCardTranslation` para todos los locales no-original usando `after()` de `next/server` (background con waitUntil de Vercel).
+- Verificado en preview: el editor recibe la respuesta inmediata, Claude traduce ~10s en background, primer visitante inglés ve cache caliente.
+- Idempotente: re-publicar una ficha ya traducida no llama a Claude (la cache evita llamadas duplicadas).
+- Errores se loguean (`[pretranslate]`) pero no rompen la respuesta del PATCH; si la pre-traducción falla, el primer visitante en `/en/` la dispara como fallback.
+
+### Mejoras opcionales sobre la pre-traducción
+- **Paralelizar por sección** dentro de `translate-card.ts` (4 calls de ~3s vs 1 de ~10s, mismo coste). Útil para retraducciones manuales y para visitantes que llegan mientras la pre-traducción todavía no ha terminado.
 
 ### 2. Pulido i18n — auto-fill de title_translations desde TMDb
 - TMDb permite `?language=en-US` y devuelve el título oficial inglés. Aprovecharlo al crear obra: una llamada extra para rellenar `works.title_translations` sin pasar por Claude.

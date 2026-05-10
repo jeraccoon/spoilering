@@ -273,11 +273,9 @@ Requiere las variables de entorno en `.env.local`.
 
 ### Pendiente de resolver (próxima sesión)
 
-#### Prioridad ALTA — bloquean el merge a producción
-1. **Pre-traducción al publicar**: en `PATCH /api/admin/cards/[id]/status`, cuando una ficha pasa a `published`, lanzar `getOrCreateCardTranslation(card, 'en')` (y para cualquier locale no-original) en background sin `await` antes del response. Editor publica → respuesta inmediata. Mientras Claude traduce ~10s en segundo plano, cuando el primer visitante inglés llega ya tiene cache caliente.
-   - Alternativa complementaria: paralelizar por sección dentro de `translate-card.ts` (4 calls de ~3s vs 1 de ~10s, mismo coste de tokens).
-
-2. **Una vez resuelto lo anterior, mergear `claude/dazzling-heyrovsky-4f9775` a `main`** y desplegar a producción. La migración SQL ya está ejecutada.
+#### Prioridad ALTA
+1. **Pre-traducción al publicar — ✅ HECHO** (commit `b00f5e9`). `PATCH /api/admin/cards/[id]/status` ahora dispara `getOrCreateCardTranslation` para locales no-original usando `after()` de next/server.
+2. **Mergear `claude/dazzling-heyrovsky-4f9775` a `main`** y desplegar a producción. La migración SQL ya está ejecutada.
 
 #### Prioridad MEDIA
 3. **Auto-fill de title_translations desde TMDb** al crear obra (`?language=en-US`). Reduce 1 traducción Claude por obra cuando se crea desde TMDb.
