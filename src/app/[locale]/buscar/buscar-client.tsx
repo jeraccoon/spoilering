@@ -1,11 +1,12 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
 import { Link, useRouter } from '@/i18n/navigation'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import { TYPE_BADGE as TYPE_COLORS } from '@/lib/work-types'
+import { localizeWork } from '@/lib/localize-work'
 import type { WorkType } from '@/types/database'
 
 export type { WorkType }
@@ -17,6 +18,7 @@ export interface Result {
   type: WorkType
   year: number | null
   poster_url: string | null
+  title_translations?: Record<string, string> | null
 }
 
 const supabase = createClient()
@@ -32,6 +34,7 @@ interface Props {
 export function BuscarClient({ initialFilter, initialQuery, initialResults, pageTitle }: Props) {
   const t = useTranslations('BuscarPage')
   const tw = useTranslations('WorkType')
+  const locale = useLocale()
   const router = useRouter()
   const [query, setQuery] = useState(initialQuery)
   const [results, setResults] = useState<Result[]>(initialResults)
@@ -67,7 +70,7 @@ export function BuscarClient({ initialFilter, initialQuery, initialResults, page
     setLoading(true)
     debounceRef.current = setTimeout(async () => {
       let q = (supabase.from('works') as any)
-        .select('slug, title, type, year, poster_url, cards!inner(status)')
+        .select('slug, title, type, year, poster_url, title_translations, cards!inner(status)')
         .eq('cards.status', 'published')
         .ilike('title', `%${query.trim()}%`)
         .order('title', { ascending: true })
@@ -76,7 +79,8 @@ export function BuscarClient({ initialFilter, initialQuery, initialResults, page
       if (initialFilter !== 'all') q = q.eq('type', initialFilter)
 
       const { data } = await q
-      setResults((data ?? []) as Result[])
+      const localized = ((data ?? []) as Result[]).map((w) => localizeWork(w, locale))
+      setResults(localized)
       setSearched(true)
       setLoading(false)
     }, 300)

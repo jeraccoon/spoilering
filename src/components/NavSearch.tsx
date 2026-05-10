@@ -1,11 +1,12 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
 import { Link, useRouter } from '@/i18n/navigation'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import { TYPE_BADGE as TYPE_COLORS } from '@/lib/work-types'
+import { localizeWork } from '@/lib/localize-work'
 import type { WorkType } from '@/types/database'
 
 const supabase = createClient()
@@ -18,6 +19,7 @@ interface SearchResult {
   type: WorkType
   year: number | null
   poster_url: string | null
+  title_translations?: Record<string, string> | null
 }
 
 function SearchIcon() {
@@ -32,6 +34,7 @@ function SearchIcon() {
 export function NavSearch() {
   const t = useTranslations('NavSearch')
   const tw = useTranslations('WorkType')
+  const locale = useLocale()
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<SearchResult[]>([])
@@ -79,12 +82,13 @@ export function NavSearch() {
     setLoading(true)
     debounceRef.current = setTimeout(async () => {
       const { data } = await (supabase.from('works') as any)
-        .select('slug, title, type, year, poster_url, cards!inner(status)')
+        .select('slug, title, type, year, poster_url, title_translations, cards!inner(status)')
         .eq('cards.status', 'published')
         .ilike('title', `%${query.trim()}%`)
         .order('title', { ascending: true })
         .limit(6)
-      setResults((data ?? []) as SearchResult[])
+      const localized = ((data ?? []) as SearchResult[]).map((w) => localizeWork(w, locale))
+      setResults(localized)
       setHighlighted(-1)
       setLoading(false)
     }, 300)

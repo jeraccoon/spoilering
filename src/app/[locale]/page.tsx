@@ -1,14 +1,15 @@
-import { getTranslations } from 'next-intl/server'
+import { getLocale, getTranslations } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { HomeSections } from '@/components/home-sections'
 import { HeroActions } from '@/components/HeroActions'
 import { CommunityCallout } from '@/components/community-callout'
+import { localizeWork } from '@/lib/localize-work'
 import type { CardWithWork } from '@/types/database'
 
 export const dynamic = 'force-dynamic'
 
-async function getData() {
+async function getData(locale: string) {
   const supabase = await createClient()
   const [{ data }, { count }] = await Promise.all([
     (supabase
@@ -23,7 +24,9 @@ async function getData() {
       .eq('status', 'published') as any),
   ])
 
-  const cards = (data ?? []) as CardWithWork[]
+  const rawCards = (data ?? []) as CardWithWork[]
+  // Aplica traducciones cacheadas de title/overview a nivel work si existen
+  const cards = rawCards.map((c) => ({ ...c, work: localizeWork(c.work, locale) }))
   const featuredIndex = cards.length > 0 ? Math.floor(Math.random() * Math.min(cards.length, 20)) : 0
   const featured = cards[featuredIndex] ?? null
   const recent = cards.filter((_, i) => i !== featuredIndex).slice(0, 6)
@@ -36,7 +39,8 @@ async function getData() {
 
 export default async function HomePage() {
   const t = await getTranslations('Home')
-  const { featured, recent, movies, series, books, total } = await getData()
+  const locale = await getLocale()
+  const { featured, recent, movies, series, books, total } = await getData(locale)
 
   return (
     <div>
